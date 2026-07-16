@@ -1,0 +1,82 @@
+package com.weg.Manutencao_API.compras.entity;
+
+import com.weg.Manutencao_API.aluno.entity.Student;
+import com.weg.Manutencao_API.enums.Status;
+import com.weg.Manutencao_API.professor.entity.Teacher;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Entity
+@Table(name = "buy")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Buy {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "buy_id")
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "buy_status")
+    private Status status;
+
+    @JoinColumn(name = "buy_aluno_id")
+    @OneToOne
+    private Student aluno;
+
+    @JoinColumn(name = "buy_professor_id")
+    @OneToOne
+    private Teacher teacher;
+
+    @Column(name = "buy_technical_specification")
+    private String technicalSpecification;
+
+    @Column(name = "buy_quantity")
+    private int quantity;
+
+    @Column(name = "buy_sap")
+    private String sap;
+
+    @Column(name = "buy_purchase_justification")
+    private String purchaseJustification;
+
+    @Column(name = "buy_class_group")
+    private String classGroup;
+
+    @Column(name = "buy_tag")
+    private String tag;
+
+    @Column(name = "buy_patrimony")
+    private String patrimony;
+
+    @Column(name = "buy_equipment")
+    private String equipment;
+
+    @Column(name = "buy_mechanical_set")
+    private String mechanicalSet;
+
+    @Column(name = "buy_created_at")
+    private LocalDate createdAt;
+
+    @ElementCollection
+    @CollectionTable(name = "buy_media_files", joinColumns = @JoinColumn(name = "buy_id"))
+    @Column(name = "media_file")
+    private List<String> mediaFiles;
+}
