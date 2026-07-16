@@ -1,4 +1,4 @@
-package com.weg.Manutencao_API.aluno.entity;
+package com.weg.Manutencao_API.coordenador.entity;
 
 import com.weg.Manutencao_API.enums.Role;
 import com.weg.Manutencao_API.usuario.entity.User;
@@ -17,15 +17,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Table(name = "student")
-public class Student extends User{
+@Table(name = "coordinator")
+public class Coordinator extends User {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "student_id")
+    @Column(name = "coordinator_id")
     private Long id;
 
-    public Student(String name, String email, Role role) {
+    public Coordinator(String name, String email, Role role) {
         super(name, email, role);
     }
 }

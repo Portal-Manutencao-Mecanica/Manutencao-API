@@ -1,8 +1,10 @@
-package com.weg.Manutencao_API.professor.entity;
+package com.weg.Manutencao_API.turma.entity;
 
 import java.util.List;
 
+import com.weg.Manutencao_API.aluno.entity.Student;
 import com.weg.Manutencao_API.enums.Role;
+import com.weg.Manutencao_API.professor.entity.Teacher;
 import com.weg.Manutencao_API.usuario.entity.User;
 
 import jakarta.persistence.Column;
@@ -20,19 +22,28 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Table(name = "teacher")
-public class Teacher extends User {
-    
+@Table(name = "class")
+public class Class extends User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "teacher_id")
+    @Column(name = "class_id")
     private Long id;
 
     @ManyToMany
-    private List<Class> classes;
+    private List<Teacher> teachers;
 
-    public Teacher(String name, String email, Role role, List<Class> classes) {
+    @ManyToMany
+    private List<Student> students;
+
+    @Column(name = "acronym_class")
+    private String acronym;
+
+    public Class(String name, String email, Role role, List<Teacher> teachers, List<Student> students, String acronym) {
         super(name, email, role);
-        this.classes = classes;
+        this.teachers = teachers;
+        this.students = students;
+        this.acronym = acronym;
     }
+
 }
