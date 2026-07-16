@@ -2,7 +2,6 @@ package com.weg.Manutencao_API.equipamento.entity;
 
 import java.math.BigDecimal;
 
-import jakarta.annotation.Generated;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

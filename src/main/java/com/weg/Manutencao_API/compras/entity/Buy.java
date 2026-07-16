@@ -2,7 +2,9 @@ package com.weg.Manutencao_API.compras.entity;
 
 import com.weg.Manutencao_API.aluno.entity.Student;
 import com.weg.Manutencao_API.enums.Status;
+import com.weg.Manutencao_API.equipamento.entity.Equipment;
 import com.weg.Manutencao_API.professor.entity.Teacher;
+import com.weg.Manutencao_API.turma.entity.ClassGroup;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -13,7 +15,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,11 +40,11 @@ public class Buy {
     private Status status;
 
     @JoinColumn(name = "buy_aluno_id")
-    @OneToOne
-    private Student aluno;
+    @ManyToOne
+    private Student student;
 
     @JoinColumn(name = "buy_professor_id")
-    @OneToOne
+    @ManyToOne
     private Teacher teacher;
 
     @Column(name = "buy_technical_specification")
@@ -57,8 +59,9 @@ public class Buy {
     @Column(name = "buy_purchase_justification")
     private String purchaseJustification;
 
-    @Column(name = "buy_class_group")
-    private String classGroup;
+    @ManyToOne
+    @JoinColumn(name = "class_group_id")
+    private ClassGroup classGroup;
 
     @Column(name = "buy_tag")
     private String tag;
@@ -66,8 +69,9 @@ public class Buy {
     @Column(name = "buy_patrimony")
     private String patrimony;
 
-    @Column(name = "buy_equipment")
-    private String equipment;
+    @ManyToOne
+    @JoinColumn(name = "equipment_id")
+    private Equipment equipment;
 
     @Column(name = "buy_mechanical_set")
     private String mechanicalSet;

@@ -1,13 +1,16 @@
 package com.weg.Manutencao_API.local.entity;
 
 import java.util.List;
+import java.util.ArrayList;
 
-import jakarta.annotation.Generated;
+import com.weg.Manutencao_API.maquina.entity.Machine;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,8 +31,8 @@ public class Place {
     @Column(name = "place_name")
     private String name;
 
-    @Column(name = "place_machines")
-    private List<Machine> machines;
+    @OneToMany(mappedBy = "place")
+    private List<Machine> machines = new ArrayList<>();
 
     public Place(String name, List<Machine> machines) {
         this.name = name;
