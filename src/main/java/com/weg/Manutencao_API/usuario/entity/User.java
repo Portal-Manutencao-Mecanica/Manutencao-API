@@ -4,18 +4,15 @@ import com.weg.Manutencao_API.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "user")
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long id;
+   
     @Column(name = "user_name")
     private String name;
     @Column(name = "user_email")
@@ -31,8 +28,4 @@ public class User {
         this.role = role;
         this.createdAt = LocalDateTime.now();
     }
-
-    public User() {
-    }
-
 }
