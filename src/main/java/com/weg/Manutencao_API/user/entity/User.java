@@ -1,4 +1,4 @@
-package com.weg.Manutencao_API.usuario.entity;
+package com.weg.Manutencao_API.user.entity;
 
 import com.weg.Manutencao_API.enums.Role;
 import jakarta.persistence.*;
@@ -7,15 +7,10 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "user")
 @Data
 @AllArgsConstructor
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long id;
+
     @Column(name = "user_name")
     private String name;
     @Column(name = "user_email")
