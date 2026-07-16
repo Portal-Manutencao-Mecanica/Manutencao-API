@@ -29,10 +29,10 @@ public class Teacher extends User {
     private Long id;
 
     @ManyToMany
-    private List<Turma> turmas;
+    private List<Class> classes;
 
-    public Teacher(String name, String email, Role role, List<Turma> turmas) {
+    public Teacher(String name, String email, Role role, List<Class> classes) {
         super(name, email, role);
-        this.turmas = turmas;
+        this.classes = classes;
     }
 }
