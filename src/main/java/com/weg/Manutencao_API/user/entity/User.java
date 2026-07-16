@@ -1,4 +1,4 @@
-package com.weg.Manutencao_API.usuario.entity;
+package com.weg.Manutencao_API.user.entity;
 
 import com.weg.Manutencao_API.enums.Role;
 import jakarta.persistence.*;
