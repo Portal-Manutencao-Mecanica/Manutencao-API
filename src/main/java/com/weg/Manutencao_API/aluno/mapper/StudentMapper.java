@@ -7,7 +7,7 @@ import com.weg.Manutencao_API.aluno.dto.request.StudentDtoRequest;
 import com.weg.Manutencao_API.aluno.dto.response.StudentDtoResponse;
 import com.weg.Manutencao_API.aluno.entity.Student;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface StudentMapper {
 
     @Mapping(target = "id", ignore = true)
