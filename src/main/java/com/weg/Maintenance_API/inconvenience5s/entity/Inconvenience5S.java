@@ -10,6 +10,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -42,24 +43,24 @@ public class Inconvenience5S {
     private String inconvenience;
 
     @Column(name = "status", nullable = false)
-    private Boolean status;
+    private Boolean status = false;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "place_id", nullable = false)
     private Place room;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher;
 
     @Column(name = "event_date", nullable = false)
     private LocalDate dateTime;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "class_id", nullable = false)
     private ClassGroup classGroup;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "inconvenience_5s_student",
             joinColumns = @JoinColumn(name = "inconvenience_5s_id"),
             inverseJoinColumns = @JoinColumn(name = "student_id"))
@@ -77,5 +78,4 @@ public class Inconvenience5S {
     @Column(name = "registered_occasion")
     private String registeredOccasion;
 }
-
 

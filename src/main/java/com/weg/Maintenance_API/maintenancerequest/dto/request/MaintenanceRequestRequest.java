@@ -2,7 +2,6 @@ package com.weg.Maintenance_API.maintenancerequest.dto.request;
 
 import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.designation.entity.Designation;
-import com.weg.Maintenance_API.enums.MaintenanceRequestStatus;
 import com.weg.Maintenance_API.enums.Priority;
 import com.weg.Maintenance_API.place.entity.Place;
 import com.weg.Maintenance_API.machine.entity.Machine;
@@ -15,8 +14,6 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record MaintenanceRequestRequest(
-    @NotNull(message = "status can't be null")
-    MaintenanceRequestStatus status,
     @NotNull(message = "designation can't be null")
     @EntityExists(entityClass = Designation.class, message = "designation not found")
     Long designationId,
@@ -24,13 +21,16 @@ public record MaintenanceRequestRequest(
     Priority priority,
     @NotEmpty(message = "students can't be empty")
     @EntityExists(entityClass = Student.class, message = "student not found")
+    // TODO SECURITY: obtain authenticated student from JWT instead of request body.
     List<Long> studentIds,
     @NotNull(message = "place can't be null")
     @EntityExists(entityClass = Place.class, message = "place not found")
     Long placeId,
     @NotBlank(message = "description can't be blank")
     String description,
+    @NotEmpty(message = "anomaly images can't be empty")
     List<byte[]> anomalyImages,
+    @NotBlank(message = "patrimony can't be blank")
     String patrimony,
     String tag,
     @NotNull(message = "teacher can't be null")
@@ -41,5 +41,4 @@ public record MaintenanceRequestRequest(
     Integer machineId
 ) {
 }
-
 

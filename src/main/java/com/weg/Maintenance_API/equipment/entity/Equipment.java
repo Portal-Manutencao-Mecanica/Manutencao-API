@@ -33,9 +33,9 @@ public class Equipment {
     private BigDecimal price;
 
     @Column(name = "equipment_quantity")
-    private int quantity;
+    private Integer quantity;
 
-    public Equipment(String name, String sap, BigDecimal price, int quantity) {
+    public Equipment(String name, String sap, BigDecimal price, Integer quantity) {
         this.name = name;
         this.sap = sap;
         this.price = price;
@@ -45,5 +45,4 @@ public class Equipment {
     
 
 }
-
 

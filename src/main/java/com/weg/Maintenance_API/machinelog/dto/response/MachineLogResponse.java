@@ -4,7 +4,6 @@ import com.weg.Maintenance_API.enums.MaintenanceType;
 import com.weg.Maintenance_API.enums.TaskCriticality;
 import com.weg.Maintenance_API.enums.TaskSituation;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,7 +19,9 @@ public record MachineLogResponse(
         LocalDateTime conclusion,
         Long teacherId,
         String teacherName,
-        LocalDate registrationDate,
+        LocalDateTime createdAt,
+        LocalDateTime scheduledFor,
+        LocalDateTime requestedAt,
         String actionToExecute,
         TaskCriticality taskCriticality,
         byte[] image,
@@ -33,5 +34,4 @@ public record MachineLogResponse(
         List<Long> assignedStudentIds,
         String reportLink) {
 }
-
 

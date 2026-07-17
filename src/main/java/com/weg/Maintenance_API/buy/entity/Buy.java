@@ -13,9 +13,11 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,21 +42,21 @@ public class Buy {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "buy_status")
-    private Status status;
+    private Status status = Status.NAO_VISUALIZADO;
 
     @JoinColumn(name = "buy_aluno_id")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Student student;
 
     @JoinColumn(name = "buy_professor_id")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Teacher teacher;
 
     @Column(name = "buy_technical_specification")
     private String technicalSpecification;
 
     @Column(name = "buy_quantity")
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "buy_sap")
     private String sap;
@@ -62,7 +64,7 @@ public class Buy {
     @Column(name = "buy_purchase_justification")
     private String purchaseJustification;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_group_id")
     private ClassGroup classGroup;
 
@@ -72,7 +74,7 @@ public class Buy {
     @Column(name = "buy_patrimony")
     private String patrimony;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "equipment_id")
     private Equipment equipment;
 
@@ -86,6 +88,15 @@ public class Buy {
     @CollectionTable(name = "buy_media_files", joinColumns = @JoinColumn(name = "buy_id"))
     @Column(name = "media_file")
     private List<String> mediaFiles = new ArrayList<>();
-}
 
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDate.now();
+        }
+        if (status == null) {
+            status = Status.NAO_VISUALIZADO;
+        }
+    }
+}
 

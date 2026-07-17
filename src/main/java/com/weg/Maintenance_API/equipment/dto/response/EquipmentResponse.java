@@ -7,8 +7,7 @@ public record EquipmentResponse(
         String name,
         String sap,
         BigDecimal price,
-        int quantity) {
+        Integer quantity) {
 
 }
-
 

@@ -10,7 +10,10 @@ import com.weg.Maintenance_API.teacher.entity.Teacher;
 import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
 import com.weg.Maintenance_API.validation.EntityExists;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.PastOrPresent;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record MachineLogRequest(
@@ -25,6 +28,12 @@ public record MachineLogRequest(
         String serviceExecute,
         @EntityExists(entityClass = Teacher.class, message = "teacher not found")
         Long teacherId,
+        @NotNull(message = "scheduled date can't be null")
+        @FutureOrPresent(message = "scheduled date can't be in the past")
+        LocalDateTime scheduledFor,
+        @NotNull(message = "requested date can't be null")
+        @PastOrPresent(message = "requested date can't be in the future")
+        LocalDateTime requestedAt,
         String actionToExecute,
         @NotNull(message = "task criticality can't be null")
         TaskCriticality taskCriticality,
@@ -39,5 +48,4 @@ public record MachineLogRequest(
         List<Long> assignedStudentIds,
         String reportLink) {
 }
-
 

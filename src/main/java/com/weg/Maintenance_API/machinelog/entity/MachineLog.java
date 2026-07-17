@@ -1,6 +1,5 @@
 package com.weg.Maintenance_API.machinelog.entity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +45,7 @@ public class MachineLog {
     @Column(name = "task_situation", nullable = false)
     private TaskSituation taskSituation;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "machine_id", nullable = false)
     private Machine machine;
 
@@ -56,12 +55,18 @@ public class MachineLog {
     @Column(name = "machine_log_conclusion")
     private LocalDateTime conclusion;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
     
-    @Column(name = "machine_log_hour_register")
-    private LocalDate registrationDate;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "scheduled_for", nullable = false)
+    private LocalDateTime scheduledFor;
+
+    @Column(name = "requested_at", nullable = false)
+    private LocalDateTime requestedAt;
 
     @Column(name = "action_to_execute", columnDefinition = "TEXT")
     private String actionToExecute;
@@ -73,7 +78,7 @@ public class MachineLog {
     @Column(name = "image", columnDefinition = "bytea")
     private byte[] image;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
     private Place place;
 
@@ -84,11 +89,11 @@ public class MachineLog {
     @Column(name = "registration_period")
     private String registrationPeriod;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id")
     private ClassGroup classGroup;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "machine_log_student",
             joinColumns = @JoinColumn(name = "machine_log_id"),
             inverseJoinColumns = @JoinColumn(name = "student_id"))
@@ -96,6 +101,10 @@ public class MachineLog {
 
     @Column(name = "report_link", length = 2048)
     private String reportLink;
-}
 
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+}
 

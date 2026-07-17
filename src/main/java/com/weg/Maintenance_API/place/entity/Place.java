@@ -26,7 +26,7 @@ public class Place {
     @Column(name = "place_name", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "place")
+    @OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
     private List<Machine> machines = new ArrayList<>();
 
     public Place(String name, List<Machine> machines) {
@@ -35,5 +35,4 @@ public class Place {
     }
     
 }
-
 

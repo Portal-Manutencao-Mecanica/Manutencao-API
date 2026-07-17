@@ -32,9 +32,9 @@ public class MaintenanceRequest {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private MaintenanceRequestStatus status;
+    private MaintenanceRequestStatus status = MaintenanceRequestStatus.NAO_VISUALIZADA;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "designation_id", nullable = false)
     private Designation designation;
 
@@ -42,13 +42,13 @@ public class MaintenanceRequest {
     @Column(name = "priority", nullable = false)
     private Priority priority;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "maintenance_request_student",
             joinColumns = @JoinColumn(name = "maintenance_request_id"),
             inverseJoinColumns = @JoinColumn(name = "student_id"))
     private List<Student> students = new ArrayList<>();
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "place_id", nullable = false)
     private Place place;
 
@@ -70,13 +70,22 @@ public class MaintenanceRequest {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime dateTime;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "machine_id", nullable = false)
     private Machine equipment;
-}
 
+    @PrePersist
+    protected void onCreate() {
+        if (dateTime == null) {
+            dateTime = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = MaintenanceRequestStatus.NAO_VISUALIZADA;
+        }
+    }
+}
 

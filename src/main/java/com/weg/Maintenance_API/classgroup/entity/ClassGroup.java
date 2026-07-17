@@ -27,17 +27,16 @@ public class ClassGroup {
     @Column(name = "acronym", nullable = false)
     private String acronym;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "class_group_teacher",
             joinColumns = @JoinColumn(name = "class_group_id"),
             inverseJoinColumns = @JoinColumn(name = "teacher_id"))
     private List<Teacher> teachers = new ArrayList<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "class_group_student",
             joinColumns = @JoinColumn(name = "class_group_id"),
             inverseJoinColumns = @JoinColumn(name = "student_id"))
     private List<Student> students = new ArrayList<>();
 }
-
 

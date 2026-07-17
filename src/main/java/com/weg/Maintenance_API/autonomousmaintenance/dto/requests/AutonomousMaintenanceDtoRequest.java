@@ -7,6 +7,7 @@ import com.weg.Maintenance_API.equipment.entity.Equipment;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
 import com.weg.Maintenance_API.validation.EntityExists;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
 
 import java.time.LocalDateTime;
@@ -22,9 +23,9 @@ public record AutonomousMaintenanceDtoRequest(
     Long equipmentId,
     @NotNull(message = "Equipment condition can't be null")
     EquipmentCondition equipmentCondition,
-    @NotNull(message = "Identified non conformity can't be null")
+    @NotBlank(message = "Identified non conformity can't be blank")
     String identifiedNonconformities,
-    @NotNull(message = "Patrimony can't be null")
+    @NotBlank(message = "Patrimony can't be blank")
     String patrimony,
     String tag,
     @NotNull(message = "Teacher can't be null")
@@ -32,8 +33,8 @@ public record AutonomousMaintenanceDtoRequest(
     Long teacherId,
     @NotNull(message = "Student can't be null")
     @EntityExists(entityClass = Student.class, message = "student not found")
+    // TODO SECURITY: obtain authenticated student from JWT instead of request body.
     Long studentId
 ) {
 }
-
 

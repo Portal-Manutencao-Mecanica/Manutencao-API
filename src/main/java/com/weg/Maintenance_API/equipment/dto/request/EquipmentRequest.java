@@ -14,9 +14,9 @@ public record EquipmentRequest(
     @NotNull(message = "price can't be null")
     @DecimalMin(value = "0.0", inclusive = true, message = "price can't be negative")
     BigDecimal price,
+    @NotNull(message = "quantity can't be null")
     @PositiveOrZero(message = "quantity can't be negative")
-    int quantity
+    Integer quantity
 ) {
 }
-
 

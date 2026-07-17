@@ -9,7 +9,7 @@ public record BuyDtoResponse(
         StudentDtoResponse student,
         TeacherDtoResponse teacher,
         String technicalSpecification,
-        int quantity,
+        Integer quantity,
         String sap,
         String purchaseJustification,
         ClassGroupDtoResponse classGroup,
@@ -21,5 +21,4 @@ public record BuyDtoResponse(
         List<String> mediaFiles
 ) {
 }
-
 

@@ -16,8 +16,6 @@ import java.util.List;
 public record Inconvenience5SDtoRequest(
         @NotBlank(message = "inconvenience can't be blank")
         String inconvenience,
-        @NotNull(message = "status can't be null")
-        Boolean status,
         @NotNull(message = "place can't be null")
         @EntityExists(entityClass = Place.class, message = "place not found")
         Long placeId,
@@ -32,11 +30,11 @@ public record Inconvenience5SDtoRequest(
         Long classGroupId,
         @NotEmpty(message = "students can't be empty")
         @EntityExists(entityClass = Student.class, message = "student not found")
+        // TODO SECURITY: obtain authenticated student from JWT instead of request body.
         List<Long> studentIds,
         String description,
         List<String> images,
         String registeredOccasion
 ) {
 }
-
 
