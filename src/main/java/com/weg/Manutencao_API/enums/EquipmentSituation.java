@@ -1,6 +1,6 @@
 package com.weg.Manutencao_API.enums;
 
-public enum EquipamentSituation {
+public enum EquipmentSituation {
     OPERANDO,
     NAO_OPERANDO
 }

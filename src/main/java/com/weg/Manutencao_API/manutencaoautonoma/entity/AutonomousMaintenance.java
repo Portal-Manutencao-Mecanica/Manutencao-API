@@ -2,7 +2,7 @@ package com.weg.Manutencao_API.manutencaoautonoma.entity;
 
 import com.weg.Manutencao_API.aluno.entity.Student;
 import com.weg.Manutencao_API.enums.EquipmentCondition;
-import com.weg.Manutencao_API.enums.EquipamentSituation;
+import com.weg.Manutencao_API.enums.EquipmentSituation;
 import com.weg.Manutencao_API.equipamento.entity.Equipment;
 import com.weg.Manutencao_API.professor.entity.Teacher;
 import jakarta.persistence.Column;
@@ -37,7 +37,7 @@ public class AutonomousMaintenance {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "equipment_situation", nullable = false)
-    private EquipamentSituation equipmentSituation;
+    private EquipmentSituation equipmentSituation;
 
     @Column(name = "date_time", nullable = false)
     private LocalDateTime dateTime;
