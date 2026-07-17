@@ -1,6 +1,5 @@
 package com.weg.Manutencao_API.compras.dto.response;
 
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -8,7 +7,7 @@ public record BuyDtoResponse(
         Long id,
         String status,
         StudentDtoResponse student,
-        TeachetDtoResponse teacher,
+        TeacherDtoResponse teacher,
         String technicalSpecification,
         int quantity,
         String sap,
@@ -16,9 +15,9 @@ public record BuyDtoResponse(
         ClassGroupDtoResponse classGroup,
         String tag,
         String patrimony,
-        EquipmentDtoResponse equipmentId,
+        EquipmentDtoResponse equipment,
         String mechanicalSet,
         LocalDate createdAt,
-        List<String> media
+        List<String> mediaFiles
 ) {
 }
