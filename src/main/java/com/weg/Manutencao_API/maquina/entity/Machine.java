@@ -1,22 +1,22 @@
 package com.weg.Manutencao_API.maquina.entity;
 
+import com.weg.Manutencao_API.enums.EquipmentCondition;
+import com.weg.Manutencao_API.livrolog.entity.MachineLog;
+import com.weg.Manutencao_API.local.entity.Place;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-import com.weg.Manutencao_API.local.entity.Place;
-
-import jakarta.annotation.Generated;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "machine")
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,31 +25,31 @@ public class Machine {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "machine_id")
-    private Long id;
+    private Integer id;
 
-    @Column(name = "machine_name")
+    @Column(name = "machine_name", nullable = false)
     private String name;
 
-    @Column(name = "machine_heritage")
-    private String heritage;
+    @Column(name = "machine_patrimony", nullable = false)
+    private String patrimony;
 
-    @Column(name = "machine_place")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "machine_condition", nullable = false)
+    private EquipmentCondition condition;
+
+    @Column(name = "machine_tag")
+    private String tag;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "place_id", nullable = false)
     private Place place;
 
-    @Column(name = "machine_created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "machine_created_at", nullable = false)
+    private LocalDate createdAt;
 
-    @Column(name = "machine_log")
-    private List<MachineLog> machineLog;
+    @Column(name = "machine_last_maintenance")
+    private LocalDateTime lastMaintenance;
 
-    public Machine(String name, String heritage, Place place, LocalDateTime createdAt, List<MachineLog> machineLog) {
-        this.name = name;
-        this.heritage = heritage;
-        this.place = place;
-        this.createdAt = createdAt;
-        this.machineLog = machineLog;
-    }
-    
-    
-
+    @OneToMany(mappedBy = "machine", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MachineLog> machineLogs = new ArrayList<>();
 }
