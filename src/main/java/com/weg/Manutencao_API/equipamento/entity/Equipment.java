@@ -2,7 +2,6 @@ package com.weg.Manutencao_API.equipamento.entity;
 
 import java.math.BigDecimal;
 
-import jakarta.annotation.Generated;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,13 +27,13 @@ public class Equipment {
     @Column(name = "equipment_name")
     private String name;
 
-    @Column(name = "equipement_sap")
+    @Column(name = "equipment_sap")
     private String sap;
 
-    @Column(name = "equipement_price")
+    @Column(name = "equipment_price")
     private BigDecimal price;
 
-    @Column(name = "equipement_quantity")
+    @Column(name = "equipment_quantity")
     private int quantity;
 
     public Equipment(String name, String sap, BigDecimal price, int quantity) {
