@@ -1,4 +1,4 @@
-package com.weg.Manutencao_API.local.dto;
+package com.weg.Manutencao_API.local.dto.response;
 
 import java.util.List;
 
