@@ -3,7 +3,7 @@ package com.weg.Manutencao_API.inconveniencia5s.entity;
 import com.weg.Manutencao_API.aluno.entity.Student;
 import com.weg.Manutencao_API.local.entity.Place;
 import com.weg.Manutencao_API.professor.entity.Teacher;
-import com.weg.Manutencao_API.turma.entity.Class;
+import com.weg.Manutencao_API.turma.entity.ClassGroup;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -57,7 +57,7 @@ public class Inconvenience5S {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "class_id", nullable = false)
-    private Class classGroup;
+    private ClassGroup classGroup;
 
     @ManyToMany
     @JoinTable(name = "inconvenience_5s_student",

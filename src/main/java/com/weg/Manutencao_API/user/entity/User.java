@@ -3,18 +3,21 @@ package com.weg.Manutencao_API.user.entity;
 import com.weg.Manutencao_API.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @MappedSuperclass
 public abstract class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
     @Column(name = "user_name")
     private String name;
@@ -23,7 +26,7 @@ public abstract class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role_user")
     private Role role;
-    @Column(name = "createdAt_user")
+    @Column(name = "user_created_at", nullable = false)
     private LocalDateTime createdAt;
 
     public User(String name, String email, Role role) {
