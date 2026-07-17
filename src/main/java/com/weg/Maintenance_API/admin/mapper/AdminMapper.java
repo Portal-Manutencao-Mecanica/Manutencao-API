@@ -11,8 +11,12 @@ import com.weg.Maintenance_API.admin.entity.Admin;
 public interface AdminMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "enabled", ignore = true)
+    @Mapping(target = "accountNonLocked", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Admin toEntity(AdminRequestDto adminRequestDto);
 
     AdminResponseDto toResponse(Admin admin);
 }
-

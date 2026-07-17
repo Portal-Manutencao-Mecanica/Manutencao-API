@@ -9,7 +9,9 @@ public record CoordinatorResponseDto(
         String name,
         String email,
         Role role,
-        LocalDateTime createdAt) {
+        boolean enabled,
+        boolean accountNonLocked,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt) {
 }
-
 

@@ -1,10 +1,10 @@
-package com.weg.Maintenance_API.admin.dto.response;
-
-import java.time.LocalDateTime;
+package com.weg.Maintenance_API.user.dto.response;
 
 import com.weg.Maintenance_API.enums.Role;
 
-public record AdminResponseDto(
+import java.time.LocalDateTime;
+
+public record UserResponseDto(
         Long id,
         String name,
         String email,
@@ -12,5 +12,6 @@ public record AdminResponseDto(
         boolean enabled,
         boolean accountNonLocked,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt) {
+        LocalDateTime updatedAt
+) {
 }
