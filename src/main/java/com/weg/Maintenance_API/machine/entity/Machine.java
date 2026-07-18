@@ -4,7 +4,6 @@ import com.weg.Maintenance_API.enums.EquipmentCondition;
 import com.weg.Maintenance_API.machinelog.entity.MachineLog;
 import com.weg.Maintenance_API.place.entity.Place;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,14 +16,13 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "machine")
-@AllArgsConstructor
 @NoArgsConstructor
 public class Machine {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "machine_id")
-    private Integer id;
+    private Long id;
 
     @Column(name = "machine_name", nullable = false)
     private String name;
@@ -43,18 +41,16 @@ public class Machine {
     @JoinColumn(name = "place_id", nullable = false)
     private Place place;
 
-    @Column(name = "machine_created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "machine_last_maintenance")
-    private LocalDateTime lastMaintenance;
 
     @OneToMany(mappedBy = "machine", fetch = FetchType.LAZY)
     private List<MachineLog> machineLogs = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 }
-

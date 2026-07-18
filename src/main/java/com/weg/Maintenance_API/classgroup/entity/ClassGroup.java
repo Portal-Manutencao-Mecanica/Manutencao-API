@@ -3,7 +3,6 @@ package com.weg.Maintenance_API.classgroup.entity;
 import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,7 +15,6 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ClassGroup {
 
     @Id
@@ -24,7 +22,7 @@ public class ClassGroup {
     @Column(name = "class_group_id")
     private Long id;
 
-    @Column(name = "acronym", nullable = false)
+    @Column(name = "acronym", nullable = false, unique = true, length = 30)
     private String acronym;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -39,4 +37,3 @@ public class ClassGroup {
             inverseJoinColumns = @JoinColumn(name = "student_id"))
     private List<Student> students = new ArrayList<>();
 }
-
