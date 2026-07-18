@@ -1,6 +1,7 @@
 package com.weg.Maintenance_API.history.entity;
 
 import com.weg.Maintenance_API.enums.HistoryAction;
+import com.weg.Maintenance_API.enums.HistoryEntityType;
 import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.user.entity.User;
 import jakarta.persistence.Column;
@@ -30,26 +31,28 @@ public class HistoryLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "history_log_id")
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 40)
+    @Column(name = "action", nullable = false, length = 40)
     private HistoryAction action;
 
-    @Column(nullable = false, length = 100)
-    private String entityType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "entity_type", nullable = false, length = 40)
+    private HistoryEntityType entityType;
 
-    @Column(nullable = false)
+    @Column(name = "entity_id", nullable = false)
     private Long entityId;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(name = "actor_role", nullable = false, length = 30)
     private Role actorRole;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -58,6 +61,8 @@ public class HistoryLog {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 }
