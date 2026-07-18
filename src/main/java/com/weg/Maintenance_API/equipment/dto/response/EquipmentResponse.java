@@ -6,8 +6,7 @@ public record EquipmentResponse(
         Long id,
         String name,
         String sap,
-        BigDecimal price,
-        Integer quantity) {
+        BigDecimal unitPrice,
+        Integer availableQuantity) {
 
 }
-

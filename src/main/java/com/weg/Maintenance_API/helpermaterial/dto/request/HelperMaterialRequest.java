@@ -1,18 +1,19 @@
 package com.weg.Maintenance_API.helpermaterial.dto.request;
 
+import com.weg.Maintenance_API.enums.HelperMaterialType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.URL;
 
 public record HelperMaterialRequest(
-    @URL(message = "technical link must be a valid URL")
-    String technicalLink,
-    @URL(message = "lubrication link must be a valid URL")
-    String lubricationLink,
-    @URL(message = "preventive maintenance link must be a valid URL")
-    String preventiveMaintenanceLink,
-    @URL(message = "manual link must be a valid URL")
-    String linkManual
+    @NotBlank(message = "title can't be blank")
+    String title,
+    String description,
+    @URL(message = "url must be a valid URL")
+    @NotBlank(message = "url can't be blank")
+    String url,
+    @NotNull(message = "type can't be null")
+    HelperMaterialType type
 ) {
 }
-
-
 

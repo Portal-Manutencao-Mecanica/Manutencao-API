@@ -11,10 +11,12 @@ import com.weg.Maintenance_API.equipment.entity.Equipment;
 public interface EquipmentMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "media", ignore = true)
     Equipment toEntity(EquipmentRequest equipmentRequest);
 
+    @Mapping(target = "unitPrice", source = "unitPrice")
+    @Mapping(target = "availableQuantity", source = "availableQuantity")
     EquipmentResponse toResponse(Equipment equipment);
 
 }
-
 
