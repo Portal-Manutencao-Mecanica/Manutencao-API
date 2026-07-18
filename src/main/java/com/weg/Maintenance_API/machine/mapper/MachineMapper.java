@@ -12,7 +12,6 @@ public interface MachineMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "place", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "lastMaintenance", ignore = true)
     @Mapping(target = "machineLogs", ignore = true)
     // Relationship must be resolved in the service layer.
     Machine toEntity(MachineRequest machineRequest);
@@ -21,4 +20,3 @@ public interface MachineMapper {
     @Mapping(target = "placeName", source = "place.name")
     MachineResponse toResponse(Machine machine);
 }
-

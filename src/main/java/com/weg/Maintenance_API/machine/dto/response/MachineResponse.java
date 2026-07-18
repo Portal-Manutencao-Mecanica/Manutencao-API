@@ -12,7 +12,5 @@ public record MachineResponse(
         String tag,
         Long placeId,
         String placeName,
-        LocalDateTime createdAt,
-        LocalDateTime lastMaintenance) {
+        LocalDateTime createdAt) {
 }
-
