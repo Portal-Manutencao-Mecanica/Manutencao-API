@@ -1,19 +1,22 @@
 package com.weg.Maintenance_API.helpermaterial.entity;
 
+import com.weg.Maintenance_API.enums.HelperMaterialType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "helper_material")
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
 public class HelperMaterial {
 
@@ -22,16 +25,16 @@ public class HelperMaterial {
     @Column(name = "helper_material_id")
     private Long id;
 
-    @Column(name = "helper_material_link_tecnic")
-    private String technicalLink;
+    @Column(name = "title", nullable = false, length = 150)
+    private String title;
 
-    @Column(name = "helper_material_link_lubrification")
-    private String lubricationLink;
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
-    @Column(name = "helper_material_link_prevent_maintance")
-    private String preventiveMaintenanceLink;
+    @Column(name = "url", nullable = false, length = 2048)
+    private String url;
 
-    @Column(name = "helper_material_link_manual")
-    private String linkManual;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 40)
+    private HelperMaterialType type;
 }
-

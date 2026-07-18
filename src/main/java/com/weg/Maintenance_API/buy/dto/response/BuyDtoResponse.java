@@ -1,25 +1,24 @@
 package com.weg.Maintenance_API.buy.dto.response;
 
-import java.time.LocalDate;
+import com.weg.Maintenance_API.buy.dto.response.BuyItemResponse;
+import com.weg.Maintenance_API.enums.BuyStatus;
+import com.weg.Maintenance_API.media.dto.response.MediaResponseDto;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record BuyDtoResponse(
         Long id,
-        String status,
-        StudentDtoResponse student,
-        TeacherDtoResponse teacher,
-        String technicalSpecification,
-        int quantity,
-        String sap,
+        BuyStatus status,
+        Long createdById,
+        String createdByName,
+        Long notifiedTeacherId,
+        String notifiedTeacherName,
         String purchaseJustification,
-        ClassGroupDtoResponse classGroup,
-        String tag,
-        String patrimony,
-        EquipmentDtoResponse equipment,
-        String mechanicalSet,
-        LocalDate createdAt,
-        List<String> mediaFiles
+        Long classGroupId,
+        String classGroupAcronym,
+        LocalDateTime createdAt,
+        List<BuyItemResponse> items,
+        List<MediaResponseDto> media
 ) {
 }
-
-

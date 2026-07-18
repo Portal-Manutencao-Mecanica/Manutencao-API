@@ -16,8 +16,11 @@ import lombok.Setter;
 @Table(name = "admin")
 public class Admin extends User {
 
-    public Admin(String name, String email, Role role) {
-        super(name, email, role);
+    {
+        setRole(Role.ADMIN);
+    }
+
+    public Admin(String name, String email, String password) {
+        super(name, email, password, Role.ADMIN);
     }
 }
-

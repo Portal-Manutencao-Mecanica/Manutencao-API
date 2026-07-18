@@ -1,28 +1,30 @@
 package com.weg.Maintenance_API.buy.entity;
 
-import com.weg.Maintenance_API.student.entity.Student;
-import com.weg.Maintenance_API.equipment.entity.Equipment;
-import com.weg.Maintenance_API.enums.Status;
-import com.weg.Maintenance_API.teacher.entity.Teacher;
 import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
-import jakarta.persistence.CollectionTable;
+import com.weg.Maintenance_API.enums.BuyStatus;
+import com.weg.Maintenance_API.media.entity.Media;
+import com.weg.Maintenance_API.teacher.entity.Teacher;
+import com.weg.Maintenance_API.user.entity.User;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,61 +33,58 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Buy {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "buy_id")
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "buy_status")
-    private Status status;
+    @Column(name = "status", nullable = false, length = 30)
+    private BuyStatus status = BuyStatus.NAO_VISUALIZADO;
 
-    @JoinColumn(name = "buy_aluno_id")
-    @ManyToOne
-    private Student student;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private User createdBy;
 
-    @JoinColumn(name = "buy_professor_id")
-    @ManyToOne
-    private Teacher teacher;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "notified_teacher_id")
+    private Teacher notifiedTeacher;
 
-    @Column(name = "buy_technical_specification")
-    private String technicalSpecification;
-
-    @Column(name = "buy_quantity")
-    private int quantity;
-
-    @Column(name = "buy_sap")
-    private String sap;
-
-    @Column(name = "buy_purchase_justification")
+    @Column(name = "purchase_justification", columnDefinition = "TEXT")
     private String purchaseJustification;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_group_id")
     private ClassGroup classGroup;
 
-    @Column(name = "buy_tag")
-    private String tag;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "buy_patrimony")
-    private String patrimony;
+    @OneToMany(
+            mappedBy = "buy",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<BuyItem> items = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "equipment_id")
-    private Equipment equipment;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "buy_media",
+            joinColumns = @JoinColumn(name = "buy_id"),
+            inverseJoinColumns = @JoinColumn(name = "media_id")
+    )
+    private List<Media> media = new ArrayList<>();
 
-    @Column(name = "buy_mechanical_set")
-    private String mechanicalSet;
-
-    @Column(name = "buy_created_at")
-    private LocalDate createdAt;
-
-    @ElementCollection
-    @CollectionTable(name = "buy_media_files", joinColumns = @JoinColumn(name = "buy_id"))
-    @Column(name = "media_file")
-    private List<String> mediaFiles = new ArrayList<>();
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = BuyStatus.NAO_VISUALIZADO;
+        }
+    }
 }
-
-

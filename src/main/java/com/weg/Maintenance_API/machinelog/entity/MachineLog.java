@@ -1,31 +1,44 @@
 package com.weg.Maintenance_API.machinelog.entity;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.weg.Maintenance_API.student.entity.Student;
+import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
 import com.weg.Maintenance_API.enums.MaintenanceType;
 import com.weg.Maintenance_API.enums.TaskCriticality;
 import com.weg.Maintenance_API.enums.TaskSituation;
-import com.weg.Maintenance_API.place.entity.Place;
 import com.weg.Maintenance_API.machine.entity.Machine;
+import com.weg.Maintenance_API.media.entity.Media;
+import com.weg.Maintenance_API.place.entity.Place;
+import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
-import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
-
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import com.weg.Maintenance_API.user.entity.User;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
+@Table(name = "machine_log")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "machine_log")
 public class MachineLog {
 
     @Id
@@ -33,69 +46,88 @@ public class MachineLog {
     @Column(name = "machine_log_id")
     private Long id;
 
-    @Column(name = "machine_log_title")
+    @Column(name = "title", length = 150)
     private String title;
 
-    @Column(name = "machine_log_description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "machine_log_content", columnDefinition = "TEXT")
-    private String content;
+    @Column(name = "execution_report", columnDefinition = "TEXT")
+    private String executionReport;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "task_situation", nullable = false)
+    @Column(name = "task_situation", nullable = false, length = 30)
     private TaskSituation taskSituation;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "machine_id", nullable = false)
     private Machine machine;
 
-    @Column(name = "machine_log_service_execute")
-    private String serviceExecute;
+    @Column(name = "service_performed", columnDefinition = "TEXT")
+    private String servicePerformed;
 
-    @Column(name = "machine_log_conclusion")
-    private LocalDateTime conclusion;
+    @Column(name = "teacher_concluded_at")
+    private LocalDateTime teacherConcludedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "teacher_id")
-    private Teacher teacher;
-    
-    @Column(name = "machine_log_hour_register")
-    private LocalDate registrationDate;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "responsible_teacher_id")
+    private Teacher responsibleTeacher;
 
-    @Column(name = "action_to_execute", columnDefinition = "TEXT")
-    private String actionToExecute;
+    @Column(name = "registered_at", nullable = false, updatable = false)
+    private LocalDateTime registeredAt;
+
+    @Column(name = "execution_started_at")
+    private LocalDateTime executionStartedAt;
+
+    @Column(name = "execution_ended_at")
+    private LocalDateTime executionEndedAt;
+
+    @Column(name = "planned_action", columnDefinition = "TEXT")
+    private String plannedAction;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "task_criticality", nullable = false)
+    @Column(name = "task_criticality", nullable = false, length = 30)
     private TaskCriticality taskCriticality;
 
-    @Column(name = "image", columnDefinition = "bytea")
-    private byte[] image;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
     private Place place;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "maintenance_type")
+    @Column(name = "maintenance_type", length = 30)
     private MaintenanceType maintenanceType;
 
-    @Column(name = "registration_period")
-    private String registrationPeriod;
-
-    @ManyToOne
-    @JoinColumn(name = "class_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_group_id")
     private ClassGroup classGroup;
 
-    @ManyToMany
-    @JoinTable(name = "machine_log_student",
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "machine_log_student",
             joinColumns = @JoinColumn(name = "machine_log_id"),
-            inverseJoinColumns = @JoinColumn(name = "student_id"))
+            inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
     private List<Student> assignedStudents = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "machine_log_media",
+            joinColumns = @JoinColumn(name = "machine_log_id"),
+            inverseJoinColumns = @JoinColumn(name = "media_id")
+    )
+    private List<Media> media = new ArrayList<>();
 
     @Column(name = "report_link", length = 2048)
     private String reportLink;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "created_by_user_id", nullable = false)
+    private User createdBy;
+
+    @PrePersist
+    protected void onCreate() {
+        if (registeredAt == null) {
+            registeredAt = LocalDateTime.now();
+        }
+    }
 }
-
-

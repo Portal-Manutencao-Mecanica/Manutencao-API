@@ -11,12 +11,11 @@ public record EquipmentRequest(
     @NotBlank(message = "name can't be blank")
     String name,
     String sap,
-    @NotNull(message = "price can't be null")
+    @NotNull(message = "unit price can't be null")
     @DecimalMin(value = "0.0", inclusive = true, message = "price can't be negative")
-    BigDecimal price,
-    @PositiveOrZero(message = "quantity can't be negative")
-    int quantity
+    BigDecimal unitPrice,
+    @NotNull(message = "available quantity can't be null")
+    @PositiveOrZero(message = "available quantity can't be negative")
+    Integer availableQuantity
 ) {
 }
-
-

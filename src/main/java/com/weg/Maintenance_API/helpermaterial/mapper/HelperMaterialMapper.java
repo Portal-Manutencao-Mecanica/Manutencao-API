@@ -11,8 +11,17 @@ import com.weg.Maintenance_API.helpermaterial.entity.HelperMaterial;
 public interface HelperMaterialMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "title", source = "title")
+    @Mapping(target = "description", source = "description")
+    @Mapping(target = "url", source = "url")
+    @Mapping(target = "type", source = "type")
     HelperMaterial toEntity(HelperMaterialRequest helperMaterialRequest);
 
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "title", source = "title")
+    @Mapping(target = "description", source = "description")
+    @Mapping(target = "url", source = "url")
+    @Mapping(target = "type", source = "type")
     HelperMaterialResponse toResponse(HelperMaterial helperMaterial);
 
 }
@@ -30,4 +39,3 @@ public interface HelperMaterialMapper {
  * 
  * 
  */
-

@@ -1,71 +1,32 @@
 package com.weg.Maintenance_API.buy.mapper;
 
-import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.buy.dto.request.BuyDtoRequest;
 import com.weg.Maintenance_API.buy.dto.response.BuyDtoResponse;
 import com.weg.Maintenance_API.buy.entity.Buy;
-import com.weg.Maintenance_API.equipment.entity.Equipment;
-import com.weg.Maintenance_API.teacher.entity.Teacher;
-import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
+import com.weg.Maintenance_API.media.mapper.MediaMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import java.time.LocalDate;
-
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {BuyItemMapper.class, MediaMapper.class})
 public interface BuyMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "student", source = "studentId")
-    @Mapping(target = "teacher", source = "teacherId")
-    @Mapping(target = "classGroup", source = "classGroupId")
-    @Mapping(target = "equipment", source = "equipmentId")
-    @Mapping(target = "mediaFiles", source = "media")
-    @Mapping(target = "createdAt", expression = "java(LocalDate.now())")
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "notifiedTeacher", ignore = true)
+    @Mapping(target = "classGroup", ignore = true)
+    @Mapping(target = "items", source = "items")
+    @Mapping(target = "media", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     Buy toEntity(BuyDtoRequest request);
 
+    @Mapping(target = "createdById", source = "createdBy.id")
+    @Mapping(target = "createdByName", source = "createdBy.name")
+    @Mapping(target = "notifiedTeacherId", source = "notifiedTeacher.id")
+    @Mapping(target = "notifiedTeacherName", source = "notifiedTeacher.name")
+    @Mapping(target = "classGroupId", source = "classGroup.id")
+    @Mapping(target = "classGroupAcronym", source = "classGroup.acronym")
+    @Mapping(target = "items", source = "items")
+    @Mapping(target = "media", source = "media")
     BuyDtoResponse toResponse(Buy buy);
-
-    default Student mapStudent(Long id) {
-        if (id == null) {
-            return null;
-        }
-
-        Student student = new Student();
-        student.setId(id);
-        return student;
-    }
-
-    default Teacher mapTeacher(Long id) {
-        if (id == null) {
-            return null;
-        }
-
-        Teacher teacher = new Teacher();
-        teacher.setId(id);
-        return teacher;
-    }
-
-    default ClassGroup mapClassGroup(Long id) {
-        if (id == null) {
-            return null;
-        }
-
-        ClassGroup classGroup = new ClassGroup();
-        classGroup.setId(id);
-        return classGroup;
-    }
-
-    default Equipment mapEquipment(Long id) {
-        if (id == null) {
-            return null;
-        }
-
-        Equipment equipment = new Equipment();
-        equipment.setId(id);
-        return equipment;
-    }
 }
-
-
-

@@ -9,14 +9,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+// Legacy entity. MaintenanceRequest now uses Sector directly.
 @Entity
 @Table(name = "designation")
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
+@Deprecated
 public class Designation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,4 +30,3 @@ public class Designation {
     @Column(name = "designation_sector")
     private Sector sector;
 }
-

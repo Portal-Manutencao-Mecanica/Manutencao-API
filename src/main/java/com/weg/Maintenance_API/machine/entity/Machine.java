@@ -4,12 +4,10 @@ import com.weg.Maintenance_API.enums.EquipmentCondition;
 import com.weg.Maintenance_API.machinelog.entity.MachineLog;
 import com.weg.Maintenance_API.place.entity.Place;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,14 +16,13 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "machine")
-@AllArgsConstructor
 @NoArgsConstructor
 public class Machine {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "machine_id")
-    private Integer id;
+    private Long id;
 
     @Column(name = "machine_name", nullable = false)
     private String name;
@@ -40,18 +37,20 @@ public class Machine {
     @Column(name = "machine_tag")
     private String tag;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "place_id", nullable = false)
     private Place place;
 
-    @Column(name = "machine_created_at", nullable = false)
-    private LocalDate createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "machine_last_maintenance")
-    private LocalDateTime lastMaintenance;
-
-    @OneToMany(mappedBy = "machine", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "machine", fetch = FetchType.LAZY)
     private List<MachineLog> machineLogs = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }
-
-

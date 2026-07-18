@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.weg.Maintenance_API.machine.entity.Machine;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +13,6 @@ import lombok.Setter;
 @Table(name = "place")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class Place {
 
@@ -23,17 +21,10 @@ public class Place {
     @Column(name = "place_id")
     private Long id;
 
-    @Column(name = "place_name", nullable = false)
+    @Column(name = "place_name", nullable = false, unique = true, length = 120)
     private String name;
 
-    @OneToMany(mappedBy = "place")
+    @OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
     private List<Machine> machines = new ArrayList<>();
 
-    public Place(String name, List<Machine> machines) {
-        this.name = name;
-        this.machines = machines;
-    }
-    
 }
-
-

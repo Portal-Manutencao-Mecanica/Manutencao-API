@@ -2,28 +2,24 @@ package com.weg.Maintenance_API.maintenancerequest.dto.response;
 
 import com.weg.Maintenance_API.enums.MaintenanceRequestStatus;
 import com.weg.Maintenance_API.enums.Priority;
+import com.weg.Maintenance_API.enums.Sector;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public record MaintenanceRequestResponse(
-        Integer id,
+        Long id,
         MaintenanceRequestStatus status,
-        Long designationId,
-        String designationSector,
+        Sector sector,
         Priority priority,
-        List<Long> studentIds,
+        List<Long> assignedStudentIds,
         Long placeId,
         String placeName,
         String description,
-        List<byte[]> anomalyImages,
-        String patrimony,
-        String tag,
-        LocalDateTime dateTime,
-        Long teacherId,
-        String teacherName,
-        Integer machineId,
-        String machineName) {
+        LocalDateTime createdAt,
+        Long notifiedTeacherId,
+        String notifiedTeacherName,
+        Long machineId,
+        String machineName
+) {
 }
-
-

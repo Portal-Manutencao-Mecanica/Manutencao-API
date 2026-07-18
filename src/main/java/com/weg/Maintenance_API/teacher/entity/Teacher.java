@@ -8,6 +8,7 @@ import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
 import com.weg.Maintenance_API.user.entity.User;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -15,19 +16,20 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
 @Table(name = "teacher")
 public class Teacher extends User {
     
-    @ManyToMany(mappedBy = "teachers")
+    @ManyToMany(mappedBy = "teachers", fetch = FetchType.LAZY)
     private List<ClassGroup> classGroups = new ArrayList<>();
 
-    public Teacher(String name, String email, Role role, List<ClassGroup> classGroups) {
-        super(name, email, role);
-        this.classGroups = classGroups;
+    {
+        setRole(Role.PROFESSOR);
+    }
+
+    public Teacher(String name, String email, String password) {
+        super(name, email, password, Role.PROFESSOR);
     }
 }
-
-

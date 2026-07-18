@@ -10,15 +10,17 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
 @Table(name = "coordinator")
 public class Coordinator extends User {
+
+    {
+        setRole(Role.COORDENADOR);
+    }
     
-    public Coordinator(String name, String email, Role role) {
-        super(name, email, role);
+    public Coordinator(String name, String email, String password) {
+        super(name, email, password, Role.COORDENADOR);
     }
 }
-
-

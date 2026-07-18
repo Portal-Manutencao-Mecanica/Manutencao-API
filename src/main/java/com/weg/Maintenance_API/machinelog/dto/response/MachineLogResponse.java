@@ -4,7 +4,6 @@ import com.weg.Maintenance_API.enums.MaintenanceType;
 import com.weg.Maintenance_API.enums.TaskCriticality;
 import com.weg.Maintenance_API.enums.TaskSituation;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,26 +11,25 @@ public record MachineLogResponse(
         Long id,
         String title,
         String description,
-        String content,
+        String executionReport,
         TaskSituation taskSituation,
-        Integer machineId,
+        Long machineId,
         String machineName,
-        String serviceExecute,
-        LocalDateTime conclusion,
-        Long teacherId,
-        String teacherName,
-        LocalDate registrationDate,
-        String actionToExecute,
+        String servicePerformed,
+        LocalDateTime teacherConcludedAt,
+        Long responsibleTeacherId,
+        String responsibleTeacherName,
+        LocalDateTime registeredAt,
+        LocalDateTime executionStartedAt,
+        LocalDateTime executionEndedAt,
+        String plannedAction,
         TaskCriticality taskCriticality,
-        byte[] image,
         Long placeId,
         String placeName,
         MaintenanceType maintenanceType,
-        String registrationPeriod,
         Long classGroupId,
         String classGroupAcronym,
         List<Long> assignedStudentIds,
-        String reportLink) {
+        String reportLink
+) {
 }
-
-
