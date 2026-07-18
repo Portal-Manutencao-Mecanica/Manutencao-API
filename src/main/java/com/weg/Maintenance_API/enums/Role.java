@@ -2,7 +2,7 @@ package com.weg.Maintenance_API.enums;
 
 public enum Role {
     ADMIN,
-    COORDENADOR,
+    ALUNO,
     PROFESSOR,
-    ALUNO
+    COORDENADOR
 }

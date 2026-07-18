@@ -1,7 +1,6 @@
 package com.weg.Maintenance_API.enums;
 
-@Deprecated
-public enum Status {
+public enum BuyStatus {
     ENTREGUE,
     EM_ANALISE,
     PEDIDO_EM_ANDAMENTO,
