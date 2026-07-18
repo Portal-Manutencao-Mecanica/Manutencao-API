@@ -12,18 +12,20 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 @Table(name = "teacher")
 public class Teacher extends User {
     
     @ManyToMany(mappedBy = "teachers", fetch = FetchType.LAZY)
     private List<ClassGroup> classGroups = new ArrayList<>();
 
-    public Teacher() {
+    {
         setRole(Role.PROFESSOR);
     }
 
