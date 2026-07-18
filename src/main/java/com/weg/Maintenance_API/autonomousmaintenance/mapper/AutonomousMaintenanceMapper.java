@@ -10,19 +10,18 @@ import org.mapstruct.Mapping;
 public interface AutonomousMaintenanceMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "inspectedEquipment", ignore = true)
-    @Mapping(target = "teacher", ignore = true)
-    @Mapping(target = "student", ignore = true)
-    // Relationships must be resolved in the service layer.
+    @Mapping(target = "inspectedMachine", ignore = true)
+    @Mapping(target = "responsibleTeacher", ignore = true)
+    @Mapping(target = "responsibleStudent", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "media", ignore = true)
     AutonomousMaintenance toEntity(AutonomousMaintenanceDtoRequest request);
 
-    @Mapping(target = "equipmentId", source = "inspectedEquipment.id")
-    @Mapping(target = "equipmentName", source = "inspectedEquipment.name")
-    @Mapping(target = "teacherId", source = "teacher.id")
-    @Mapping(target = "teacherName", source = "teacher.name")
-    @Mapping(target = "studentId", source = "student.id")
-    @Mapping(target = "studentName", source = "student.name")
+    @Mapping(target = "inspectedMachineId", source = "inspectedMachine.id")
+    @Mapping(target = "inspectedMachineName", source = "inspectedMachine.name")
+    @Mapping(target = "responsibleTeacherId", source = "responsibleTeacher.id")
+    @Mapping(target = "responsibleTeacherName", source = "responsibleTeacher.name")
+    @Mapping(target = "responsibleStudentId", source = "responsibleStudent.id")
+    @Mapping(target = "responsibleStudentName", source = "responsibleStudent.name")
     AutonomousMaintenanceDtoResponse toResponse(AutonomousMaintenance autonomousMaintenance);
-
 }
-

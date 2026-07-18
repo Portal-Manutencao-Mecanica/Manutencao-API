@@ -1,24 +1,24 @@
 package com.weg.Maintenance_API.inconvenience5s.dto.response;
 
-import java.time.LocalDate;
+import com.weg.Maintenance_API.enums.Inconvenience5SStatus;
+import com.weg.Maintenance_API.enums.RegistrationPeriod;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record Inconvenience5SDtoResponse(
-        Integer id,
+        Long id,
         String inconvenience,
-        Boolean status,
+        Inconvenience5SStatus status,
         Long placeId,
         String placeName,
-        Long teacherId,
-        String teacherName,
-        LocalDate dateTime,
+        Long notifiedTeacherId,
+        String notifiedTeacherName,
+        LocalDateTime createdAt,
         Long classGroupId,
         String classGroupAcronym,
-        List<Long> studentIds,
+        List<Long> involvedStudentIds,
         String description,
-        List<String> images,
-        String registeredOccasion
+        RegistrationPeriod registrationPeriod
 ) {
 }
-
-
