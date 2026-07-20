@@ -3,6 +3,7 @@ package com.weg.Maintenance_API.machine.dto.request;
 import com.weg.Maintenance_API.enums.EquipmentCondition;
 import com.weg.Maintenance_API.place.entity.Place;
 import com.weg.Maintenance_API.validation.EntityExists;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

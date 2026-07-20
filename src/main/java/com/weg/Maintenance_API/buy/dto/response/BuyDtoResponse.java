@@ -1,6 +1,5 @@
 package com.weg.Maintenance_API.buy.dto.response;
 
-import com.weg.Maintenance_API.buy.dto.response.BuyItemResponse;
 import com.weg.Maintenance_API.enums.BuyStatus;
 import com.weg.Maintenance_API.media.dto.response.MediaResponseDto;
 
