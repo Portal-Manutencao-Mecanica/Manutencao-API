@@ -16,6 +16,7 @@ import com.weg.Maintenance_API.buy.dto.response.BuyDtoResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RequestMapping("/compras")
 @AllArgsConstructor
@@ -41,6 +42,11 @@ public class BuyController {
         return null;
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<BuyDtoResponse> update(@PathVariable Long id, @Valid @RequestBody BuyDtoRequest entity) {
+        return null;
+    }
+
     // Delete por id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
@@ -50,7 +56,7 @@ public class BuyController {
     // Requisições personalizadas
     // Essa Requisição retorna por status da compra
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<BuyDtoResponse>> getByStatus(@Valid @PathVariable String status) {
+    public ResponseEntity<List<BuyDtoResponse>> getByStatus(@PathVariable String status) {
         return null;
     }
 
