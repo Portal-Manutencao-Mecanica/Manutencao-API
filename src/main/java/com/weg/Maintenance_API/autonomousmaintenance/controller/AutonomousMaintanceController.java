@@ -59,9 +59,9 @@ public class AutonomousMaintanceController {
         return null;
     }
 
-    //Deleta por Id
+    //Deleta por Id 
     @DeleteMapping("/{id}")
-    public ResponseEntity<AutonomousMaintenanceDtoResponse> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         return null;
     }
 
