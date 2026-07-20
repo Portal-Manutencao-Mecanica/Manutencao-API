@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.maintenancerequest.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +17,9 @@ import com.weg.Maintenance_API.machinelog.dto.response.MachineLogResponse;
 import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceRequestRequest;
 import com.weg.Maintenance_API.maintenancerequest.dto.response.MaintenanceRequestResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping("/solicitao-manutencao")
 @RequiredArgsConstructor
@@ -23,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class MaintanceRequestController {
 
     @PostMapping()
-    public ResponseEntity<MaintenanceRequestResponse> create(@RequestBody MaintenanceRequestRequest entity) {
+    public ResponseEntity<MaintenanceRequestResponse> create(@Valid @RequestBody MaintenanceRequestRequest entity) {
         return null;
     }
 
@@ -39,7 +43,7 @@ public class MaintanceRequestController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MaintenanceRequestResponse> update(@PathVariable Long id,
-            @RequestBody MaintenanceRequestRequest entity) {
+            @Valid @RequestBody MaintenanceRequestRequest entity) {
         return null;
     }
 
@@ -47,5 +51,20 @@ public class MaintanceRequestController {
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         return null;
     }
+
+    // Requisição personalizada
+    // setor
+    @GetMapping("/setor/{setor}")
+    public ResponseEntity<List<MaintenanceRequestResponse>> getBySetor(@PathVariable String setor) {
+        return null;
+    }
+
+    // Prioridade
+    @GetMapping("/prioridade/{prioridade}")
+    public ResponseEntity<List<MaintenanceRequestResponse>> getByPrioridade(@PathVariable String prioridade) {
+        return null;
+    }
+
+    
 
 }
