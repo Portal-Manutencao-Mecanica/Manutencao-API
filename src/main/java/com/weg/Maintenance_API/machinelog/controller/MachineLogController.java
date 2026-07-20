@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.machinelog.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +17,10 @@ import com.weg.Maintenance_API.machine.dto.response.MachineResponse;
 import com.weg.Maintenance_API.machinelog.dto.request.MachineLogRequest;
 import com.weg.Maintenance_API.machinelog.dto.response.MachineLogResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/maquina-log")
@@ -23,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class MachineLogController {
 
     @PostMapping()
-    public ResponseEntity<MachineLogResponse> create(@RequestBody MachineLogRequest entity) {
+    public ResponseEntity<MachineLogResponse> create(@Valid @RequestBody MachineLogRequest entity) {
         return null;
     }
 
@@ -39,7 +44,7 @@ public class MachineLogController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MachineLogResponse> update(@PathVariable Long id,
-            @RequestBody MachineLogRequest entity) {
+            @Valid @RequestBody MachineLogRequest entity) {
         return null;
     }
 
@@ -47,5 +52,13 @@ public class MachineLogController {
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         return null;
     }
+
+    //Requisição Personalizada 
+    //Retorna por situação
+    @GetMapping("/situacao/{situacao}")
+    public ResponseEntity<List<MachineLogResponse>> getBySituacao(@PathVariable String situacao) {
+        return null;
+    }
+    
 
 }
