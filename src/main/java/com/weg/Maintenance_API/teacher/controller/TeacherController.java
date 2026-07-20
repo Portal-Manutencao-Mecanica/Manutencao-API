@@ -10,11 +10,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.weg.Maintenance_API.buy.dto.response.StudentDtoResponse;
 import com.weg.Maintenance_API.buy.dto.response.TeacherDtoResponse;
-import com.weg.Maintenance_API.student.dto.request.StudentDtoRequest;
 import com.weg.Maintenance_API.teacher.dto.request.TeacherRequestDto;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -23,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class TeacherController {
 
     @PostMapping()
-    public ResponseEntity<TeacherDtoResponse> create(@RequestBody TeacherRequestDto entity) {
+    public ResponseEntity<TeacherDtoResponse> create( @Valid @RequestBody TeacherRequestDto entity) {
         return null;
     }
 
@@ -39,7 +38,7 @@ public class TeacherController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TeacherDtoResponse> update(@PathVariable Long id,
-            @RequestBody TeacherRequestDto entity) {
+            @Valid @RequestBody TeacherRequestDto entity) {
         return null;
     }
 

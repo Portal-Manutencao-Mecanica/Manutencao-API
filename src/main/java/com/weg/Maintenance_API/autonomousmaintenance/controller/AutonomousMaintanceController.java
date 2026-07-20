@@ -65,4 +65,13 @@ public class AutonomousMaintanceController {
         return null;
     }
 
+
+    //Requisições personalizadas para o front 
+    @GetMapping("/situacao/{situacao}")
+    public String getMethodName(@PathVariable String situacao) {
+        return null;
+    }
+    
+    
+
 }
