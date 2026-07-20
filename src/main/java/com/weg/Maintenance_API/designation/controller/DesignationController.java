@@ -15,6 +15,7 @@ import com.weg.Maintenance_API.coordinator.dto.response.CoordinatorResponseDto;
 import com.weg.Maintenance_API.designation.dto.request.DesignationDtoRequest;
 import com.weg.Maintenance_API.designation.dto.response.DesignationDtoResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequestMapping("/designacao")
@@ -24,7 +25,7 @@ public class DesignationController {
 
     // Cria um Designação
     @PostMapping()
-    public ResponseEntity<DesignationDtoResponse> create(@RequestBody DesignationDtoRequest entity) {
+    public ResponseEntity<DesignationDtoResponse> create( @Valid @RequestBody DesignationDtoRequest entity) {
         return null;
     }
 
@@ -41,7 +42,7 @@ public class DesignationController {
 
     @PutMapping("/{id}")
     public ResponseEntity<DesignationDtoResponse> update(@PathVariable Long id,
-            @RequestBody DesignationDtoRequest entity) {
+            @Valid @RequestBody DesignationDtoRequest entity) {
         return null;
     }
 
