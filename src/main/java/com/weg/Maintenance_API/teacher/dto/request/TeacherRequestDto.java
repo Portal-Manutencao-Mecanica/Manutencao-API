@@ -16,6 +16,7 @@ public record TeacherRequestDto(
         @NotBlank(message = "password can't be blank")
         @Size(min = 8, max = 72)
         String password,
-        List<Long> classGroupIds) {
+        List<Long> classGroupIds
+) {
 }
 
