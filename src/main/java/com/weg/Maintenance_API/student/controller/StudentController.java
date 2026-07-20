@@ -1,4 +1,4 @@
-package com.weg.Maintenance_API.place.controller;
+package com.weg.Maintenance_API.student.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,36 +10,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceRequestRequest;
-import com.weg.Maintenance_API.maintenancerequest.dto.response.MaintenanceRequestResponse;
+import com.weg.Maintenance_API.buy.dto.response.StudentDtoResponse;
 import com.weg.Maintenance_API.place.dto.request.PlaceRequest;
 import com.weg.Maintenance_API.place.dto.response.PlaceResponse;
+import com.weg.Maintenance_API.student.dto.request.StudentDtoRequest;
 
 import lombok.RequiredArgsConstructor;
 
+@RequestMapping("/alunos")
 @RestController
-@RequestMapping("/lugar")
 @RequiredArgsConstructor
-public class PlaceController {
+public class StudentController {
 
     @PostMapping()
-    public ResponseEntity<PlaceResponse> create(@RequestBody PlaceRequest entity) {
+    public ResponseEntity<StudentDtoResponse> create(@RequestBody StudentDtoRequest entity) {
         return null;
     }
 
     @GetMapping()
-    public ResponseEntity<PlaceResponse> getAll() {
+    public ResponseEntity<StudentDtoResponse> getAll() {
         return null;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlaceResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<StudentDtoResponse> getById(@PathVariable Long id) {
         return null;
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PlaceResponse> update(@PathVariable Long id,
-            @RequestBody PlaceRequest entity) {
+    public ResponseEntity<StudentDtoResponse> update(@PathVariable Long id,
+            @RequestBody StudentDtoRequest entity) {
         return null;
     }
 
