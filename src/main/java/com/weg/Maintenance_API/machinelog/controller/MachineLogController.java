@@ -1,4 +1,4 @@
-package com.weg.Maintenance_API.machine.controller;
+package com.weg.Maintenance_API.machinelog.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,36 +10,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.weg.Maintenance_API.inconvenience5s.dto.requests.Inconvenience5SDtoRequest;
-import com.weg.Maintenance_API.inconvenience5s.dto.response.Inconvenience5SDtoResponse;
 import com.weg.Maintenance_API.machine.dto.request.MachineRequest;
 import com.weg.Maintenance_API.machine.dto.response.MachineResponse;
+import com.weg.Maintenance_API.machinelog.dto.request.MachineLogRequest;
+import com.weg.Maintenance_API.machinelog.dto.response.MachineLogResponse;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/maquina")
+@RequestMapping("/maquina-log")
 @RequiredArgsConstructor
-public class MachineController {
+public class MachineLogController {
 
     @PostMapping()
-    public ResponseEntity<MachineResponse> create(@RequestBody MachineRequest entity) {
+    public ResponseEntity<MachineLogResponse> create(@RequestBody MachineLogRequest entity) {
         return null;
     }
 
     @GetMapping()
-    public ResponseEntity<MachineResponse> getAll() {
+    public ResponseEntity<MachineLogResponse> getAll() {
         return null;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MachineResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<MachineLogResponse> getById(@PathVariable Long id) {
         return null;
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MachineResponse> update(@PathVariable Long id,
-            @RequestBody MachineRequest entity) {
+    public ResponseEntity<MachineLogResponse> update(@PathVariable Long id,
+            @RequestBody MachineLogRequest entity) {
         return null;
     }
 
