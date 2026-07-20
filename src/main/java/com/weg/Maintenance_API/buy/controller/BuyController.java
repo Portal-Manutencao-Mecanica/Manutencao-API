@@ -7,19 +7,15 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.weg.Maintenance_API.autonomousmaintenance.dto.requests.AutonomousMaintenanceDtoRequest;
-import com.weg.Maintenance_API.autonomousmaintenance.dto.response.AutonomousMaintenanceDtoResponse;
 import com.weg.Maintenance_API.buy.dto.request.BuyDtoRequest;
 import com.weg.Maintenance_API.buy.dto.response.BuyDtoResponse;
 
-import io.micrometer.core.ipc.http.HttpSender.Response;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping("/compras")
 @AllArgsConstructor
@@ -28,7 +24,7 @@ public class BuyController {
 
     // Cria uma compra
     @PostMapping()
-    public ResponseEntity<BuyDtoResponse> create(@RequestBody BuyDtoRequest entity) {
+    public ResponseEntity<BuyDtoResponse> create(@Valid @RequestBody BuyDtoRequest entity) {
         return null;
     }
 
@@ -54,9 +50,8 @@ public class BuyController {
     // Requisições personalizadas
     // Essa Requisição retorna por status da compra
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<BuyDtoResponse>> getByStatus(@PathVariable String status) {
+    public ResponseEntity<List<BuyDtoResponse>> getByStatus(@Valid @PathVariable String status) {
         return null;
     }
-    
 
 }
