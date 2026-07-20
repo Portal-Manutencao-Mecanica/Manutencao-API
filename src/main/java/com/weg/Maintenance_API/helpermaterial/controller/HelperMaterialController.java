@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorRequestDto;
-import com.weg.Maintenance_API.coordinator.dto.response.CoordinatorResponseDto;
 import com.weg.Maintenance_API.helpermaterial.dto.request.HelperMaterialRequest;
 import com.weg.Maintenance_API.helpermaterial.dto.response.HelperMaterialResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping("/material-apoio")
 @RequiredArgsConstructor
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class HelperMaterialController {
 
     @PostMapping()
-    public ResponseEntity<HelperMaterialResponse> create(@RequestBody HelperMaterialResponse entity) {
+    public ResponseEntity<HelperMaterialResponse> create(@Valid @RequestBody HelperMaterialResponse entity) {
         return null;
     }
 
@@ -39,12 +39,17 @@ public class HelperMaterialController {
 
     @PutMapping("/{id}")
     public ResponseEntity<HelperMaterialResponse> update(@PathVariable Long id,
-            @RequestBody HelperMaterialRequest entity) {
+            @Valid @RequestBody HelperMaterialRequest entity) {
         return null;
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        return null;
+    }
+
+    @GetMapping("/tipo/{tipo}")
+    public String getMethodName(@PathVariable String tipo) {
         return null;
     }
 
