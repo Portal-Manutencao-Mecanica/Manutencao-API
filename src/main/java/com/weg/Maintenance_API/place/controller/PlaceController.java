@@ -15,6 +15,7 @@ import com.weg.Maintenance_API.maintenancerequest.dto.response.MaintenanceReques
 import com.weg.Maintenance_API.place.dto.request.PlaceRequest;
 import com.weg.Maintenance_API.place.dto.response.PlaceResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -23,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class PlaceController {
 
     @PostMapping()
-    public ResponseEntity<PlaceResponse> create(@RequestBody PlaceRequest entity) {
+    public ResponseEntity<PlaceResponse> create(@Valid @RequestBody PlaceRequest entity) {
         return null;
     }
 
@@ -39,7 +40,7 @@ public class PlaceController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PlaceResponse> update(@PathVariable Long id,
-            @RequestBody PlaceRequest entity) {
+            @Valid @RequestBody PlaceRequest entity) {
         return null;
     }
 
