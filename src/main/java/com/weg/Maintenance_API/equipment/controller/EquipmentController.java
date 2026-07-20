@@ -15,6 +15,7 @@ import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorRequestDto;
 import com.weg.Maintenance_API.coordinator.dto.response.CoordinatorResponseDto;
 import com.weg.Maintenance_API.equipment.dto.request.EquipmentRequest;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -24,7 +25,7 @@ public class EquipmentController {
 
     // Cria um Equipamento
     @PostMapping()
-    public ResponseEntity<EquipmentDtoResponse> create(@RequestBody EquipmentRequest entity) {
+    public ResponseEntity<EquipmentDtoResponse> create(@Valid @RequestBody EquipmentRequest entity) {
         return null;
     }
 
@@ -40,7 +41,7 @@ public class EquipmentController {
 
     @PutMapping("/{id}")
     public ResponseEntity<EquipmentDtoResponse> update(@PathVariable Long id,
-            @RequestBody EquipmentRequest entity) {
+            @Valid @RequestBody EquipmentRequest entity) {
         return null;
     }
 
