@@ -8,6 +8,7 @@ import com.weg.Maintenance_API.classgroup.dto.request.ClassRequestDto;
 import com.weg.Maintenance_API.classgroup.dto.response.ClassResponseDto;
 
 import io.micrometer.core.ipc.http.HttpSender.Response;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class ClassGroupController {
 
     // Cria uma classe, o coordenador vai fazer isso e colocar alunos na turma
     @PostMapping()
-    public ResponseEntity<ClassResponseDto> create(@RequestBody ClassRequestDto entity) {
+    public ResponseEntity<ClassResponseDto> create(@Valid @RequestBody ClassRequestDto entity) {
         return null;
     }
 
@@ -46,7 +47,7 @@ public class ClassGroupController {
 
     //Atualiza a turma por id
     @PutMapping("/{id}")
-    public ResponseEntity<ClassResponseDto> update(@PathVariable Long id, @RequestBody ClassRequestDto entity) {
+    public ResponseEntity<ClassResponseDto> update(@PathVariable Long id, @Valid @RequestBody ClassRequestDto entity) {
         return null;
     }
 

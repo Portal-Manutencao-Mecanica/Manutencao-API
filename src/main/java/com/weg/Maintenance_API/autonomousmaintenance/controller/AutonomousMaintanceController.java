@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.weg.Maintenance_API.autonomousmaintenance.dto.requests.AutonomousMaintenanceDtoRequest;
 import com.weg.Maintenance_API.autonomousmaintenance.dto.response.AutonomousMaintenanceDtoResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RequestMapping("/manutencao-autonoma")
@@ -27,14 +27,14 @@ public class AutonomousMaintanceController {
     // Cria uma manutneção autonoma
     @PostMapping()
     public ResponseEntity<AutonomousMaintenanceDtoResponse> create(
-            @RequestBody AutonomousMaintenanceDtoRequest entity) {
+            @Valid @RequestBody AutonomousMaintenanceDtoRequest entity) {
         return null;
     }
 
     // Utiliza uma lista de entidades e cadastra no banco de dados
     @PostMapping("/create-all")
     public ResponseEntity<List<AutonomousMaintenanceDtoResponse>> createAll(
-            @RequestBody List<AutonomousMaintenanceDtoRequest> entity) {
+            @Valid @RequestBody List<AutonomousMaintenanceDtoRequest> entity) {
         return null;
     }
 
@@ -54,14 +54,21 @@ public class AutonomousMaintanceController {
     // para atualizar
     @PutMapping("/{id}")
     public ResponseEntity<AutonomousMaintenanceDtoResponse> update(@PathVariable Long id,
-            @RequestBody AutonomousMaintenanceDtoRequest entity) {
+            @Valid @RequestBody AutonomousMaintenanceDtoRequest entity) {
 
         return null;
     }
 
-    //Deleta por Id 
+    // Deleta por Id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
+        return null;
+    }
+
+    // Requisições personalizadas para o front
+    // Essa requisição retorna por meio da situação da manutenção autonoma
+    @GetMapping("/situacao/{situacao}")
+    public ResponseEntity<List<AutonomousMaintenanceDtoResponse>> getBySituacao(@PathVariable String situacao) {
         return null;
     }
 

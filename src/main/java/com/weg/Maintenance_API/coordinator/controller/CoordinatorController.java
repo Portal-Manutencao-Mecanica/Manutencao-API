@@ -7,6 +7,7 @@ import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorRequestDto;
 import com.weg.Maintenance_API.coordinator.dto.response.CoordinatorResponseDto;
 
 import io.micrometer.core.ipc.http.HttpSender.Response;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class CoordinatorController {
 
     // Cria um coordenador, só o admin ira conseguir criar um coordenador
     @PostMapping()
-    public ResponseEntity<CoordinatorResponseDto> create(@RequestBody CoordinatorRequestDto entity) {
+    public ResponseEntity<CoordinatorResponseDto> create(@Valid @RequestBody CoordinatorRequestDto entity) {
         return null;
     }
 
@@ -41,7 +42,7 @@ public class CoordinatorController {
 
     @PutMapping("/{id}")
     public ResponseEntity<CoordinatorResponseDto> update(@PathVariable Long id,
-            @RequestBody CoordinatorRequestDto entity) {
+            @Valid @RequestBody CoordinatorRequestDto entity) {
         return null;
     }
 

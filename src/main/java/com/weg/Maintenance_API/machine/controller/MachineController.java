@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.machine.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +17,10 @@ import com.weg.Maintenance_API.inconvenience5s.dto.response.Inconvenience5SDtoRe
 import com.weg.Maintenance_API.machine.dto.request.MachineRequest;
 import com.weg.Maintenance_API.machine.dto.response.MachineResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/maquina")
@@ -23,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class MachineController {
 
     @PostMapping()
-    public ResponseEntity<MachineResponse> create(@RequestBody MachineRequest entity) {
+    public ResponseEntity<MachineResponse> create(@Valid @RequestBody MachineRequest entity) {
         return null;
     }
 
@@ -39,7 +44,7 @@ public class MachineController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MachineResponse> update(@PathVariable Long id,
-            @RequestBody MachineRequest entity) {
+            @Valid @RequestBody MachineRequest entity) {
         return null;
     }
 
@@ -47,5 +52,12 @@ public class MachineController {
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         return null;
     }
+
+    @GetMapping("/condicao/{condicao}")
+    public ResponseEntity<List<MachineResponse>> getByCondition(@PathVariable String condicao) {
+        return null;
+    }
+    
+    
 
 }
