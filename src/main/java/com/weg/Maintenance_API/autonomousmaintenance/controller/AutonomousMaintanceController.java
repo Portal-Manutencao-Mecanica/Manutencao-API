@@ -59,19 +59,17 @@ public class AutonomousMaintanceController {
         return null;
     }
 
-    //Deleta por Id 
+    // Deleta por Id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return null;
     }
 
-
-    //Requisições personalizadas para o front 
+    // Requisições personalizadas para o front
+    // Essa requisição retorna por meio da situação da manutenção autonoma
     @GetMapping("/situacao/{situacao}")
-    public String getMethodName(@PathVariable String situacao) {
+    public ResponseEntity<List<AutonomousMaintenanceDtoResponse>> getBySituacao(@PathVariable String situacao) {
         return null;
     }
-    
-    
 
 }

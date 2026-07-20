@@ -51,4 +51,12 @@ public class BuyController {
         return null;
     }
 
+    // Requisições personalizadas
+    // Essa Requisição retorna por status da compra
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<BuyDtoResponse>> getByStatus(@PathVariable String status) {
+        return null;
+    }
+    
+
 }
