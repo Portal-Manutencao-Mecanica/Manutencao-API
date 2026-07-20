@@ -52,7 +52,7 @@ public class JwtRoleAuthenticationConverter implements Converter<Jwt, AbstractAu
             roles.addAll(List.of(array));
         }
     }
-
+    //normaliza a ROLE como padrão inicio ROLE_
     private String normalizeRole(String role) {
         if (!StringUtils.hasText(role)) {
             return null;
