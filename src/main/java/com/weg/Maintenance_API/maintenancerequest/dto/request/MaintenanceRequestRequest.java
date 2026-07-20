@@ -6,6 +6,7 @@ import com.weg.Maintenance_API.machine.entity.Machine;
 import com.weg.Maintenance_API.place.entity.Place;
 import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
+import com.weg.Maintenance_API.validation.AllEntitiesExist;
 import com.weg.Maintenance_API.validation.EntityExists;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -19,7 +20,7 @@ public record MaintenanceRequestRequest(
         @NotNull(message = "priority can't be null")
         Priority priority,
         @NotEmpty(message = "assigned students can't be empty")
-        @EntityExists(entityClass = Student.class, message = "student not found")
+        @AllEntitiesExist(entityClass = Student.class, message = "student not found")
         List<Long> assignedStudentIds,
         @NotNull(message = "place can't be null")
         @EntityExists(entityClass = Place.class, message = "place not found")
