@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.inconvenience5s.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +17,9 @@ import com.weg.Maintenance_API.helpermaterial.dto.response.HelperMaterialRespons
 import com.weg.Maintenance_API.inconvenience5s.dto.requests.Inconvenience5SDtoRequest;
 import com.weg.Maintenance_API.inconvenience5s.dto.response.Inconvenience5SDtoResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/5s")
@@ -23,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class Inconvenience5sController {
 
     @PostMapping()
-    public ResponseEntity<Inconvenience5SDtoResponse> create(@RequestBody Inconvenience5SDtoRequest entity) {
+    public ResponseEntity<Inconvenience5SDtoResponse> create(@Valid @RequestBody Inconvenience5SDtoRequest entity) {
         return null;
     }
 
@@ -39,12 +43,19 @@ public class Inconvenience5sController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Inconvenience5SDtoResponse> update(@PathVariable Long id,
-            @RequestBody Inconvenience5SDtoRequest entity) {
+            @Valid @RequestBody Inconvenience5SDtoRequest entity) {
         return null;
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        return null;
+    }
+
+    // Requisição personalizada
+    // Ela filtra por status
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<Inconvenience5SDtoResponse>> getByStatus(@PathVariable String status) {
         return null;
     }
 
