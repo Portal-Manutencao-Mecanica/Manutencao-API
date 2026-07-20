@@ -15,6 +15,7 @@ import com.weg.Maintenance_API.place.dto.request.PlaceRequest;
 import com.weg.Maintenance_API.place.dto.response.PlaceResponse;
 import com.weg.Maintenance_API.student.dto.request.StudentDtoRequest;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequestMapping("/alunos")
@@ -23,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class StudentController {
 
     @PostMapping()
-    public ResponseEntity<StudentDtoResponse> create(@RequestBody StudentDtoRequest entity) {
+    public ResponseEntity<StudentDtoResponse> create(@Valid @RequestBody StudentDtoRequest entity) {
         return null;
     }
 
@@ -39,7 +40,7 @@ public class StudentController {
 
     @PutMapping("/{id}")
     public ResponseEntity<StudentDtoResponse> update(@PathVariable Long id,
-            @RequestBody StudentDtoRequest entity) {
+            @Valid @RequestBody StudentDtoRequest entity) {
         return null;
     }
 
