@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
@@ -24,10 +25,21 @@ import java.util.concurrent.TimeUnit;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
-    private static final int REQUESTS_PER_WINDOW = 5;
-    private static final Duration WINDOW = Duration.ofMinutes(1);
-
+    private final int requestsPerWindow;
+    private final Duration window;
     private final ConcurrentMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+
+    public LoginRateLimitFilter(
+            @Value("${app.security.login-rate-limit.capacity:5}") int requestsPerWindow,
+            @Value("${app.security.login-rate-limit.refill-seconds:60}") long refillSeconds
+    ) {
+        if (requestsPerWindow <= 0 || refillSeconds <= 0) {
+            throw new IllegalArgumentException("Login rate limit values must be positive");
+        }
+
+        this.requestsPerWindow = requestsPerWindow;
+        this.window = Duration.ofSeconds(refillSeconds);
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -60,7 +72,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setHeader("Retry-After", String.valueOf(retryAfterSeconds));
             response.getWriter().write(
-                    "{\"status\":429,\"error\":\"Too Many Requests\","
+                    "{\"status\":429,\"error\":\"Too Many Requests\"," 
                             + "\"message\":\"Too many login attempts\"}"
             );
             return;
@@ -71,8 +83,8 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
 
     private Bucket createBucket() {
         Bandwidth limit = Bandwidth.builder()
-                .capacity(REQUESTS_PER_WINDOW)
-                .refillGreedy(REQUESTS_PER_WINDOW, WINDOW)
+                .capacity(requestsPerWindow)
+                .refillGreedy(requestsPerWindow, window)
                 .build();
 
         return Bucket.builder()
