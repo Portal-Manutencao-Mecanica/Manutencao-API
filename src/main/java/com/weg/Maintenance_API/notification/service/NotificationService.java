@@ -56,4 +56,14 @@ public class NotificationService {
         notificationRepository.delete(notification);
     }
 
+    public NotificationResponse readNotification(Long id){
+        Notification notification = notificationRepository.findById(id).orElse(null);
+        if(notification == null){
+            throw new RuntimeException("Notificação não existe");
+        }
+        notification.setStatusRead(true);
+        notificationRepository.save(notification);
+        return notificationMapper.toResponse(notification);
+    }
+
 }
