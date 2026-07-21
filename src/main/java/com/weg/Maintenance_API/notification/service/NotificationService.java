@@ -28,8 +28,8 @@ public class NotificationService {
         SimpleMailMessage email = new SimpleMailMessage();
         email.setFrom("portalmanutencaoweg@gmail.com");
         email.setTo(notificationRequest.email());
-        email.setSubject(notificationRequest.about());
-        email.setText(notification.getMessage());
+        email.setSubject(notificationRequest.title());
+        email.setText(notificationRequest.description());
         mailSender.send(email);
         notificationRepository.save(notification);
         return notificationMapper.toResponse(notification);
@@ -54,6 +54,16 @@ public class NotificationService {
             throw new RuntimeException("Notifiçao não existe");
         }
         notificationRepository.delete(notification);
+    }
+
+    public NotificationResponse readNotification(Long id){
+        Notification notification = notificationRepository.findById(id).orElse(null);
+        if(notification == null){
+            throw new RuntimeException("Notificação não existe");
+        }
+        notification.setStatusRead(true);
+        notificationRepository.save(notification);
+        return notificationMapper.toResponse(notification);
     }
 
 }

@@ -3,8 +3,10 @@ package com.weg.Maintenance_API.notification.dto.Response;
 public record NotificationResponse (
     Long id,
     String email,
+    String title,
     String about,
-    String message
+    String description,
+    Boolean statusRead
 ){
 
 }
