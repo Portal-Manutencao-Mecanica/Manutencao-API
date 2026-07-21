@@ -10,7 +10,7 @@ import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface ClassMapper {
+public interface ClassGroupMapper {
     
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "teachers", ignore = true)
