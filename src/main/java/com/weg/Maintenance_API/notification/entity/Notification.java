@@ -25,14 +25,16 @@ public class Notification {
     @Column(name = "notification_email")
     private String email;
 
+    @Column(name = "notification_about")
+    private String about;
+
     @Column(name = "notification_message")
     private String message;
 
-    public Notification(String email, String message) {
+    public Notification(String email, String about, String message) {
         this.email = email;
+        this.about = about;
         this.message = message;
     }
-
-    
 
 }
