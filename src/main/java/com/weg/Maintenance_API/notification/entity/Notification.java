@@ -25,16 +25,24 @@ public class Notification {
     @Column(name = "notification_email")
     private String email;
 
+    @Column(name = "notification_title")
+    private String title;
+
     @Column(name = "notification_about")
     private String about;
 
-    @Column(name = "notification_message")
-    private String message;
+    @Column(name = "notification_description")
+    private String description;
 
-    public Notification(String email, String about, String message) {
+    @Column(name = "notification_status_read")
+    private Boolean statusRead;
+
+    public Notification(String email, String title, String about, String description) {
         this.email = email;
+        this.title = title;
         this.about = about;
-        this.message = message;
+        this.description = description;
+        this.statusRead = false;
     }
 
 }
