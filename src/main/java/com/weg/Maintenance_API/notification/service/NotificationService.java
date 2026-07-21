@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.notification.service;
 
+import java.util.List;
+
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,27 @@ public class NotificationService {
         mailSender.send(email);
         notificationRepository.save(notification);
         return notificationMapper.toResponse(notification);
+    }
+
+    public List<NotificationResponse> getAll() {
+        List<Notification> notifications = notificationRepository.findAll();
+        return notifications.stream().map(notificationMapper::toResponse).toList();
+    }
+
+    public NotificationResponse getById(Long id) {
+        Notification notification = notificationRepository.findById(id).orElse(null);
+        if (notification == null) {
+            throw new RuntimeException("Notificação não existe");
+        }
+        return notificationMapper.toResponse(notification);
+    }
+
+    public void delete(Long id) {
+        Notification notification = notificationRepository.findById(id).orElse(null);
+        if (notification == null) {
+            throw new RuntimeException("Notifiçao não existe");
+        }
+        notificationRepository.delete(notification);
     }
 
 }
