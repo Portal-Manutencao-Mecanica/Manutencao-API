@@ -10,12 +10,21 @@ import com.weg.Maintenance_API.notification.entity.Notification;
 public class NotificationMapper {
 
     public Notification toEntity(NotificationRequest notificationRequest) {
-        return new Notification(notificationRequest.email(), notificationRequest.about(),
-                notificationRequest.message());
+        return new Notification(
+                notificationRequest.email(),
+                notificationRequest.title(),
+                notificationRequest.about(),
+                notificationRequest.description());
     }
 
     public NotificationResponse toResponse(Notification notification) {
-        return new NotificationResponse(notification.getId(), notification.getEmail(), notification.getAbout(), notification.getMessage());
+        return new NotificationResponse(
+                notification.getId(),
+                notification.getEmail(),
+                notification.getTitle(),
+                notification.getAbout(),
+                notification.getDescription(),
+                notification.getStatusRead());
     }
 
 }
