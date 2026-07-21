@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.coordinator.controller;
 
+import com.weg.Maintenance_API.coordinator.service.CoordinatorService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,36 +21,40 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/coordernador")
 public class CoordinatorController {
+    private final CoordinatorService service;
 
     // Cria um coordenador, só o admin ira conseguir criar um coordenador
     @PostMapping()
-    public ResponseEntity<CoordinatorResponseDto> create(@Valid @RequestBody CoordinatorRequestDto entity) {
-        return null;
+    public ResponseEntity<CoordinatorResponseDto> create(@Valid @RequestBody CoordinatorRequestDto request) {
+        return new ResponseEntity<>(service.create(request), HttpStatus.CREATED);
     }
 
     @GetMapping()
-    public ResponseEntity<CoordinatorResponseDto> getAll() {
-        return null;
+    public ResponseEntity<List<CoordinatorResponseDto>> getAll() {
+        return new ResponseEntity<>(service.getAll(),HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CoordinatorResponseDto> getById(@PathVariable Long id) {
-        return null;
+        return new ResponseEntity<>(service.getById(id),HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CoordinatorResponseDto> update(@PathVariable Long id,
             @Valid @RequestBody CoordinatorRequestDto entity) {
-        return null;
+        return new ResponseEntity<>(service.update(id,entity),HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
-        return null;
+        service.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }

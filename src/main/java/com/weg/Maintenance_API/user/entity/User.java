@@ -49,11 +49,15 @@ public abstract class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    protected User(String name, String email, String password, Role role) {
+    @Column(name = "number_card",nullable = false,unique = true)
+    private String numberCard;
+
+    protected User(String name, String email, String password, Role role,String numberCard) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.numberCard = numberCard;
     }
 
     @PrePersist
@@ -79,6 +83,7 @@ public abstract class User {
                 ", accountNonLocked=" + accountNonLocked +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", numberCard=" + numberCard +
                 '}';
     }
 
