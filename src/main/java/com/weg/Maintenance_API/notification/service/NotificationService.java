@@ -29,6 +29,7 @@ public class NotificationService {
         email.setSubject(notificationRequest.about());
         email.setText(notification.getMessage());
         mailSender.send(email);
+        notificationRepository.save(notification);
         return notificationMapper.toResponse(notification);
     }
 
