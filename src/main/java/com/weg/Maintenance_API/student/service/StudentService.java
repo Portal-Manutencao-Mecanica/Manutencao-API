@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class StudentService {
-    
+
     private final StudentRepository studentRepository;
     private final StudentMapper studentMapper;
 
@@ -31,5 +31,29 @@ public class StudentService {
         List<Student> students = studentRepository.findAll();
 
         return students.stream().map(studentMapper::toResponse).toList();
+    }
+
+    public StudentDtoResponse getById(Long id) {
+        Student student = studentRepository.findById(id).orElseThrow(() -> new RuntimeException("")); // Falta a
+                                                                                                      // mensagem
+
+        return studentMapper.toResponse(student);
+    }
+
+    public StudentDtoResponse update(Long id, StudentDtoRequest studentDtoRequest) {
+        Student student = studentRepository.findById(id).orElseThrow(() -> new RuntimeException("")); // Falta a
+                                                                                                      // mensagem
+
+        student.setName(studentDtoRequest.name());
+        student.setEmail(studentDtoRequest.email());
+        student.setPassword(studentDtoRequest.password());
+
+        student = studentRepository.save(student);
+
+        return studentMapper.toResponse(student);
+    }
+
+    public void delete(Long id) {
+        studentRepository.deleteById(id);
     }
 }
