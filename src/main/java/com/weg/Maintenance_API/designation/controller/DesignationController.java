@@ -1,8 +1,16 @@
 package com.weg.Maintenance_API.designation.controller;
 
+import com.weg.Maintenance_API.designation.dto.request.DesignationDtoRequest;
+import com.weg.Maintenance_API.designation.dto.request.DesignationPatchRequest;
+import com.weg.Maintenance_API.designation.dto.response.DesignationDtoResponse;
+import com.weg.Maintenance_API.designation.service.DesignationService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -10,45 +18,49 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorRequestDto;
-import com.weg.Maintenance_API.coordinator.dto.response.CoordinatorResponseDto;
-import com.weg.Maintenance_API.designation.dto.request.DesignationDtoRequest;
-import com.weg.Maintenance_API.designation.dto.response.DesignationDtoResponse;
+import java.util.List;
 
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-
-@RequestMapping("/designacao")
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/designacao")
 public class DesignationController {
 
-    // Cria um Designação
-    @PostMapping()
-    public ResponseEntity<DesignationDtoResponse> create( @Valid @RequestBody DesignationDtoRequest entity) {
-        return null;
+    private final DesignationService service;
+
+    @PostMapping
+    public ResponseEntity<DesignationDtoResponse> create(@Valid @RequestBody DesignationDtoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request));
     }
 
-    // Retorna todas designações
-    @GetMapping()
-    public ResponseEntity<DesignationDtoResponse> getAll() {
-        return null;
+    @GetMapping
+    public ResponseEntity<List<DesignationDtoResponse>> getAll() {
+        return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<DesignationDtoResponse> getById(@PathVariable Long id) {
-        return null;
+        return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DesignationDtoResponse> update(@PathVariable Long id,
-            @Valid @RequestBody DesignationDtoRequest entity) {
-        return null;
+    public ResponseEntity<DesignationDtoResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody DesignationDtoRequest request
+    ) {
+        return ResponseEntity.ok(service.update(id, request));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<DesignationDtoResponse> patch(
+            @PathVariable Long id,
+            @RequestBody DesignationPatchRequest request
+    ) {
+        return ResponseEntity.ok(service.patch(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
-        return null;
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
-
 }

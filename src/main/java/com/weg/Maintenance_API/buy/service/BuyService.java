@@ -1,8 +1,10 @@
 package com.weg.Maintenance_API.buy.service;
 
 import com.weg.Maintenance_API.buy.dto.request.BuyDtoRequest;
+import com.weg.Maintenance_API.buy.dto.request.BuyPatchRequest;
 import com.weg.Maintenance_API.buy.dto.response.BuyDtoResponse;
 import com.weg.Maintenance_API.buy.entity.Buy;
+import com.weg.Maintenance_API.enums.BuyStatus;
 import com.weg.Maintenance_API.buy.mapper.BuyMapper;
 import com.weg.Maintenance_API.buy.repository.BuyRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -25,24 +28,37 @@ public class BuyService {
         return mapper.toResponse(entity);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class,readOnly = true)
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
     public List<BuyDtoResponse> getAll(){
         return repository.findAll().stream().map(mapper::toResponse).toList();
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class,readOnly = true)
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
     public BuyDtoResponse getById(Long id){
         Buy entity = repository.findById(id).orElseThrow(() -> new RuntimeException(""));
         return mapper.toResponse(entity);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
-    public BuyDtoResponse update(Long id,BuyDtoRequest request){
+    public BuyDtoResponse update(Long id, BuyDtoRequest request){
         Buy entity = repository.findById(id).orElseThrow(() -> new RuntimeException(""));
-        Buy entity2 = mapper.toEntity(request);
-        entity2.setId(entity.getId());
-        repository.save(entity2);
-        return mapper.toResponse(entity2);
+
+        entity.setPurchaseJustification(request.purchaseJustification());
+
+        repository.save(entity);
+        return mapper.toResponse(entity);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    public BuyDtoResponse patch(Long id, BuyPatchRequest request){
+        Buy entity = repository.findById(id).orElseThrow(() -> new RuntimeException(""));
+
+        if (request.purchaseJustification() != null) {
+            entity.setPurchaseJustification(request.purchaseJustification());
+        }
+
+        repository.save(entity);
+        return mapper.toResponse(entity);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
@@ -50,8 +66,12 @@ public class BuyService {
         repository.deleteById(id);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class,readOnly = true)
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
     public List<BuyDtoResponse> getByStatus(String status){
-        return repository.findAllByStatus(status).orElseThrow(() -> new RuntimeException(""));
+        BuyStatus buyStatus = BuyStatus.valueOf(status.trim().toUpperCase(Locale.ROOT));
+        return repository.findAllByStatus(buyStatus)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 }

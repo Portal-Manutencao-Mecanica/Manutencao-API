@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.weg.Maintenance_API.equipment.dto.request.EquipmentPatchRequest;
 import com.weg.Maintenance_API.equipment.dto.request.EquipmentRequest;
 import com.weg.Maintenance_API.equipment.dto.response.EquipmentResponse;
 import com.weg.Maintenance_API.equipment.entity.Equipment;
@@ -23,35 +24,49 @@ public class EquipmentService {
     @Transactional
     public EquipmentResponse save(EquipmentRequest equipmentRequest) {
         Equipment equipment = equipmentMapper.toEntity(equipmentRequest);
-
         equipment = equipmentRepository.save(equipment);
-
         return equipmentMapper.toResponse(equipment);
     }
 
     @Transactional(readOnly = true)
     public List<EquipmentResponse> getAll() {
-        List<Equipment> equipments = equipmentRepository.findAll();
-
-        return equipments.stream().map(equipmentMapper::toResponse).toList();
+        return equipmentRepository.findAll().stream().map(equipmentMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public EquipmentResponse getById(Long id) {
         Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
-
         return equipmentMapper.toResponse(equipment);
     }
 
     @Transactional
     public EquipmentResponse update(Long id, EquipmentRequest equipmentRequest) {
-        if (!equipmentRepository.existsById(id)) {
-            throw new RuntimeException("");
+        Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        equipment.setName(equipmentRequest.name());
+        equipment.setSap(equipmentRequest.sap());
+        equipment.setUnitPrice(equipmentRequest.unitPrice());
+        equipment.setAvailableQuantity(equipmentRequest.availableQuantity());
+        equipmentRepository.save(equipment);
+        return equipmentMapper.toResponse(equipment);
+    }
+
+    @Transactional
+    public EquipmentResponse patch(Long id, EquipmentPatchRequest request) {
+        Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+
+        if (request.name() != null) {
+            equipment.setName(request.name());
+        }
+        if (request.sap() != null) {
+            equipment.setSap(request.sap());
+        }
+        if (request.unitPrice() != null) {
+            equipment.setUnitPrice(request.unitPrice());
+        }
+        if (request.availableQuantity() != null) {
+            equipment.setAvailableQuantity(request.availableQuantity());
         }
 
-        Equipment equipment = equipmentMapper.toEntity(equipmentRequest);
-
-        equipment.setId(id);
         equipmentRepository.save(equipment);
         return equipmentMapper.toResponse(equipment);
     }
