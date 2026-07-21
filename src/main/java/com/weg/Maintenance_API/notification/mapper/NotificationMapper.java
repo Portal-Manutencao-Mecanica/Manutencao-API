@@ -24,7 +24,7 @@ public class NotificationMapper {
                 notification.getTitle(),
                 notification.getAbout(),
                 notification.getDescription(),
-                notification.getStatusRead());
+                notification.isStatusRead());
     }
 
 }

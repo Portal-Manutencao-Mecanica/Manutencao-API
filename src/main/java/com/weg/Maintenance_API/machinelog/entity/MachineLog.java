@@ -8,6 +8,7 @@ import com.weg.Maintenance_API.machine.entity.Machine;
 import com.weg.Maintenance_API.media.entity.Media;
 import com.weg.Maintenance_API.place.entity.Place;
 import com.weg.Maintenance_API.student.entity.Student;
+import com.weg.Maintenance_API.teacher.dto.response.TeacherResponseDto;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
 import com.weg.Maintenance_API.user.entity.User;
 import jakarta.persistence.CascadeType;
