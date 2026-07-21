@@ -8,6 +8,7 @@ import com.weg.Maintenance_API.machine.entity.Machine;
 import com.weg.Maintenance_API.place.entity.Place;
 import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
+import com.weg.Maintenance_API.validation.AllEntitiesExist;
 import com.weg.Maintenance_API.validation.EntityExists;
 import jakarta.validation.constraints.NotNull;
 
@@ -37,7 +38,7 @@ public record MachineLogRequest(
         MaintenanceType maintenanceType,
         @EntityExists(entityClass = ClassGroup.class, message = "class group not found")
         Long classGroupId,
-        @EntityExists(entityClass = Student.class, message = "student not found")
+        @AllEntitiesExist(entityClass = Student.class, message = "student not found")
         List<Long> assignedStudentIds,
         String reportLink
 ) {

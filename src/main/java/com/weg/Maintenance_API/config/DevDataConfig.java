@@ -19,7 +19,7 @@ public class DevDataConfig {
     @Bean
     CommandLineRunner createDevelopmentAdmin(PasswordEncoder passwordEncoder) {
         return args -> {
-            if (userRepository.findByEmail("admin@local.com").isEmpty()) {
+            if (userRepository.findByEmailIgnoreCase("admin@local.com").isEmpty()) {
                 Admin admin = new Admin(
                         "Administrador Local",
                         "admin@local.com",

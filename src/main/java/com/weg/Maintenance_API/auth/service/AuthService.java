@@ -27,7 +27,7 @@ public class AuthService {
                 )
         );
 
-        User user = userRepository.findByEmail(authentication.getName())
+        User user = userRepository.findByEmailIgnoreCase(authentication.getName())
                 .orElseThrow(() -> new IllegalStateException(
                         "Authenticated user was not found"
                 ));
@@ -55,7 +55,7 @@ public class AuthService {
     }
 
     public UserResponseDto getCurrentUser(String email) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() ->
                         new IllegalStateException("Authenticated user was not found"));
 

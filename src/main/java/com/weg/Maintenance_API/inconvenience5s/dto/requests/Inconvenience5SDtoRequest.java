@@ -5,6 +5,7 @@ import com.weg.Maintenance_API.enums.RegistrationPeriod;
 import com.weg.Maintenance_API.place.entity.Place;
 import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
+import com.weg.Maintenance_API.validation.AllEntitiesExist;
 import com.weg.Maintenance_API.validation.EntityExists;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -25,7 +26,7 @@ public record Inconvenience5SDtoRequest(
         @EntityExists(entityClass = ClassGroup.class, message = "class group not found")
         Long classGroupId,
         @NotEmpty(message = "involved students can't be empty")
-        @EntityExists(entityClass = Student.class, message = "student not found")
+        @AllEntitiesExist(entityClass = Student.class, message = "student not found")
         List<Long> involvedStudentIds,
         String description,
         @NotNull(message = "registration period can't be null")
