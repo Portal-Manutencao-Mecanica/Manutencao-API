@@ -9,12 +9,13 @@ import com.weg.Maintenance_API.notification.entity.Notification;
 @Component
 public class NotificationMapper {
 
-    public Notification toEntity(NotificationRequest notificationRequest){
-        return new Notification(notificationRequest.email(), notificationRequest.message());
+    public Notification toEntity(NotificationRequest notificationRequest) {
+        return new Notification(notificationRequest.email(), notificationRequest.about(),
+                notificationRequest.message());
     }
 
-    public NotificationResponse toResponse(Notification notification){
-        return new NotificationResponse(notification.getId(), notification.getEmail(), notification.getMessage());
+    public NotificationResponse toResponse(Notification notification) {
+        return new NotificationResponse(notification.getId(), notification.getEmail(), notification.getAbout(), notification.getMessage());
     }
 
 }
