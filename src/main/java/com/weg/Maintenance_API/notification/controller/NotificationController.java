@@ -1,5 +1,6 @@
 package com.weg.Maintenance_API.notification.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,7 +32,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping()
-    public ResponseEntity<NotificationResponse> postMethodName(@RequestBody NotificationRequest notificationRequest) {
+    public ResponseEntity<NotificationResponse> postMethodName(@Valid @RequestBody NotificationRequest notificationRequest) {
         return new ResponseEntity<>(notificationService.create(notificationRequest), HttpStatus.CREATED);
     }
 
