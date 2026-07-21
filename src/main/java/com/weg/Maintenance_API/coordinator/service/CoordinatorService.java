@@ -1,5 +1,6 @@
 package com.weg.Maintenance_API.coordinator.service;
 
+import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorPatchRequest;
 import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorRequestDto;
 import com.weg.Maintenance_API.coordinator.dto.response.CoordinatorResponseDto;
 import com.weg.Maintenance_API.coordinator.entity.Coordinator;
@@ -25,12 +26,12 @@ public class CoordinatorService {
         return mapper.toResponse(entity);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class,readOnly = true)
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
     public List<CoordinatorResponseDto> getAll(){
         return repository.findAll().stream().map(mapper::toResponse).toList();
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class,readOnly = true)
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
     public CoordinatorResponseDto getById(Long id){
         Coordinator entity = repository.findById(id).orElseThrow(() -> new RuntimeException(""));
         return mapper.toResponse(entity);
@@ -38,15 +39,34 @@ public class CoordinatorService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
     public CoordinatorResponseDto update(Long id, CoordinatorRequestDto request){
-        if(!repository.existsById(id)) throw new RuntimeException("");
-        Coordinator entity = mapper.toEntity(request);
-        entity.setId(id);
+        Coordinator entity = repository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        entity.setName(request.name());
+        entity.setEmail(request.email());
+        entity.setPassword(request.password());
         repository.save(entity);
         return mapper.toResponse(entity);
     }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    public CoordinatorResponseDto patch(Long id, CoordinatorPatchRequest request){
+        Coordinator entity = repository.findById(id).orElseThrow(() -> new RuntimeException(""));
+
+        if (request.name() != null) {
+            entity.setName(request.name());
+        }
+        if (request.email() != null) {
+            entity.setEmail(request.email());
+        }
+        if (request.password() != null) {
+            entity.setPassword(request.password());
+        }
+
+        repository.save(entity);
+        return mapper.toResponse(entity);
+    }
+
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
     public void deleteById(Long id){
         repository.deleteById(id);
     }
 }
-

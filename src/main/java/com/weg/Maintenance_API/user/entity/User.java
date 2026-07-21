@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -50,7 +51,11 @@ public abstract class User {
     private LocalDateTime updatedAt;
 
     @Column(name = "number_card",nullable = false,unique = true)
-    private String numberCard;
+    private String numberCard = UUID.randomUUID().toString();
+
+    protected User(String name, String email, String password, Role role) {
+        this(name, email, password, role, UUID.randomUUID().toString());
+    }
 
     protected User(String name, String email, String password, Role role,String numberCard) {
         this.name = name;

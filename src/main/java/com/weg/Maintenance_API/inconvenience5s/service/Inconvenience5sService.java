@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.weg.Maintenance_API.inconvenience5s.dto.requests.Inconvenience5SDtoRequest;
+import com.weg.Maintenance_API.inconvenience5s.dto.requests.Inconvenience5SPatchRequest;
 import com.weg.Maintenance_API.inconvenience5s.dto.response.Inconvenience5SDtoResponse;
 import com.weg.Maintenance_API.inconvenience5s.entity.Inconvenience5S;
 import com.weg.Maintenance_API.inconvenience5s.mapper.Inconvenience5SMapper;
@@ -21,41 +22,50 @@ public class Inconvenience5sService {
     private final Inconvenience5sRepository inconvenience5sRepository;
 
     @Transactional
-    public Inconvenience5SDtoResponse save(Inconvenience5SDtoRequest inconvenience5sDtoRequest) {
-        Inconvenience5S inconvenience5s = inconvenience5sMapper.toEntity(inconvenience5sDtoRequest);
-
+    public Inconvenience5SDtoResponse save(Inconvenience5SDtoRequest request) {
+        Inconvenience5S inconvenience5s = inconvenience5sMapper.toEntity(request);
         inconvenience5s = inconvenience5sRepository.save(inconvenience5s);
-
         return inconvenience5sMapper.toResponse(inconvenience5s);
     }
 
     @Transactional(readOnly = true)
     public List<Inconvenience5SDtoResponse> getAll() {
-        List<Inconvenience5S> inconvenience5s = inconvenience5sRepository.findAll();
-
-        return inconvenience5s.stream().map(inconvenience5sMapper::toResponse).toList();
+        return inconvenience5sRepository.findAll().stream().map(inconvenience5sMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public Inconvenience5SDtoResponse getById(Long id) {
         Inconvenience5S inconvenience5s = inconvenience5sRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException(""));
-
         return inconvenience5sMapper.toResponse(inconvenience5s);
     }
 
     @Transactional
-    public Inconvenience5SDtoResponse update(Long id, Inconvenience5SDtoRequest inconvenience5sDtoRequest) {
+    public Inconvenience5SDtoResponse update(Long id, Inconvenience5SDtoRequest request) {
+        Inconvenience5S inconvenience5s = inconvenience5sRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException(""));
+        inconvenience5s.setInconvenience(request.inconvenience());
+        inconvenience5s.setDescription(request.description());
+        inconvenience5s.setRegistrationPeriod(request.registrationPeriod());
+        return inconvenience5sMapper.toResponse(inconvenience5sRepository.save(inconvenience5s));
+    }
+
+    @Transactional
+    public Inconvenience5SDtoResponse patch(Long id, Inconvenience5SPatchRequest request) {
         Inconvenience5S inconvenience5s = inconvenience5sRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException(""));
 
-        inconvenience5s.setInconvenience(inconvenience5sDtoRequest.inconvenience());
-        inconvenience5s.setDescription(inconvenience5sDtoRequest.description());
-        inconvenience5s.setRegistrationPeriod(inconvenience5sDtoRequest.registrationPeriod());
+        if (request.inconvenience() != null) {
+            inconvenience5s.setInconvenience(request.inconvenience());
+        }
+        if (request.description() != null) {
+            inconvenience5s.setDescription(request.description());
+        }
+        if (request.registrationPeriod() != null) {
+            inconvenience5s.setRegistrationPeriod(request.registrationPeriod());
+        }
 
-        inconvenience5s = inconvenience5sRepository.save(inconvenience5s);
-
-        return inconvenience5sMapper.toResponse(inconvenience5s);
+        return inconvenience5sMapper.toResponse(inconvenience5sRepository.save(inconvenience5s));
     }
 
     @Transactional
