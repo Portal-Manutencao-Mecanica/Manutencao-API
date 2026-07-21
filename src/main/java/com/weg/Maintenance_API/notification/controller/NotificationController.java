@@ -7,6 +7,7 @@ import com.weg.Maintenance_API.notification.dto.Request.NotificationRequest;
 import com.weg.Maintenance_API.notification.dto.Response.NotificationResponse;
 import com.weg.Maintenance_API.notification.service.NotificationService;
 
+import io.micrometer.core.ipc.http.HttpSender.Response;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -46,6 +49,11 @@ public class NotificationController {
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         notificationService.delete(id);
         return new ResponseEntity<>(null);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<NotificationResponse> readNotification(@PathVariable Long id) {
+        return new ResponseEntity<>(notificationService.readNotification(id), HttpStatus.OK);
     }
 
 }
