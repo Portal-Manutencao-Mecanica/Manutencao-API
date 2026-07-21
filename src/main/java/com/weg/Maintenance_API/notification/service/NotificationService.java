@@ -28,8 +28,8 @@ public class NotificationService {
         SimpleMailMessage email = new SimpleMailMessage();
         email.setFrom("portalmanutencaoweg@gmail.com");
         email.setTo(notificationRequest.email());
-        email.setSubject(notificationRequest.about());
-        email.setText(notification.getMessage());
+        email.setSubject(notificationRequest.title());
+        email.setText(notificationRequest.description());
         mailSender.send(email);
         notificationRepository.save(notification);
         return notificationMapper.toResponse(notification);
