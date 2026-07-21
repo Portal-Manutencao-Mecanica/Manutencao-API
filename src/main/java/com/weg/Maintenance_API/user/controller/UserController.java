@@ -29,5 +29,4 @@ public class UserController {
                 authService.getCurrentUser(authentication.getName())
         );
     }
-
 }
