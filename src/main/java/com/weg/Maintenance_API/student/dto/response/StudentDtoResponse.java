@@ -7,6 +7,7 @@ import com.weg.Maintenance_API.enums.Role;
 
 public record StudentDtoResponse(
         Long id,
+        String numberCard,
         String name,
         String email,
         Role role,

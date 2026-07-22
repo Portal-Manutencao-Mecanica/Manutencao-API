@@ -7,5 +7,6 @@ public enum HistoryEntityType {
     MAINTENANCE_REQUEST,
     MACHINE_LOG,
     EQUIPMENT,
-    MACHINE
+    MACHINE,
+    EVENT
 }

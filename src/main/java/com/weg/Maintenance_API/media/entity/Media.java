@@ -20,6 +20,9 @@ public class Media {
     @Column(name = "media_id")
     private Long id;
 
+    @Column(name = "number_card", nullable = false, unique = true, length = 255)
+    private String numberCard = java.util.UUID.randomUUID().toString();
+
     @Column(name = "media_description", length = 255)
     private String description;
 
@@ -27,8 +30,8 @@ public class Media {
     @Column(name = "media_type", nullable = false, length = 50)
     private MediaType mediaType;
 
-    @Column(name = "storage_key", nullable = false, unique = true, length = 500)
-    private String storageKey;
+    @Column(name = "storage_key", unique = true, length = 500,columnDefinition = "TEXT")
+    private String image;
 
     @Column(name = "original_name", nullable = false, length = 255)
     private String originalName;

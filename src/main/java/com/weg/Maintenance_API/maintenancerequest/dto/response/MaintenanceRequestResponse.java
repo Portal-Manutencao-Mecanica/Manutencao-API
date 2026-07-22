@@ -9,6 +9,7 @@ import java.util.List;
 
 public record MaintenanceRequestResponse(
         Long id,
+        String numberCard,
         MaintenanceRequestStatus status,
         Sector sector,
         Priority priority,

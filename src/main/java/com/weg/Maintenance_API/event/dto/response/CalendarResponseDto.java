@@ -1,4 +1,4 @@
-package com.weg.Maintenance_API.calendar.dto.response;
+package com.weg.Maintenance_API.event.dto.response;
 
 import com.weg.Maintenance_API.enums.MaintenanceType;
 import com.weg.Maintenance_API.enums.TaskCriticality;
@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 public record CalendarResponseDto(
         Long id,
+        String numberCard,
         String scheduledAction,
         TaskCriticality criticality,
         LocalDateTime createdAt,
@@ -19,7 +20,7 @@ public record CalendarResponseDto(
         String teacherName,
         Long equipmentId,
         String equipmentName,
-        Integer machineId,
+        Long machineId,
         String machineName,
         Long placeId,
         String placeName,

@@ -44,6 +44,9 @@ public class Inconvenience5S {
     @Column(name = "inconvenience_5s_id")
     private Long id;
 
+    @Column(name = "number_card", nullable = false, unique = true, length = 255)
+    private String numberCard = java.util.UUID.randomUUID().toString();
+
     @Column(name = "inconvenience", nullable = false, length = 255)
     private String inconvenience;
 

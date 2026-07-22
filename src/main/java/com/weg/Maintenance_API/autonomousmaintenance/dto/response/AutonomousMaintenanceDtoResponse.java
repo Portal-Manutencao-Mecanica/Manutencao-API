@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public record AutonomousMaintenanceDtoResponse(
         Long id,
+        String numberCard,
         EquipmentSituation equipmentSituation,
         LocalDateTime inspectedAt,
         Long inspectedMachineId,

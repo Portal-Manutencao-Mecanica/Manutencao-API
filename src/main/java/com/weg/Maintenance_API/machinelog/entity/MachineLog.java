@@ -47,6 +47,9 @@ public class MachineLog {
     @Column(name = "machine_log_id")
     private Long id;
 
+    @Column(name = "number_card", nullable = false, unique = true, length = 255)
+    private String numberCard = java.util.UUID.randomUUID().toString();
+
     @Column(name = "title", length = 150)
     private String title;
 

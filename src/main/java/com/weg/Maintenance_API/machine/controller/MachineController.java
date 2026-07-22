@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/maquina")
+@RequestMapping("/maquinas")
 public class MachineController {
 
     private final MachineService service;

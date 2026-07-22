@@ -36,6 +36,9 @@ public class Notification {
     @Column(name = "notification_id")
     private Long id;
 
+    @Column(name = "number_card", nullable = false, unique = true, length = 255)
+    private String numberCard = java.util.UUID.randomUUID().toString();
+
     @Column(
             name = "notification_email",
             nullable = false,

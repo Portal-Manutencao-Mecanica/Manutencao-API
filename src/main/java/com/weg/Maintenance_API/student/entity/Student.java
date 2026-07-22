@@ -29,7 +29,7 @@ public class Student extends User {
         setRole(Role.ALUNO);
     }
 
-    public Student(String name, String email, String password) {
-        super(name, email, password, Role.ALUNO);
+    public Student(String name, String email, String password,String numberCard) {
+        super(name, email, password, Role.ALUNO,numberCard);
     }
 }

@@ -6,9 +6,10 @@ import java.time.LocalDateTime;
 
 public record MediaResponseDto(
         Long id,
+        String numberCard,
         String description,
         MediaType mediaType,
-        String storageKey,
+        String image,
         String originalName,
         String contentType,
         Long fileSize,

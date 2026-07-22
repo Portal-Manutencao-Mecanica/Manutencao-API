@@ -25,6 +25,9 @@ public class Designation {
     @Column(name = "designation_id")
     private Long id;
 
+    @Column(name = "number_card", nullable = false, unique = true, length = 255)
+    private String numberCard = java.util.UUID.randomUUID().toString();
+
     @Enumerated(EnumType.STRING)
     @Column(name = "designation_sector")
     private Sector sector;

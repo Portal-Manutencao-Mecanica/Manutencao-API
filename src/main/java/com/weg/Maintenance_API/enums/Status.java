@@ -1,6 +1,5 @@
 package com.weg.Maintenance_API.enums;
 
-@Deprecated
 public enum Status {
     ENTREGUE,
     EM_ANALISE,

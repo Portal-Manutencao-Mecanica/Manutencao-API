@@ -8,6 +8,7 @@ import java.util.List;
 
 public record Inconvenience5SDtoResponse(
         Long id,
+        String numberCard,
         String inconvenience,
         Inconvenience5SStatus status,
         Long placeId,

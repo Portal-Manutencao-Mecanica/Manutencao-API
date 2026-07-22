@@ -42,6 +42,9 @@ public class AutonomousMaintenance {
     @Column(name = "autonomous_maintenance_id")
     private Long id;
 
+    @Column(name = "number_card", nullable = false, unique = true, length = 255)
+    private String numberCard = java.util.UUID.randomUUID().toString();
+
     @Enumerated(EnumType.STRING)
     @Column(name = "equipment_situation", nullable = false, length = 30)
     private EquipmentSituation equipmentSituation;
@@ -79,6 +82,10 @@ public class AutonomousMaintenance {
             inverseJoinColumns = @JoinColumn(name = "media_id")
     )
     private List<Media> media = new ArrayList<>();
+
+    public void setMedia(List<Media> media) {
+        this.media = media != null ? media : new ArrayList<>();
+    }
 
     @PrePersist
     protected void onCreate() {

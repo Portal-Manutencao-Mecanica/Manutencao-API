@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public record EquipmentResponse(
         Long id,
+        String numberCard,
         String name,
         String sap,
         BigDecimal unitPrice,
