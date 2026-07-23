@@ -9,6 +9,7 @@ import java.util.List;
 
 public record MachineLogResponse(
         Long id,
+        String numberCard,
         String title,
         String description,
         String executionReport,

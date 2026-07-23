@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record MachineResponse(
         Integer id,
+        String numberCard,
         String name,
         String patrimony,
         EquipmentCondition condition,

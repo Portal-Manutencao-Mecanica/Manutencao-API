@@ -34,6 +34,9 @@ public class HistoryLog {
     @Column(name = "history_log_id")
     private Long id;
 
+    @Column(name = "number_card", nullable = false, unique = true, length = 255)
+    private String numberCard = java.util.UUID.randomUUID().toString();
+
     @Enumerated(EnumType.STRING)
     @Column(name = "action", nullable = false, length = 40)
     private HistoryAction action;

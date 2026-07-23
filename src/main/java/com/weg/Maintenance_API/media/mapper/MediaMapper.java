@@ -9,9 +9,10 @@ import org.mapstruct.Mapping;
 public interface MediaMapper {
 
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "numberCard", source = "numberCard")
     @Mapping(target = "description", source = "description")
     @Mapping(target = "mediaType", source = "mediaType")
-    @Mapping(target = "storageKey", source = "storageKey")
+    @Mapping(target = "image", source = "image")
     @Mapping(target = "originalName", source = "originalName")
     @Mapping(target = "contentType", source = "contentType")
     @Mapping(target = "fileSize", source = "fileSize")

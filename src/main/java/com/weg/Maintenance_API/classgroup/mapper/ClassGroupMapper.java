@@ -6,11 +6,19 @@ import org.mapstruct.Mapping;
 import com.weg.Maintenance_API.classgroup.dto.request.ClassRequestDto;
 import com.weg.Maintenance_API.classgroup.dto.response.ClassResponseDto;
 import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
+import com.weg.Maintenance_API.student.dto.response.StudentDtoResponse;
+import com.weg.Maintenance_API.student.entity.Student;
+import com.weg.Maintenance_API.teacher.dto.response.TeacherResponseDto;
+import com.weg.Maintenance_API.teacher.entity.Teacher;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ClassGroupMapper {
+
+    TeacherResponseDto toTeacherResponse(Teacher teacher);
+
+    StudentDtoResponse toStudentResponse(Student student);
     
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "teachers", ignore = true)
@@ -23,14 +31,13 @@ public interface ClassGroupMapper {
             return null;
         }
 
-        List<Long> teacherIds = classGroup.getTeachers().stream()
-                .map(teacher -> teacher.getId())
+        List<TeacherResponseDto> teachers = classGroup.getTeachers().stream()
+                .map(this::toTeacherResponse)
                 .toList();
-        List<Long> studentIds = classGroup.getStudents().stream()
-                .map(student -> student.getId())
+        List<StudentDtoResponse> students = classGroup.getStudents().stream()
+                .map(this::toStudentResponse)
                 .toList();
 
-        return new ClassResponseDto(classGroup.getId(), classGroup.getAcronym(), teacherIds, studentIds);
+        return new ClassResponseDto(classGroup.getId(), classGroup.getNumberCard(), classGroup.getAcronym(), teachers, students);
     }
 }
-

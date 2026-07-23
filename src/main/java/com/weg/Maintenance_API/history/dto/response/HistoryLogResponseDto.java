@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public record HistoryLogResponseDto(
         Long id,
+        String numberCard,
         HistoryAction action,
         String entityType,
         Long entityId,

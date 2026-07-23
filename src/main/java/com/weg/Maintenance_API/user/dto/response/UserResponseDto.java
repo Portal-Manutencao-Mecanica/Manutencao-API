@@ -9,6 +9,7 @@ public record UserResponseDto(
         String name,
         String email,
         Role role,
+        String numberCard,
         boolean enabled,
         boolean accountNonLocked,
         LocalDateTime createdAt,

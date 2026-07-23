@@ -20,6 +20,7 @@ public class NotificationMapper {
     public NotificationResponse toResponse(Notification notification) {
         return new NotificationResponse(
                 notification.getId(),
+                notification.getNumberCard(),
                 notification.getEmail(),
                 notification.getTitle(),
                 notification.getAbout(),

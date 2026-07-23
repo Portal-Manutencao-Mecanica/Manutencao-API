@@ -26,6 +26,9 @@ public class BuyItem {
     @Column(name = "buy_item_id")
     private Long id;
 
+    @Column(name = "number_card", nullable = false, unique = true, length = 255)
+    private String numberCard = java.util.UUID.randomUUID().toString();
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "buy_id", nullable = false)
     private Buy buy;

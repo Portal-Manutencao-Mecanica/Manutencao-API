@@ -8,6 +8,7 @@ import java.util.List;
 
 public record BuyDtoResponse(
         Long id,
+        String numberCard,
         BuyStatus status,
         Long createdById,
         String createdByName,
