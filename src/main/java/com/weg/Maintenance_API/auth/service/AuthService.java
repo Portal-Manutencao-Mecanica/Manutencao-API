@@ -7,6 +7,7 @@ import com.weg.Maintenance_API.auth.dto.response.LoginResponseDto;
 import com.weg.Maintenance_API.user.UserRepository;
 import com.weg.Maintenance_API.user.dto.response.UserResponseDto;
 import com.weg.Maintenance_API.user.entity.User;
+import com.weg.Maintenance_API.user.mapper.UserResponseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +21,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtTokenService jwtTokenService;
+    private final UserResponseMapper userResponseMapper;
 
     public LoginResponseDto login(LoginRequestDto request) {
         Authentication authentication = authenticationManager.authenticate(
@@ -37,17 +39,7 @@ public class AuthService {
         JwtTokenService.TokenData tokenData =
                 jwtTokenService.generateToken(user);
 
-        UserResponseDto userResponse = new UserResponseDto(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getRole(),
-                user.getNumberCard(),
-                user.isEnabled(),
-                user.isAccountNonLocked(),
-                user.getCreatedAt(),
-                user.getUpdatedAt()
-        );
+        UserResponseDto userResponse = userResponseMapper.toResponse(user);
 
         return new LoginResponseDto(
                 tokenData.accessToken(),
@@ -62,16 +54,6 @@ public class AuthService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Usuário autenticado"));
 
-        return new UserResponseDto(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getRole(),
-                user.getNumberCard(),
-                user.isEnabled(),
-                user.isAccountNonLocked(),
-                user.getCreatedAt(),
-                user.getUpdatedAt()
-        );
+        return userResponseMapper.toResponse(user);
     }
 }

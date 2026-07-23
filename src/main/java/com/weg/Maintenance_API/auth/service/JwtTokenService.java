@@ -36,6 +36,8 @@ public class JwtTokenService {
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole().name())
+                .claim("organizationId", user.getOrganization().getId().toString())
+                .claim("passwordChangeRequired", user.isPasswordChangeRequired())
                 .build();
 
         String accessToken = jwtEncoder.encode(
