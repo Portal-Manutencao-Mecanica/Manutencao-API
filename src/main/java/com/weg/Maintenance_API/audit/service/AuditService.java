@@ -43,4 +43,30 @@ public class AuditService {
                 details
         ));
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordAnonymous(
+            String username,
+            String action,
+            String endpoint,
+            String method,
+            String ipAddress,
+            String userAgent,
+            boolean success,
+            String details
+    ) {
+        auditLogRepository.save(new AuditLog(
+                null,
+                username,
+                action,
+                null,
+                null,
+                endpoint,
+                method,
+                ipAddress,
+                userAgent,
+                success,
+                details
+        ));
+    }
 }
