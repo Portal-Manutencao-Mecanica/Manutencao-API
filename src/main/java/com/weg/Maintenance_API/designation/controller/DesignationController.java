@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.designation.controller;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.designation.dto.request.DesignationDtoRequest;
 import com.weg.Maintenance_API.designation.dto.request.DesignationPatchRequest;
 import com.weg.Maintenance_API.designation.dto.response.DesignationDtoResponse;
@@ -38,13 +41,13 @@ public class DesignationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DesignationDtoResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<DesignationDtoResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<DesignationDtoResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody DesignationDtoRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -52,14 +55,14 @@ public class DesignationController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<DesignationDtoResponse> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody DesignationPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -1,11 +1,14 @@
 package com.weg.Maintenance_API.validation;
 
+
+import java.util.UUID;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class EntityExistsIterableValidator implements ConstraintValidator<EntityExists, Iterable<Long>> {
+public class EntityExistsIterableValidator implements ConstraintValidator<EntityExists, Iterable<UUID>> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -18,12 +21,12 @@ public class EntityExistsIterableValidator implements ConstraintValidator<Entity
     }
 
     @Override
-    public boolean isValid(Iterable<Long> ids, ConstraintValidatorContext context) {
+    public boolean isValid(Iterable<UUID> ids, ConstraintValidatorContext context) {
         if (ids == null) {
             return true;
         }
 
-        for (Long id : ids) {
+        for (UUID id : ids) {
             if (id == null || entityManager.find(entityClass, id) == null) {
                 return false;
             }

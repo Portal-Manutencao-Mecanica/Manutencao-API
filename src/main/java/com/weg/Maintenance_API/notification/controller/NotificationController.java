@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.notification.controller;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.notification.dto.Request.NotificationRequest;
 import com.weg.Maintenance_API.notification.dto.Response.NotificationResponse;
 import com.weg.Maintenance_API.notification.service.NotificationService;
@@ -40,33 +43,33 @@ public class NotificationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<NotificationResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<NotificationResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(notificationService.getById(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         notificationService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<NotificationResponse> readNotification(
-            @PathVariable Long id
+            @PathVariable UUID id
     ) {
         return ResponseEntity.ok(notificationService.readNotification(id));
     }
 
     @PatchMapping("/{id}/read")
     public ResponseEntity<NotificationResponse> patchReadNotification(
-            @PathVariable Long id
+            @PathVariable UUID id
     ) {
         return readNotification(id);
     }
 
     @PatchMapping("/{id}/toggle-read")
     public ResponseEntity<NotificationResponse> toggleReadStatus(
-            @PathVariable Long id
+            @PathVariable UUID id
     ) {
         return ResponseEntity.ok(notificationService.toggleReadStatus(id));
     }

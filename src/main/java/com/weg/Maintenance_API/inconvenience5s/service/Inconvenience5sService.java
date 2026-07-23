@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.inconvenience5s.service;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import java.util.List;
@@ -36,14 +39,14 @@ public class Inconvenience5sService {
     }
 
     @Transactional(readOnly = true)
-    public Inconvenience5SDtoResponse getById(Long id) {
+    public Inconvenience5SDtoResponse getById(UUID id) {
         Inconvenience5S inconvenience5s = inconvenience5sRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ocorrência 5S", id));
         return inconvenience5sMapper.toResponse(inconvenience5s);
     }
 
     @Transactional
-    public Inconvenience5SDtoResponse update(Long id, Inconvenience5SDtoRequest request) {
+    public Inconvenience5SDtoResponse update(UUID id, Inconvenience5SDtoRequest request) {
         Inconvenience5S inconvenience5s = inconvenience5sRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ocorrência 5S", id));
         inconvenience5s.setInconvenience(request.inconvenience());
@@ -53,7 +56,7 @@ public class Inconvenience5sService {
     }
 
     @Transactional
-    public Inconvenience5SDtoResponse patch(Long id, Inconvenience5SPatchRequest request) {
+    public Inconvenience5SDtoResponse patch(UUID id, Inconvenience5SPatchRequest request) {
         Inconvenience5S inconvenience5s = inconvenience5sRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ocorrência 5S", id));
 
@@ -71,7 +74,7 @@ public class Inconvenience5sService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         inconvenience5sRepository.deleteById(id);
     }
 }

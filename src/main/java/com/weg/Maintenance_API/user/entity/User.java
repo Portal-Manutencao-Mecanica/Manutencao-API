@@ -20,9 +20,9 @@ import java.util.UUID;
 public abstract class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "user_name", nullable = false, length = 120)
     private String name;

@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.machine.service;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import java.util.List;
@@ -36,13 +39,13 @@ public class MachineService {
     }
 
     @Transactional(readOnly = true)
-    public MachineResponse getById(Long id) {
+    public MachineResponse getById(UUID id) {
         Machine machine = machineRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Máquina", id));
         return machineMapper.toResponse(machine);
     }
 
     @Transactional
-    public MachineResponse update(Long id, MachineRequest request) {
+    public MachineResponse update(UUID id, MachineRequest request) {
         Machine machine = machineRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Máquina", id));
         machine.setName(request.name());
         machine.setPatrimony(request.patrimony());
@@ -52,7 +55,7 @@ public class MachineService {
     }
 
     @Transactional
-    public MachineResponse patch(Long id, MachinePatchRequest request) {
+    public MachineResponse patch(UUID id, MachinePatchRequest request) {
         Machine machine = machineRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Máquina", id));
 
         if (request.name() != null) {
@@ -72,7 +75,7 @@ public class MachineService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         machineRepository.deleteById(id);
     }
 }

@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.maintenancerequest.service;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import java.util.List;
@@ -36,14 +39,14 @@ public class MaintenanceRequestService {
     }
 
     @Transactional(readOnly = true)
-    public MaintenanceRequestResponse getById(Long id) {
+    public MaintenanceRequestResponse getById(UUID id) {
         MaintenanceRequest maintenanceRequest = maintenanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitação de manutenção", id));
         return maintenanceRequestMapper.toResponse(maintenanceRequest);
     }
 
     @Transactional
-    public MaintenanceRequestResponse update(Long id, MaintenanceRequestRequest request) {
+    public MaintenanceRequestResponse update(UUID id, MaintenanceRequestRequest request) {
         MaintenanceRequest maintenanceRequest = maintenanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitação de manutenção", id));
         maintenanceRequest.setSector(request.sector());
@@ -53,7 +56,7 @@ public class MaintenanceRequestService {
     }
 
     @Transactional
-    public MaintenanceRequestResponse patch(Long id, MaintenanceRequestPatchRequest request) {
+    public MaintenanceRequestResponse patch(UUID id, MaintenanceRequestPatchRequest request) {
         MaintenanceRequest maintenanceRequest = maintenanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitação de manutenção", id));
 
@@ -71,7 +74,7 @@ public class MaintenanceRequestService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         maintenanceRepository.deleteById(id);
     }
 }

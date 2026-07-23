@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.machinelog.controller;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.machinelog.dto.request.MachineLogPatchRequest;
 import com.weg.Maintenance_API.machinelog.dto.request.MachineLogRequest;
 import com.weg.Maintenance_API.machinelog.dto.response.MachineLogResponse;
@@ -38,13 +41,13 @@ public class MachineLogController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MachineLogResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<MachineLogResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<MachineLogResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody MachineLogRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -52,14 +55,14 @@ public class MachineLogController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<MachineLogResponse> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody MachineLogPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.equipment.service;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import java.util.List;
@@ -36,13 +39,13 @@ public class EquipmentService {
     }
 
     @Transactional(readOnly = true)
-    public EquipmentResponse getById(Long id) {
+    public EquipmentResponse getById(UUID id) {
         Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
         return equipmentMapper.toResponse(equipment);
     }
 
     @Transactional
-    public EquipmentResponse update(Long id, EquipmentRequest equipmentRequest) {
+    public EquipmentResponse update(UUID id, EquipmentRequest equipmentRequest) {
         Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
         equipment.setName(equipmentRequest.name());
         equipment.setSap(equipmentRequest.sap());
@@ -53,7 +56,7 @@ public class EquipmentService {
     }
 
     @Transactional
-    public EquipmentResponse patch(Long id, EquipmentPatchRequest request) {
+    public EquipmentResponse patch(UUID id, EquipmentPatchRequest request) {
         Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
 
         if (request.name() != null) {
@@ -74,7 +77,7 @@ public class EquipmentService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         equipmentRepository.deleteById(id);
     }
 }

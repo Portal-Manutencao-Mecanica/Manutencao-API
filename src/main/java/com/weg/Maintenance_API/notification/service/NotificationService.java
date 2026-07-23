@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.notification.service;
 
+
+import java.util.UUID;
+
 import java.util.List;
 
 import org.springframework.mail.MailException;
@@ -54,18 +57,18 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    public NotificationResponse getById(Long id) {
+    public NotificationResponse getById(UUID id) {
         return notificationMapper.toResponse(findById(id));
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         notificationRepository.delete(findById(id));
     }
 
     /** Marca a notificação como lida. */
     @Transactional
-    public NotificationResponse readNotification(Long id) {
+    public NotificationResponse readNotification(UUID id) {
         Notification notification = findById(id);
         notification.setStatusRead(true);
         return notificationMapper.toResponse(notificationRepository.save(notification));
@@ -73,7 +76,7 @@ public class NotificationService {
 
     /** Alterna entre lida e não lida. */
     @Transactional
-    public NotificationResponse toggleReadStatus(Long id) {
+    public NotificationResponse toggleReadStatus(UUID id) {
         Notification notification = findById(id);
         notification.setStatusRead(!notification.isStatusRead());
         return notificationMapper.toResponse(notificationRepository.save(notification));
@@ -87,7 +90,7 @@ public class NotificationService {
         notificationRepository.saveAll(notifications);
     }
 
-    private Notification findById(Long id) {
+    private Notification findById(UUID id) {
         return notificationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Notificação", id));
     }

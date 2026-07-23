@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.autonomousmaintenance.controller;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.autonomousmaintenance.dto.requests.AutonomousMaintenanceDtoRequest;
 import com.weg.Maintenance_API.autonomousmaintenance.dto.response.AutonomousMaintenanceDtoResponse;
 import com.weg.Maintenance_API.autonomousmaintenance.entity.AutonomousMaintenance;
@@ -51,21 +54,21 @@ public class AutonomousMaintanceController {
     @GetMapping("/{id}")
     public ResponseEntity<AutonomousMaintenanceDtoResponse> getById(
             @PathVariable
-            @EntityExists(message = "entity not found", entityClass = AutonomousMaintenance.class) Long id
+            @EntityExists(message = "entity not found", entityClass = AutonomousMaintenance.class) UUID id
     ) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<AutonomousMaintenanceDtoResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody AutonomousMaintenanceDtoRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

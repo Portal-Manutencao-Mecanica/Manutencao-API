@@ -1,9 +1,12 @@
 package com.weg.Maintenance_API.equipment.dto.response;
 
+
+import java.util.UUID;
+
 import java.math.BigDecimal;
 
 public record EquipmentResponse(
-        Long id,
+        UUID id,
         String numberCard,
         String name,
         String sap,

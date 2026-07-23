@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.classgroup.entity;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
 import jakarta.persistence.*;
@@ -18,9 +21,9 @@ import java.util.List;
 public class ClassGroup {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "class_group_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "class_group_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();

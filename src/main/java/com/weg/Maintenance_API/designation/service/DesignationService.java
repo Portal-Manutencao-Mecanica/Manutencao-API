@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.designation.service;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import java.util.List;
@@ -36,13 +39,13 @@ public class DesignationService {
     }
 
     @Transactional(readOnly = true)
-    public DesignationDtoResponse getById(Long id) {
+    public DesignationDtoResponse getById(UUID id) {
         Designation designation = designationRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Designação", id));
         return designationMapper.toResponse(designation);
     }
 
     @Transactional
-    public DesignationDtoResponse update(Long id, DesignationDtoRequest designationDtoRequest) {
+    public DesignationDtoResponse update(UUID id, DesignationDtoRequest designationDtoRequest) {
         Designation designation = designationRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Designação", id));
         designation.setSector(designationDtoRequest.sector());
         designationRepository.save(designation);
@@ -50,7 +53,7 @@ public class DesignationService {
     }
 
     @Transactional
-    public DesignationDtoResponse patch(Long id, DesignationPatchRequest request) {
+    public DesignationDtoResponse patch(UUID id, DesignationPatchRequest request) {
         Designation designation = designationRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Designação", id));
 
         if (request.sector() != null) {
@@ -62,7 +65,7 @@ public class DesignationService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         designationRepository.deleteById(id);
     }
 }

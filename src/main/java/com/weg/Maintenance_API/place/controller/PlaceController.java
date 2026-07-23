@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.place.controller;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.place.dto.request.PlacePatchRequest;
 import com.weg.Maintenance_API.place.dto.request.PlaceRequest;
 import com.weg.Maintenance_API.place.dto.response.PlaceResponse;
@@ -38,13 +41,13 @@ public class PlaceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlaceResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<PlaceResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PlaceResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody PlaceRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -52,14 +55,14 @@ public class PlaceController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<PlaceResponse> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody PlacePatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

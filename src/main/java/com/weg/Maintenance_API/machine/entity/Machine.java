@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.machine.entity;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.EquipmentCondition;
 import com.weg.Maintenance_API.machinelog.entity.MachineLog;
 import com.weg.Maintenance_API.place.entity.Place;
@@ -20,9 +23,9 @@ import java.util.List;
 public class Machine {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "machine_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "machine_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();

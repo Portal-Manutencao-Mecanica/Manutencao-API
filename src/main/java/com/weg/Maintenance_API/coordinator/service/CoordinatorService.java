@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.coordinator.service;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorPatchRequest;
@@ -38,20 +41,20 @@ public class CoordinatorService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
-    public CoordinatorResponseDto inativar(Long id){
+    public CoordinatorResponseDto inativar(UUID id){
         Coordinator entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Coordenador", id));
         entity.setEnabled(false);
         repository.save(entity);
         return mapper.toResponse(entity);
     }
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
-    public CoordinatorResponseDto getById(Long id){
+    public CoordinatorResponseDto getById(UUID id){
         Coordinator entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Coordenador", id));
         return mapper.toResponse(entity);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
-    public CoordinatorResponseDto update(Long id, CoordinatorRequestDto request){
+    public CoordinatorResponseDto update(UUID id, CoordinatorRequestDto request){
         Coordinator entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Coordenador", id));
         entity.setName(request.name());
         entity.setEmail(request.email());
@@ -61,7 +64,7 @@ public class CoordinatorService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
-    public CoordinatorResponseDto patch(Long id, CoordinatorPatchRequest request){
+    public CoordinatorResponseDto patch(UUID id, CoordinatorPatchRequest request){
         Coordinator entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Coordenador", id));
 
         if (request.name() != null) {
@@ -79,7 +82,7 @@ public class CoordinatorService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
-    public void deleteById(Long id){
+    public void deleteById(UUID id){
         repository.deleteById(id);
     }
 }

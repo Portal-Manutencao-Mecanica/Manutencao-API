@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.validation;
 
+
+import java.util.UUID;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.metamodel.EntityType;
@@ -13,7 +16,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class AllEntitiesExistValidator implements ConstraintValidator<AllEntitiesExist, Iterable<Long>> {
+public class AllEntitiesExistValidator implements ConstraintValidator<AllEntitiesExist, Iterable<UUID>> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -26,13 +29,13 @@ public class AllEntitiesExistValidator implements ConstraintValidator<AllEntitie
     }
 
     @Override
-    public boolean isValid(Iterable<Long> ids, ConstraintValidatorContext context) {
+    public boolean isValid(Iterable<UUID> ids, ConstraintValidatorContext context) {
         if (ids == null) {
             return true;
         }
 
-        Set<Long> uniqueIds = new LinkedHashSet<>();
-        for (Long id : ids) {
+        Set<UUID> uniqueIds = new LinkedHashSet<>();
+        for (UUID id : ids) {
             if (id == null) {
                 return false;
             }

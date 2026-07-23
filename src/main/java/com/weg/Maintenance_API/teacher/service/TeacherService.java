@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.teacher.service;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import java.util.List;
@@ -40,19 +43,19 @@ public class TeacherService {
     }
 
     @Transactional
-    public TeacherResponseDto inativar(Long id) {
+    public TeacherResponseDto inativar(UUID id) {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
         teacher.setEnabled(false);
         return teacherMapper.toResponse(teacherRepository.save(teacher));
     }
     @Transactional(readOnly = true)
-    public TeacherResponseDto getById(Long id) {
+    public TeacherResponseDto getById(UUID id) {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
         return teacherMapper.toResponse(teacher);
     }
 
     @Transactional
-    public TeacherResponseDto update(TeacherRequestDto teacherRequestDto, Long id) {
+    public TeacherResponseDto update(TeacherRequestDto teacherRequestDto, UUID id) {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
         teacher.setName(teacherRequestDto.name());
         teacher.setEmail(teacherRequestDto.email());
@@ -61,7 +64,7 @@ public class TeacherService {
     }
 
     @Transactional
-    public TeacherResponseDto patch(Long id, TeacherPatchRequest request) {
+    public TeacherResponseDto patch(UUID id, TeacherPatchRequest request) {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
 
         if (request.name() != null) {
@@ -78,7 +81,7 @@ public class TeacherService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         teacherRepository.deleteById(id);
     }
 }

@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.equipment.entity;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.media.entity.Media;
 import jakarta.persistence.CascadeType;
 import java.math.BigDecimal;
@@ -28,9 +31,9 @@ import lombok.Setter;
 public class Equipment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "equipment_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "equipment_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();

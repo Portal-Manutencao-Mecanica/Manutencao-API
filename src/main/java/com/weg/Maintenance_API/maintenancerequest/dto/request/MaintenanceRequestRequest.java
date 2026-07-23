@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.maintenancerequest.dto.request;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.Priority;
 import com.weg.Maintenance_API.enums.Sector;
 import com.weg.Maintenance_API.machine.entity.Machine;
@@ -21,17 +24,17 @@ public record MaintenanceRequestRequest(
         Priority priority,
         @NotEmpty(message = "assigned students can't be empty")
         @AllEntitiesExist(entityClass = Student.class, message = "student not found")
-        List<Long> assignedStudentIds,
+        List<UUID> assignedStudentIds,
         @NotNull(message = "place can't be null")
         @EntityExists(entityClass = Place.class, message = "place not found")
-        Long placeId,
+        UUID placeId,
         @NotBlank(message = "description can't be blank")
         String description,
         @NotNull(message = "notified teacher can't be null")
         @EntityExists(entityClass = Teacher.class, message = "teacher not found")
-        Long notifiedTeacherId,
+        UUID notifiedTeacherId,
         @NotNull(message = "machine can't be null")
         @EntityExists(entityClass = Machine.class, message = "machine not found")
-        Long machineId
+        UUID machineId
 ) {
 }

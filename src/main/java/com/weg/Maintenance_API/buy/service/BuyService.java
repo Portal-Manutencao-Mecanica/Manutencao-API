@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.buy.service;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import com.weg.Maintenance_API.buy.dto.request.BuyDtoRequest;
@@ -36,13 +39,13 @@ public class BuyService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
-    public BuyDtoResponse getById(Long id){
+    public BuyDtoResponse getById(UUID id){
         Buy entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id));
         return mapper.toResponse(entity);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
-    public BuyDtoResponse update(Long id, BuyDtoRequest request){
+    public BuyDtoResponse update(UUID id, BuyDtoRequest request){
         Buy entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id));
 
         entity.setPurchaseJustification(request.purchaseJustification());
@@ -52,7 +55,7 @@ public class BuyService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
-    public BuyDtoResponse patch(Long id, BuyPatchRequest request){
+    public BuyDtoResponse patch(UUID id, BuyPatchRequest request){
         Buy entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id));
 
         if (request.purchaseJustification() != null) {
@@ -64,7 +67,7 @@ public class BuyService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
-    public void deleteById(Long id){
+    public void deleteById(UUID id){
         repository.deleteById(id);
     }
 

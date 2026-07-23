@@ -1,22 +1,25 @@
 package com.weg.Maintenance_API.autonomousmaintenance.dto.response;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.EquipmentCondition;
 import com.weg.Maintenance_API.enums.EquipmentSituation;
 
 import java.time.LocalDateTime;
 
 public record AutonomousMaintenanceDtoResponse(
-        Long id,
+        UUID id,
         String numberCard,
         EquipmentSituation equipmentSituation,
         LocalDateTime inspectedAt,
-        Long inspectedMachineId,
+        UUID inspectedMachineId,
         String inspectedMachineName,
         EquipmentCondition equipmentCondition,
         String identifiedNonconformities,
-        Long responsibleTeacherId,
+        UUID responsibleTeacherId,
         String responsibleTeacherName,
-        Long responsibleStudentId,
+        UUID responsibleStudentId,
         String responsibleStudentName
 ) {
 }

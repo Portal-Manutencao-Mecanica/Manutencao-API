@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.student.controller;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.student.dto.request.StudentDtoRequest;
 import com.weg.Maintenance_API.student.dto.request.StudentPatchRequest;
 import com.weg.Maintenance_API.student.dto.response.StudentDtoResponse;
@@ -43,13 +46,13 @@ public class StudentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StudentDtoResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<StudentDtoResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<StudentDtoResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody StudentDtoRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -57,19 +60,19 @@ public class StudentController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<StudentDtoResponse> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody StudentPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @PatchMapping("/{id}/inativar")
-    public ResponseEntity<StudentDtoResponse> inativar(@PathVariable Long id) {
+    public ResponseEntity<StudentDtoResponse> inativar(@PathVariable UUID id) {
         return ResponseEntity.ok(service.inativar(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

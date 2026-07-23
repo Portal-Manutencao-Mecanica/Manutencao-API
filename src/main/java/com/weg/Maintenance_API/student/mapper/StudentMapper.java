@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.student.mapper;
 
+
+import java.util.UUID;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -24,7 +27,7 @@ public interface StudentMapper {
     @Mapping(target = "classGroupIds", source = "classGroups")
     StudentDtoResponse toResponse(Student student);
 
-    default Long mapClassGroupId(ClassGroup classGroup) {
+    default UUID mapClassGroupId(ClassGroup classGroup) {
         return classGroup == null ? null : classGroup.getId();
     }
 }

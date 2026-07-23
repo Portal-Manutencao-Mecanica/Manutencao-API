@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.student.dto.request;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.validation.UniqueEmail;
 import com.weg.Maintenance_API.validation.ValidPassword;
 import jakarta.validation.constraints.Email;
@@ -20,6 +23,6 @@ public record StudentDtoRequest(
         @NotBlank(message = "password can't be blank")
         @ValidPassword
         String password,
-        List<Long> classGroupIds) {
+        List<UUID> classGroupIds) {
 }
 

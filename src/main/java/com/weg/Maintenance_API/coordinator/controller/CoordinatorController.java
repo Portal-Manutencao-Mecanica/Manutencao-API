@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.coordinator.controller;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorPatchRequest;
 import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorRequestDto;
 import com.weg.Maintenance_API.coordinator.dto.response.CoordinatorResponseDto;
@@ -43,13 +46,13 @@ public class CoordinatorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CoordinatorResponseDto> getById(@PathVariable Long id) {
+    public ResponseEntity<CoordinatorResponseDto> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CoordinatorResponseDto> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody CoordinatorRequestDto request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -57,19 +60,19 @@ public class CoordinatorController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<CoordinatorResponseDto> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody CoordinatorPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @PatchMapping("/{id}/inativar")
-    public ResponseEntity<CoordinatorResponseDto> inativar(@PathVariable Long id) {
+    public ResponseEntity<CoordinatorResponseDto> inativar(@PathVariable UUID id) {
         return ResponseEntity.ok(service.inativar(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.helpermaterial.entity;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.HelperMaterialType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,9 +24,9 @@ import lombok.Setter;
 public class HelperMaterial {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "helper_material_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "helper_material_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();

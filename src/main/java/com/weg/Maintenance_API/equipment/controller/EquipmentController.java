@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.equipment.controller;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.equipment.dto.request.EquipmentPatchRequest;
 import com.weg.Maintenance_API.equipment.dto.request.EquipmentRequest;
 import com.weg.Maintenance_API.equipment.dto.response.EquipmentResponse;
@@ -38,13 +41,13 @@ public class EquipmentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EquipmentResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<EquipmentResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<EquipmentResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody EquipmentRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -52,14 +55,14 @@ public class EquipmentController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<EquipmentResponse> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody EquipmentPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

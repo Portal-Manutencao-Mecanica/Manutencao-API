@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.maintenancerequest.controller;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceRequestPatchRequest;
 import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceRequestRequest;
 import com.weg.Maintenance_API.maintenancerequest.dto.response.MaintenanceRequestResponse;
@@ -40,13 +43,13 @@ public class MaintanceRequestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MaintenanceRequestResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<MaintenanceRequestResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<MaintenanceRequestResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody MaintenanceRequestRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -54,14 +57,14 @@ public class MaintanceRequestController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<MaintenanceRequestResponse> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody MaintenanceRequestPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
