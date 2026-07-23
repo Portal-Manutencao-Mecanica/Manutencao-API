@@ -4,8 +4,10 @@ import com.weg.Maintenance_API.exception.dto.ApiErrorResponse;
 import com.weg.Maintenance_API.exception.type.ConflictException;
 import com.weg.Maintenance_API.exception.type.ExpiredTokenException;
 import com.weg.Maintenance_API.exception.type.InvalidRequestException;
+import com.weg.Maintenance_API.exception.type.InvalidFileException;
 import com.weg.Maintenance_API.exception.type.InvalidTokenException;
 import com.weg.Maintenance_API.exception.type.NotificationDeliveryException;
+import com.weg.Maintenance_API.exception.type.RateLimitExceededException;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
@@ -77,6 +79,19 @@ public class DomainExceptionHandler {
         );
     }
 
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidFile(
+            InvalidFileException exception,
+            HttpServletRequest request
+    ) {
+        return response(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                "INVALID_FILE",
+                exception.getMessage(),
+                request
+        );
+    }
+
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiErrorResponse> handleConflict(
             ConflictException exception,
@@ -140,6 +155,19 @@ public class DomainExceptionHandler {
                 HttpStatus.CONFLICT,
                 "CONCURRENT_UPDATE",
                 "O registro foi alterado por outro usuário. Atualize os dados e tente novamente.",
+                request
+        );
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleRateLimit(
+            RateLimitExceededException exception,
+            HttpServletRequest request
+    ) {
+        return response(
+                HttpStatus.TOO_MANY_REQUESTS,
+                "RATE_LIMIT_EXCEEDED",
+                exception.getMessage(),
                 request
         );
     }

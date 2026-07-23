@@ -126,6 +126,7 @@ public class RefreshTokenService {
         if (!user.isEnabled()
                 || !user.isAccountNonLocked()
                 || user.isTemporarilyLocked()
+                || user.isPasswordChangeRequired()
                 || !user.getOrganization().isActive()) {
             throw new InvalidTokenException("A sessão não pode ser renovada. Faça login novamente.");
         }

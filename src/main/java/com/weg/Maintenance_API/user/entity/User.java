@@ -2,6 +2,7 @@ package com.weg.Maintenance_API.user.entity;
 
 import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.organization.entity.Organization;
+import com.weg.Maintenance_API.media.entity.Media;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -60,6 +61,10 @@ public abstract class User {
 
     @Column(name = "password_changed_at")
     private LocalDateTime passwordChangedAt;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_photo_media_id", unique = true)
+    private Media profilePhoto;
 
     @Column(name = "failed_login_attempts", nullable = false)
     private int failedLoginAttempts;

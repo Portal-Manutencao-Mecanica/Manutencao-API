@@ -4,6 +4,8 @@ package com.weg.Maintenance_API.media.entity;
 import java.util.UUID;
 
 import com.weg.Maintenance_API.enums.MediaType;
+import com.weg.Maintenance_API.organization.entity.Organization;
+import com.weg.Maintenance_API.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,6 +49,17 @@ public class Media {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uploaded_by", updatable = false)
+    private User uploadedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id", updatable = false)
+    private Organization organization;
+
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
 
     @PrePersist
     protected void onCreate() {

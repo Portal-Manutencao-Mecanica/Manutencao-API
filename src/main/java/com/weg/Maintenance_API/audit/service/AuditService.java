@@ -69,4 +69,32 @@ public class AuditService {
                 details
         ));
     }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void recordInCurrentTransaction(
+            User actor,
+            String action,
+            String entityType,
+            UUID entityId,
+            String endpoint,
+            String method,
+            String ipAddress,
+            String userAgent,
+            boolean success,
+            String details
+    ) {
+        auditLogRepository.save(new AuditLog(
+                actor == null ? null : actor.getId(),
+                actor == null ? null : actor.getEmail(),
+                action,
+                entityType,
+                entityId,
+                endpoint,
+                method,
+                ipAddress,
+                userAgent,
+                success,
+                details
+        ));
+    }
 }
