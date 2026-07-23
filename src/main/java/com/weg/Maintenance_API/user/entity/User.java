@@ -25,7 +25,7 @@ public abstract class User {
     @Column(name = "user_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "user_name", nullable = false, length = 120)
+    @Column(name = "user_name", nullable = false, length = 150)
     private String name;
 
     @Column(name = "username", nullable = false, unique = true, length = 50)

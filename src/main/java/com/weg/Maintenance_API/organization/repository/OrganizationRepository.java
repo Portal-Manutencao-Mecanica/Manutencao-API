@@ -10,6 +10,8 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 
     Optional<Organization> findByEmailDomainIgnoreCase(String emailDomain);
 
+    Optional<Organization> findByNameIgnoreCase(String name);
+
     boolean existsByNameIgnoreCase(String name);
 
     boolean existsByEmailDomainIgnoreCase(String emailDomain);

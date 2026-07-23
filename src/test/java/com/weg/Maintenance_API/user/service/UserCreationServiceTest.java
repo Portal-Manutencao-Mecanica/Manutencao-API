@@ -62,8 +62,12 @@ class UserCreationServiceTest {
                 userRepository,
                 organizationService,
                 new UserManagementPermissionService(),
-                temporaryPasswordGenerator,
-                passwordEncoder,
+                new UserIdentityPolicy(userRepository),
+                new UserAccountFactory(),
+                new TemporaryCredentialService(
+                        temporaryPasswordGenerator,
+                        passwordEncoder
+                ),
                 auditService,
                 eventPublisher
         );
@@ -81,6 +85,8 @@ class UserCreationServiceTest {
                 .thenReturn(organization);
         when(temporaryPasswordGenerator.generate()).thenReturn("Temp@1234Ab");
         when(passwordEncoder.encode("Temp@1234Ab")).thenReturn("bcrypt-hash");
+        when(userRepository.existsByUsernameIgnoreCase("aluno.teste")).thenReturn(false);
+        when(userRepository.existsByEmailIgnoreCase("aluno@local.com")).thenReturn(false);
         when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
             User saved = invocation.getArgument(0);
             saved.setId(UUID.randomUUID());
