@@ -1,518 +1,331 @@
-﻿# API de Manutenção — Rotas para integração
+# Portal de Manutenção — API
 
-Todas as rotas abaixo usam JSON, salvo quando indicado. Nas rotas protegidas, enviar:
+API REST do Portal de Manutenção, construída com Java 21, Spring Boot 4, Spring Security, JWT, Spring Data JPA, PostgreSQL e Flyway.
 
-```http
-Authorization: Bearer <accessToken>
-Content-Type: application/json
+O estado atual corresponde à conclusão da base de segurança da Fase 1: identificadores UUID, organizações, autenticação stateless, refresh token rotativo, logout, proteção contra tentativas de login, RBAC inicial, criação manual controlada de usuários e respostas de erro padronizadas.
+
+## Requisitos para execução
+
+- Java 21 ou superior;
+- PostgreSQL 17 ou compatível;
+- Docker, opcional;
+- servidor SMTP para os fluxos que enviam e-mail.
+
+Copie `.env.example` e configure os valores como variáveis de ambiente do processo. O Spring Boot não carrega arquivos `.env` automaticamente.
+
+Variáveis obrigatórias:
+
+```text
+DATABASE_URL
+DATABASE_USERNAME
+DATABASE_PASSWORD
+JWT_SECRET
+MAIL_HOST
+MAIL_USERNAME
+MAIL_PASSWORD
+FRONTEND_URL
 ```
 
-## Catálogo completo de endpoints
+`JWT_SECRET` deve ser um valor Base64 que represente pelo menos 32 bytes aleatórios. Não armazene senhas, tokens ou segredos no repositório.
 
-Esta é a lista integral das rotas expostas pelos controllers atuais:
+Para iniciar:
 
-| Método | Endpoint | Informação principal |
-|---|---|---|
-| `POST` | `/auth/login` | `email`, `password` |
-| `GET` | `/auth/me` | Usuário autenticado |
-| `POST` | `/excel/import` | Multipart `file` |
-| `POST` | `/equipamento` | Dados do equipamento |
-| `GET` | `/equipamento` | Lista equipamentos |
-| `GET` | `/equipamento/{id}` | `id` do equipamento |
-| `PUT` | `/equipamento/{id}` | Dados completos do equipamento |
-| `PATCH` | `/equipamento/{id}` | Campos parciais do equipamento |
-| `DELETE` | `/equipamento/{id}` | `id` do equipamento |
-| `POST` | `/lugar` | `name` |
-| `GET` | `/lugar` | Lista lugares |
-| `GET` | `/lugar/{id}` | `id` do lugar |
-| `PUT` | `/lugar/{id}` | `name` |
-| `PATCH` | `/lugar/{id}` | `name` opcional |
-| `DELETE` | `/lugar/{id}` | `id` do lugar |
-| `POST` | `/maquinas` | Dados da máquina |
-| `GET` | `/maquinas` | Lista máquinas |
-| `GET` | `/maquinas/{id}` | `id` da máquina |
-| `PUT` | `/maquinas/{id}` | Dados completos da máquina |
-| `PATCH` | `/maquinas/{id}` | Campos parciais da máquina |
-| `DELETE` | `/maquinas/{id}` | `id` da máquina |
-| `POST` | `/solicitao-manutencao` | Dados da solicitação |
-| `GET` | `/solicitao-manutencao` | Lista solicitações |
-| `GET` | `/solicitao-manutencao/{id}` | `id` da solicitação |
-| `PUT` | `/solicitao-manutencao/{id}` | Dados completos da solicitação |
-| `PATCH` | `/solicitao-manutencao/{id}` | `sector`, `priority`, `description` |
-| `DELETE` | `/solicitao-manutencao/{id}` | `id` da solicitação |
-| `POST` | `/eventos` | Dados do evento |
-| `GET` | `/eventos` | Lista eventos |
-| `GET` | `/eventos/{id}` | `id` do evento |
-| `PUT` | `/eventos/{id}` | Dados do evento |
-| `DELETE` | `/eventos/{id}` | `id` do evento |
-| `POST` | `/designacao` | `sector` |
-| `GET` | `/designacao` | Lista designações |
-| `GET` | `/designacao/{id}` | `id` da designação |
-| `PUT` | `/designacao/{id}` | `sector` |
-| `PATCH` | `/designacao/{id}` | `sector` opcional |
-| `DELETE` | `/designacao/{id}` | `id` da designação |
-| `POST` | `/material-apoio` | Material de apoio |
-| `GET` | `/material-apoio` | Lista materiais |
-| `GET` | `/material-apoio/{id}` | `id` do material |
-| `PUT` | `/material-apoio/{id}` | Dados completos do material |
-| `PATCH` | `/material-apoio/{id}` | Campos parciais do material |
-| `DELETE` | `/material-apoio/{id}` | `id` do material |
-| `POST` | `/alunos` | Dados do aluno |
-| `GET` | `/alunos` | Lista alunos |
-| `GET` | `/alunos/ativos` | Lista alunos ativos |
-| `GET` | `/alunos/{id}` | `id` do aluno |
-| `PUT` | `/alunos/{id}` | Dados completos do aluno |
-| `PATCH` | `/alunos/{id}` | `name`, `email`, `password` |
-| `PATCH` | `/alunos/{id}/inativar` | Inativa o aluno |
-| `DELETE` | `/alunos/{id}` | `id` do aluno |
-| `POST` | `/professores` | Dados do professor |
-| `GET` | `/professores` | Lista professores |
-| `GET` | `/professores/ativos` | Lista professores ativos |
-| `GET` | `/professores/{id}` | `id` do professor |
-| `PUT` | `/professores/{id}` | Dados completos do professor |
-| `PATCH` | `/professores/{id}` | `name`, `email`, `password` |
-| `PATCH` | `/professores/{id}/inativar` | Inativa o professor |
-| `DELETE` | `/professores/{id}` | `id` do professor |
-| `POST` | `/coordenador` ou `/coordernador` | Dados do coordenador |
-| `GET` | `/coordenador` ou `/coordernador` | Lista coordenadores |
-| `GET` | `/coordenador/ativos` ou `/coordernador/ativos` | Lista coordenadores ativos |
-| `GET` | `/coordenador/{id}` ou `/coordernador/{id}` | `id` do coordenador |
-| `PUT` | `/coordenador/{id}` ou `/coordernador/{id}` | Dados completos do coordenador |
-| `PATCH` | `/coordenador/{id}` ou `/coordernador/{id}` | `name`, `email`, `password` |
-| `PATCH` | `/coordenador/{id}/inativar` ou `/coordernador/{id}/inativar` | Inativa o coordenador |
-| `DELETE` | `/coordenador/{id}` ou `/coordernador/{id}` | `id` do coordenador |
-| `POST` | `/turma` | `acronym`, `teacherIds`, `studentIds` |
-| `GET` | `/turma` | Lista turmas |
-| `GET` | `/turma/ativos` | Lista turmas ativas |
-| `GET` | `/turma/{id}` | `id` da turma |
-| `PUT` | `/turma/{id}` | Dados da turma |
-| `PATCH` | `/turma/{id}` | `acronym` |
-| `PATCH` | `/turma/{id}/inativar` | Inativa a turma |
-| `DELETE` | `/turma/{id}` | `id` da turma |
-| `POST` | `/maquina-log` | Dados do log |
-| `GET` | `/maquina-log` | Lista logs |
-| `GET` | `/maquina-log/{id}` | `id` do log |
-| `PUT` | `/maquina-log/{id}` | Dados completos do log |
-| `PATCH` | `/maquina-log/{id}` | Campos parciais do log |
-| `DELETE` | `/maquina-log/{id}` | `id` do log |
-| `POST` | `/5s` | Dados da ocorrência 5S |
-| `GET` | `/5s` | Lista ocorrências 5S |
-| `GET` | `/5s/{id}` | `id` da ocorrência |
-| `PUT` | `/5s/{id}` | Dados completos da ocorrência |
-| `PATCH` | `/5s/{id}` | Campos parciais da ocorrência |
-| `DELETE` | `/5s/{id}` | `id` da ocorrência |
-| `POST` | `/compras` | Dados da compra |
-| `GET` | `/compras` | Lista compras |
-| `GET` | `/compras/{id}` | `id` da compra |
-| `PUT` | `/compras/{id}` | Dados completos da compra |
-| `PATCH` | `/compras/{id}` | `purchaseJustification` |
-| `DELETE` | `/compras/{id}` | `id` da compra |
-| `GET` | `/compras/status/{status}` | Status da compra |
-| `POST` | `/manutencao-autonoma` | Dados da manutenção |
-| `POST` | `/manutencao-autonoma/create-all` | Lista de manutenções |
-| `GET` | `/manutencao-autonoma` | Lista manutenções |
-| `GET` | `/manutencao-autonoma/{id}` | `id` da manutenção |
-| `PUT` | `/manutencao-autonoma/{id}` | Dados da manutenção |
-| `DELETE` | `/manutencao-autonoma/{id}` | `id` da manutenção |
-| `GET` | `/manutencao-autonoma/situacao/{situacao}` | Situação do equipamento |
-| `POST` | `/notification` | Dados da notificação |
-| `GET` | `/notification` | Lista notificações |
-| `GET` | `/notification/{id}` | `id` da notificação |
-| `PUT` | `/notification/{id}` | Marca como lida (sem body) |
-| `PATCH` | `/notification/{id}/read` | Marca como lida |
-| `PATCH` | `/notification/{id}/toggle-read` | Alterna entre lida e não lida |
-| `PATCH` | `/notification/read-all` | Marca todas como lidas |
-| `DELETE` | `/notification/{id}` | `id` da notificação |
+```powershell
+.\mvnw.cmd spring-boot:run
+```
 
-O controller `/admin` existe, mas atualmente não possui endpoints implementados.
+Para executar os testes:
+
+```powershell
+.\mvnw.cmd test
+```
+
+## URLs
+
+O contexto padrão da aplicação é `/api`.
+
+```text
+API:        http://localhost:8080/api
+Swagger:    http://localhost:8080/api/swagger-ui.html
+OpenAPI:    http://localhost:8080/api/v3/api-docs
+Health:     http://localhost:8080/api/actuator/health
+```
+
+Swagger e OpenAPI são desabilitados no perfil `prod`.
 
 ## Autenticação
 
-### `POST /auth/login`
+Envie o access token nas rotas protegidas:
 
-Body obrigatório:
-
-```json
-{
-  "email": "usuario@exemplo.com",
-  "password": "senha"
-}
+```http
+Authorization: Bearer <accessToken>
 ```
 
-Retorna `accessToken`, `tokenType`, `expiresIn` e `user`.
+### Login
 
-### `GET /auth/me`
-
-Retorna o usuário autenticado: `id`, `numberCard`, `name`, `email`, `role`, `enabled`, `accountNonLocked`, `createdAt` e `updatedAt`.
-
-## Rotas CRUD
-
-Para os recursos abaixo, estão disponíveis as rotas:
-
-| Recurso | Base |
-|---|---|
-| Equipamentos | `/equipamento` |
-| Lugares | `/lugar` |
-| Máquinas | `/maquinas` |
-| Solicitações de manutenção | `/solicitao-manutencao` |
-| Eventos | `/eventos` |
-| Designações | `/designacao` |
-| Materiais de apoio | `/material-apoio` |
-| Alunos | `/alunos` |
-| Professores | `/professores` |
-| Coordenadores | `/coordenador` ou `/coordernador` |
-| Turmas | `/turma` |
-| Logs de máquina | `/maquina-log` |
-| Ocorrências 5S | `/5s` |
-| Compras | `/compras` |
-| Manutenções autônomas | `/manutencao-autonoma` |
-| Notificações | `/notification` |
-
-### Rotas comuns
-
-Para cada base acima, exceto onde indicado de forma diferente:
-
-- `GET /base`: lista todos os registros.
-- `GET /base/{id}`: busca um registro pelo `id` (path param obrigatório).
-- `POST /base`: cria um registro com o body indicado abaixo; retorna `201`.
-- `PUT /base/{id}`: substitui/atualiza o registro; recebe o mesmo body de criação, salvo indicação abaixo.
-- `PATCH /base/{id}`: atualização parcial; recebe somente os campos desejados.
-- `DELETE /base/{id}`: exclui o registro; retorna `204`.
-
-### Equipamento — `/equipamento`
-
-`POST`/`PUT` body:
+`POST /api/auth/login` — público
 
 ```json
 {
-  "name": "Torno mecânico",
-  "sap": "SAP-001",
-  "unitPrice": 1500.00,
-  "availableQuantity": 2
-}
-```
-
-`PATCH` aceita: `name`, `sap`, `unitPrice`, `availableQuantity`.
-
-Retorno: `id`, `numberCard`, `name`, `sap`, `unitPrice`, `availableQuantity`.
-
-### Lugar — `/lugar`
-
-`POST`/`PUT` body: `{ "name": "Laboratório" }`.
-
-`PATCH` aceita: `name`.
-
-Retorno: `id`, `numberCard`, `name`.
-
-### Máquina — `/maquinas`
-
-`POST`/`PUT` body:
-
-```json
-{
-  "name": "Prensa hidráulica",
-  "patrimony": "PAT-001",
-  "condition": "CONFORME",
-  "tag": "PR-01",
-  "placeId": 1
-}
-```
-
-`PATCH` aceita: `name`, `patrimony`, `condition`, `tag`. `placeId` não é alterado pelo PATCH.
-
-### Solicitação de manutenção — `/solicitao-manutencao`
-
-`POST`/`PUT` body:
-
-```json
-{
-  "sector": "CENTRO_WEG",
-  "priority": "ALTA",
-  "assignedStudentIds": [1, 2],
-  "placeId": 1,
-  "description": "Descrição do problema",
-  "notifiedTeacherId": 1,
-  "machineId": 1
-}
-```
-
-`PATCH` aceita: `sector`, `priority`, `description`.
-
-Retorno: `id`, `numberCard`, `status`, `sector`, `priority`, `assignedStudentIds`, `placeId`, `placeName`, `description`, `createdAt`, `notifiedTeacherId`, `notifiedTeacherName`, `machineId` e `machineName`.
-
-### Evento — `/eventos`
-
-`POST` body:
-
-```json
-{
-  "scheduledAction": "Inspecionar equipamento",
-  "criticality": "MEDIA",
-  "scheduledFor": "2026-07-30T10:00:00",
-  "requestedAt": "2026-07-23T10:00:00",
-  "studentId": 1,
-  "teacherId": 1,
-  "equipmentId": 1,
-  "machineId": 1,
-  "placeId": 1,
-  "maintenanceType": "PREVENTIVA",
-  "status": "PENDENTE"
-}
-```
-
-`PUT` aceita os mesmos campos, todos opcionais. Não há `PATCH`.
-
-Retorno: `id`, `numberCard`, `scheduledAction`, `criticality`, `scheduledFor`, `requestedAt`, `studentId`, `studentName`, `teacherId`, `teacherName`, `equipmentId`, `equipmentName`, `machineId`, `machineName`, `placeId`, `placeName`, `maintenanceType` e `status`.
-
-### Designação — `/designacao`
-
-`POST`/`PUT` body: `{ "sector": "CENTRO_WEG" }`.
-
-`PATCH` aceita: `sector`.
-
-Retorno: `id`, `numberCard` e `sector`.
-
-### Material de apoio — `/material-apoio`
-
-`POST`/`PUT` body:
-
-```json
-{
-  "title": "Manual do equipamento",
-  "description": "Descrição do material",
-  "url": "https://exemplo.com/manual.pdf",
-  "type": "TECNICO"
-}
-```
-
-`PATCH` aceita: `title`, `description`, `url`, `type`.
-
-### Aluno — `/alunos`
-
-`POST`/`PUT` body:
-
-```json
-{
-  "name": "Nome do aluno",
-  "email": "aluno@exemplo.com",
-  "password": "Senha@123",
-  "classGroupIds": [1]
-}
-```
-
-`PATCH` aceita: `name`, `email`, `password`.
-
-Rotas adicionais:
-
-- `GET /alunos/ativos`: lista somente alunos com `enabled: true`.
-- `PATCH /alunos/{id}/inativar`: altera `enabled` para `false`.
-
-### Professor — `/professores`
-
-`POST`/`PUT` body:
-
-```json
-{
-  "name": "Nome do professor",
-  "email": "professor@exemplo.com",
-  "password": "Senha@123",
-  "classGroupIds": [1]
-}
-```
-
-`PATCH` aceita: `name`, `email`, `password`.
-
-Rotas adicionais:
-
-- `GET /professores/ativos`: lista somente professores com `enabled: true`.
-- `PATCH /professores/{id}/inativar`: altera `enabled` para `false`.
-
-### Coordenador — `/coordenador` ou `/coordernador`
-
-`POST`/`PUT` body:
-
-```json
-{
-  "name": "Nome do coordenador",
-  "email": "coordenador@exemplo.com",
+  "email": "usuario@sesisenai.org.br",
   "password": "Senha@123"
 }
 ```
 
-`PATCH` aceita: `name`, `email`, `password`.
-
-Rotas adicionais:
-
-- `GET /coordenador/ativos`: lista somente coordenadores com `enabled: true`.
-- `PATCH /coordenador/{id}/inativar`: altera `enabled` para `false`.
-
-### Turma — `/turma`
-
-`POST`/`PUT` body:
+Resposta:
 
 ```json
 {
-  "acronym": "MEC-01",
-  "teacherIds": [1, 2],
-  "studentIds": [1, 2]
-}
-```
-
-`PATCH` aceita: `acronym`.
-
-Rotas adicionais:
-
-- `GET /turma/ativos`: lista somente turmas com `enabled: true`.
-- `PATCH /turma/{id}/inativar`: altera `enabled` para `false`.
-
-### Log de máquina — `/maquina-log`
-
-`POST`/`PUT` body:
-
-```json
-{
-  "title": "Troca de correia",
-  "description": "Descrição",
-  "executionReport": "Relatório da execução",
-  "taskSituation": "PENDENTE",
-  "machineId": 1,
-  "servicePerformed": "Troca realizada",
-  "responsibleTeacherId": 1,
-  "teacherConcludedAt": "2026-07-23T12:00:00",
-  "executionStartedAt": "2026-07-23T10:00:00",
-  "executionEndedAt": "2026-07-23T12:00:00",
-  "plannedAction": "Verificar desgaste",
-  "taskCriticality": "MEDIA",
-  "placeId": 1,
-  "maintenanceType": "PREVENTIVA",
-  "classGroupId": 1,
-  "assignedStudentIds": [1],
-  "reportLink": "https://exemplo.com/relatorio"
-}
-```
-
-`PATCH` aceita: `title`, `description`, `executionReport`, `taskSituation`, `servicePerformed`, `teacherConcludedAt`, `executionStartedAt`, `executionEndedAt`, `plannedAction`, `taskCriticality`, `maintenanceType` e `reportLink`.
-
-### Ocorrência 5S — `/5s`
-
-`POST`/`PUT` body:
-
-```json
-{
-  "inconvenience": "Vazamento identificado",
-  "placeId": 1,
-  "notifiedTeacherId": 1,
-  "classGroupId": 1,
-  "involvedStudentIds": [1, 2],
-  "description": "Descrição",
-  "registrationPeriod": "MATUTINO"
-}
-```
-
-`PATCH` aceita: `inconvenience`, `description`, `registrationPeriod`.
-
-### Compra — `/compras`
-
-`POST`/`PUT` body:
-
-```json
-{
-  "purchaseJustification": "Reposição de equipamento",
-  "classGroupId": 1,
-  "notifiedTeacherId": 1,
-  "items": [
-    {
-      "equipmentId": 1,
-      "quantity": 2,
-      "technicalSpecification": "Especificação",
-      "sap": "SAP-001",
-      "patrimony": "PAT-001",
-      "tag": "TAG-001",
-      "mechanicalSet": "Conjunto mecânico"
+  "accessToken": "...",
+  "refreshToken": "...",
+  "tokenType": "Bearer",
+  "expiresIn": 900,
+  "passwordChangeRequired": false,
+  "user": {
+    "id": "5e642408-7af3-47ef-a7cb-154aaf4316f7",
+    "name": "Nome",
+    "username": "nome.usuario",
+    "email": "usuario@sesisenai.org.br",
+    "role": "ALUNO",
+    "status": "ACTIVE",
+    "passwordChangeRequired": false,
+    "organization": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "SENAI"
     }
-  ],
-  "mediaIds": [1]
+  }
 }
 ```
 
-`PATCH` aceita: `purchaseJustification`.
+### Sessão
 
-Rotas adicionais:
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| `POST` | `/api/auth/login` | Público | Autentica e emite access e refresh tokens |
+| `POST` | `/api/auth/refresh` | Público | Rotaciona o refresh token e emite novo par |
+| `POST` | `/api/auth/logout` | Autenticado | Revoga o refresh token informado |
+| `POST` | `/api/auth/logout-all` | Autenticado | Revoga todos os refresh tokens do usuário |
+| `GET` | `/api/auth/me` | Autenticado | Retorna o usuário autenticado |
 
-- `GET /compras/status/{status}`: lista compras por status.
-- Status aceitos: `ENTREGUE`, `EM_ANALISE`, `PEDIDO_EM_ANDAMENTO`.
-
-### Manutenção autônoma — `/manutencao-autonoma`
-
-`POST`/`PUT` body:
+Body de refresh ou logout:
 
 ```json
 {
-  "equipmentSituation": "OPERANDO",
-  "inspectedAt": "2026-07-23T10:00:00",
-  "inspectedMachineId": 1,
-  "equipmentCondition": "CONFORME",
-  "identifiedNonconformities": "Nenhuma",
-  "responsibleTeacherId": 1,
-  "responsibleStudentId": 1
+  "refreshToken": "..."
 }
 ```
 
-Rotas adicionais:
+O refresh token original só é entregue ao cliente. No banco é persistido apenas seu hash SHA-256.
 
-- `POST /manutencao-autonoma/create-all`: recebe uma lista dos objetos acima.
-- `GET /manutencao-autonoma/situacao/{situacao}`: lista por situação do equipamento.
-- Situação aceita: `OPERANDO`.
+## Roles
 
-### Notificação — `/notification`
+Os nomes atuais do projeto foram preservados:
 
-`POST /notification` body:
+| Requisito | Role da API |
+|---|---|
+| `ADMIN` | `ADMIN` |
+| `COORDINATOR` | `COORDENADOR` |
+| `TEACHER` | `PROFESSOR` |
+| `STUDENT` | `ALUNO` |
+
+## Criação manual de usuários
+
+`POST /api/users`
+
+Acesso: `ADMIN` ou `COORDENADOR`.
 
 ```json
 {
-  "email": "destinatario@exemplo.com",
-  "title": "Nova solicitação",
-  "about": "Manutenção",
-  "description": "Descrição da notificação"
+  "name": "João da Silva",
+  "username": "joao.silva",
+  "email": "joao.silva@sesisenai.org.br",
+  "role": "ALUNO",
+  "organizationId": "00000000-0000-4000-8000-000000000001"
 }
 ```
 
-`PUT /notification/{id}` e `PATCH /notification/{id}/read` marcam uma notificação como lida; não possuem body.
+Regras aplicadas no backend:
 
-`PATCH /notification/{id}/toggle-read` alterna o campo `statusRead` entre `true` e `false`; não possui body.
+- `ADMIN` pode criar `ADMIN`, `COORDENADOR`, `PROFESSOR` e `ALUNO`;
+- `COORDENADOR` pode criar apenas `PROFESSOR` e `ALUNO`;
+- o coordenador sempre cria na própria organização, independentemente do ID enviado;
+- nome de usuário e e-mail são normalizados e devem ser únicos;
+- nomes de usuário reservados são rejeitados;
+- o domínio do e-mail deve corresponder à organização ativa;
+- a senha temporária é aleatória, armazenada somente como hash BCrypt e expira em três dias;
+- a conta é criada com troca de senha obrigatória;
+- a operação gera auditoria e evento de envio de credenciais após o commit;
+- a resposta nunca contém a senha temporária.
 
-`PATCH /notification/read-all` marca todas as notificações como lidas; não possui body.
+As rotas legadas `POST /api/alunos`, `POST /api/professores` e `POST /api/coordenador` estão bloqueadas para impedir que contornem essas regras.
 
-`DELETE /notification/{id}` remove a notificação.
+## Organizações
 
-Retorno: `id`, `numberCard`, `email`, `title`, `about`, `description` e `statusRead`.
+| Método | Endpoint | Acesso |
+|---|---|---|
+| `POST` | `/api/organizations` | `ADMIN` |
+| `GET` | `/api/organizations` | `ADMIN`, `COORDENADOR` |
+| `GET` | `/api/organizations/{id}` | `ADMIN`, `COORDENADOR` |
+| `PATCH` | `/api/organizations/{id}` | `ADMIN` |
+| `PATCH` | `/api/organizations/{id}/activate` | `ADMIN` |
+| `PATCH` | `/api/organizations/{id}/deactivate` | `ADMIN` |
 
-## Importação
+Listagens paginadas aceitam `page`, `size` e `sort`. O tamanho máximo global é 100.
 
-### `POST /excel/import`
+Exemplo de criação:
 
-Enviar como `multipart/form-data`, com o campo obrigatório `file` contendo a planilha de usuários.
+```json
+{
+  "name": "SENAI",
+  "type": "SENAI",
+  "emailDomain": "sesisenai.org.br"
+}
+```
 
-Retorna uma mensagem de confirmação.
+## Endpoints de domínio existentes
 
-## Enumeradores aceitos
+Todos os parâmetros `{id}` abaixo são UUIDs.
 
-- `condition`: `CONFORME`
-- `equipmentSituation`: `OPERANDO`
-- `type` de material: `TECNICO`, `LUBRIFICACAO`, `MANUTENCAO_PREVENTIVA`
-- `maintenanceType`: `PREVENTIVA`, `CORRETIVA`, `PREDITIVA`
-- `criticality`/`taskCriticality`: `BAIXA`, `MEDIA`
-- `priority`: `ALTA`, `MEDIA`
-- `registrationPeriod`: `MATUTINO`, `VESPERTINO`
-- `sector`: `AREA_NAO_DESIGNADA`, `CENTRO_WEG`
-- `taskSituation`: `PENDENTE`, `EM_ANDAMENTO`
-- `status` de compra: `ENTREGUE`, `EM_ANALISE`, `PEDIDO_EM_ANDAMENTO`
-- `status` de evento: `PENDENTE`, `EM_ANDAMENTO`
+### Recursos restritos a `ADMIN`
 
-## Formato de datas
+| Base | Endpoints |
+|---|---|
+| `/api/equipamento` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
+| `/api/lugar` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
+| `/api/maquinas` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
+| `/api/designacao` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
+| `/api/material-apoio` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
+| `/api/turma` | CRUD, `GET /ativos`, `PATCH /{id}/inativar` |
+| `/api/alunos` | consultas, edição, inativação e exclusão legadas |
+| `/api/professores` | consultas, edição, inativação e exclusão legadas |
+| `/api/coordenador` | consultas, edição, inativação e exclusão legadas |
+| `/api/coordernador` | alias legado de `/api/coordenador` |
 
-Enviar datas no formato ISO-8601, por exemplo: `2026-07-23T10:00:00`.
+### Recursos que exigem autenticação
 
-## Respostas sem conteúdo
+| Base | Endpoints |
+|---|---|
+| `/api/compras` | CRUD e `GET /status/{status}` |
+| `/api/solicitao-manutencao` | CRUD |
+| `/api/eventos` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `DELETE /{id}` |
+| `/api/maquina-log` | CRUD |
+| `/api/5s` | CRUD |
+| `/api/manutencao-autonoma` | CRUD, `POST /create-all`, `GET /situacao/{situacao}` |
+| `/api/notification` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}/read`, `PATCH /{id}/toggle-read`, `PATCH /read-all`, `DELETE /{id}` |
 
-As operações `DELETE` retornam HTTP `204 No Content`. Erros de validação e requisições inválidas retornam HTTP `400`; recurso inexistente retorna HTTP `404`; falha no envio de e-mail retorna HTTP `502`; autenticação inválida retorna HTTP `401`.
+Esses módulos ainda usam parte do modelo legado. As regras de acesso por organização, propriedade do registro e transição de status serão concluídas nas fases de domínio.
+
+## Rotas temporariamente indisponíveis
+
+| Método | Endpoint | Motivo |
+|---|---|---|
+| `POST` | `/api/excel/import` | Importador legado bloqueado até aplicar validação por linha, role e organização |
+| `POST` | `/api/alunos` | Substituído por `POST /api/users` |
+| `POST` | `/api/professores` | Substituído por `POST /api/users` |
+| `POST` | `/api/coordenador` | Substituído por `POST /api/users` |
+
+Os caminhos de recuperação de senha estão reservados na configuração de segurança, mas seus controllers serão implementados na Fase 2:
+
+```text
+POST /api/auth/password/forgot
+GET  /api/auth/password/validate
+POST /api/auth/password/reset
+```
+
+## Identificadores UUID
+
+Todas as 21 entidades JPA e todos os repositories usam `UUID`. O JSON representa UUID como texto:
+
+```json
+{
+  "id": "5e642408-7af3-47ef-a7cb-154aaf4316f7"
+}
+```
+
+Um ID malformado retorna `400 INVALID_PARAMETER`. Quantidades, paginação, contadores e o campo de versão otimista continuam numéricos porque não são identificadores de entidade.
+
+As migrations `V12` e `V13` convertem progressivamente IDs e chaves estrangeiras existentes sem converter números diretamente para UUID. As migrations `V14` e `V15` adicionam organizações, estado de segurança, auditoria e refresh tokens.
+
+## Respostas de erro
+
+Formato padrão:
+
+```json
+{
+  "status": 400,
+  "error": "VALIDATION_ERROR",
+  "message": "Existem campos inválidos.",
+  "path": "/api/users",
+  "timestamp": "2026-07-23T11:00:00",
+  "errors": {
+    "email": "O e-mail informado é inválido."
+  }
+}
+```
+
+Códigos usados incluem:
+
+```text
+VALIDATION_ERROR
+INVALID_REQUEST
+INVALID_REQUEST_BODY
+INVALID_PARAMETER
+AUTHENTICATION_REQUIRED
+INVALID_CREDENTIALS
+CREDENTIALS_EXPIRED
+ACCESS_DENIED
+RESOURCE_NOT_FOUND
+DATA_CONFLICT
+CONCURRENT_UPDATE
+INVALID_TOKEN
+TOKEN_EXPIRED
+RATE_LIMIT_EXCEEDED
+UNEXPECTED_ERROR
+```
+
+Stack traces e detalhes internos não são retornados ao cliente.
+
+## Segurança implementada
+
+- sessão stateless;
+- access token JWT HS256 com issuer validado;
+- chave JWT mínima de 256 bits;
+- refresh token aleatório, com hash persistido, expiração, rotação e revogação;
+- logout de uma sessão e de todas as sessões;
+- bloqueio progressivo após grupos de cinco falhas: 5 minutos, 15 minutos e 1 hora;
+- rate limit por IP no endpoint de login;
+- mensagens genéricas para credenciais inválidas;
+- senhas legadas recriptografadas com BCrypt nas rotas de edição;
+- CORS com origens explícitas e credenciais;
+- Actuator restrito, exceto `health`;
+- Swagger desabilitado em produção;
+- configuração sensível por variável de ambiente;
+- `.env` ignorado pelo Git;
+- auditoria base para login e criação de usuário.
+
+## Banco e testes
+
+O Hibernate usa `ddl-auto=validate` fora dos testes e o Flyway é responsável pelo schema. Não altere migrations já aplicadas; crie uma nova migration versionada.
+
+Estado verificado em 23/07/2026:
+
+- migrations `V1` até `V15` aplicadas com sucesso no PostgreSQL;
+- nenhuma coluna de ID ou foreign key permanece com tipo numérico;
+- 16 testes automatizados passando;
+- fluxo integrado coberto: login, refresh, acesso autenticado e logout;
+- cobertura unitária da geração/hash de token, bloqueio de login, senha temporária, criação manual e matriz de permissões.
+
+## Próxima fase
+
+A Fase 2 deve implementar:
+
+1. importação Excel segura para `PROFESSOR` e `ALUNO`;
+2. histórico de importações e erros por linha;
+3. troca obrigatória no primeiro acesso;
+4. recuperação de senha com token de uso único;
+5. revogação de sessões após troca de senha;
+6. perfil do usuário;
+7. bloqueio, inativação, reativação e alteração administrativa de role;
+8. reenvio controlado de credenciais.
+
+Depois disso, os módulos de compras, Livro Máquina, inspeções, máquinas, equipamentos, ocorrências, comentários, mídia, notificações, filtros, dashboard e exportações devem ser evoluídos conforme as fases descritas nos requisitos.
