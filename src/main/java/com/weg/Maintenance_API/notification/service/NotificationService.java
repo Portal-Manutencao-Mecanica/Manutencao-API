@@ -10,6 +10,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.weg.Maintenance_API.exception.type.NotificationDeliveryException;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
@@ -29,12 +30,15 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final JavaMailSender mailSender;
 
+    @Value("${app.mail.from}")
+    private String mailFrom;
+
     @Transactional
     public NotificationResponse create(NotificationRequest notificationRequest) {
         Notification notification = notificationMapper.toEntity(notificationRequest);
 
         SimpleMailMessage email = new SimpleMailMessage();
-        email.setFrom("portalmanutencaoweg@gmail.com");
+        email.setFrom(mailFrom);
         email.setTo(notificationRequest.email());
         email.setSubject(notificationRequest.title());
         email.setText(notificationRequest.description());

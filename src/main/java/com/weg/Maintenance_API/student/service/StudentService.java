@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.weg.Maintenance_API.student.dto.request.StudentDtoRequest;
 import com.weg.Maintenance_API.student.dto.request.StudentPatchRequest;
@@ -25,10 +26,12 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final StudentMapper studentMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public StudentDtoResponse save(StudentDtoRequest studentDtoRequest) {
         Student student = studentMapper.toEntity(studentDtoRequest);
+        student.setPassword(passwordEncoder.encode(studentDtoRequest.password()));
         student = studentRepository.save(student);
         return studentMapper.toResponse(student);
     }
@@ -59,7 +62,7 @@ public class StudentService {
         Student student = studentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Aluno", id));
         student.setName(studentDtoRequest.name());
         student.setEmail(studentDtoRequest.email());
-        student.setPassword(studentDtoRequest.password());
+        student.setPassword(passwordEncoder.encode(studentDtoRequest.password()));
         return studentMapper.toResponse(studentRepository.save(student));
     }
 
@@ -74,7 +77,7 @@ public class StudentService {
             student.setEmail(request.email());
         }
         if (request.password() != null) {
-            student.setPassword(request.password());
+            student.setPassword(passwordEncoder.encode(request.password()));
         }
 
         return studentMapper.toResponse(studentRepository.save(student));

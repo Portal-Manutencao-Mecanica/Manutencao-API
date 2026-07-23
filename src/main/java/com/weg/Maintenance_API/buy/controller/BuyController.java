@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.buy.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 
 import java.util.UUID;
 
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 @RequestMapping("/compras")
 public class BuyController {

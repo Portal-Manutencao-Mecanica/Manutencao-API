@@ -17,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -72,8 +73,11 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setHeader("Retry-After", String.valueOf(retryAfterSeconds));
             response.getWriter().write(
-                    "{\"status\":429,\"error\":\"Too Many Requests\"," 
-                            + "\"message\":\"Too many login attempts\"}"
+                    """
+                    {"status":429,"error":"RATE_LIMIT_EXCEEDED",\
+                    "message":"Muitas tentativas de login. Aguarde e tente novamente.",\
+                    "path":"%s","timestamp":"%s","errors":{}}
+                    """.formatted(request.getRequestURI(), LocalDateTime.now()).trim()
             );
             return;
         }

@@ -1,5 +1,6 @@
 package com.weg.Maintenance_API.config.security;
 
+import com.weg.Maintenance_API.exception.dto.ApiErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +12,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Component
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -30,12 +32,13 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        SecurityErrorResponse body = new SecurityErrorResponse(
+        ApiErrorResponse body = new ApiErrorResponse(
                 HttpServletResponse.SC_UNAUTHORIZED,
-                "Unauthorized",
-                "Authentication is required",
+                "AUTHENTICATION_REQUIRED",
+                "Autenticação obrigatória.",
                 request.getRequestURI(),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                Map.of()
         );
         objectMapper.writeValue(response.getOutputStream(), body);
     }

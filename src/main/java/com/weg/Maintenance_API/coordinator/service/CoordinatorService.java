@@ -13,6 +13,7 @@ import com.weg.Maintenance_API.coordinator.mapper.CoordinatorMapper;
 import com.weg.Maintenance_API.coordinator.repository.CoordinatorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +24,12 @@ import java.util.List;
 public class CoordinatorService {
     private final CoordinatorRepository repository;
     private final CoordinatorMapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
     public CoordinatorResponseDto create(CoordinatorRequestDto request){
         Coordinator entity = mapper.toEntity(request);
+        entity.setPassword(passwordEncoder.encode(request.password()));
         repository.save(entity);
         return mapper.toResponse(entity);
     }
@@ -58,7 +61,7 @@ public class CoordinatorService {
         Coordinator entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Coordenador", id));
         entity.setName(request.name());
         entity.setEmail(request.email());
-        entity.setPassword(request.password());
+        entity.setPassword(passwordEncoder.encode(request.password()));
         repository.save(entity);
         return mapper.toResponse(entity);
     }
@@ -74,7 +77,7 @@ public class CoordinatorService {
             entity.setEmail(request.email());
         }
         if (request.password() != null) {
-            entity.setPassword(request.password());
+            entity.setPassword(passwordEncoder.encode(request.password()));
         }
 
         repository.save(entity);

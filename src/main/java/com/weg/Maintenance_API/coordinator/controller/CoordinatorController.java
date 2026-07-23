@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.coordinator.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 
 import java.util.UUID;
 
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @RequestMapping({"/coordenador", "/coordernador"})
 public class CoordinatorController {
@@ -31,6 +34,7 @@ public class CoordinatorController {
     private final CoordinatorService service;
 
     @PostMapping
+    @PreAuthorize("denyAll()")
     public ResponseEntity<CoordinatorResponseDto> create(@Valid @RequestBody CoordinatorRequestDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }

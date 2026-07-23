@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.student.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 
 import java.util.UUID;
 
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @RequestMapping("/alunos")
 public class StudentController {
@@ -31,6 +34,7 @@ public class StudentController {
     private final StudentService service;
 
     @PostMapping
+    @PreAuthorize("denyAll()")
     public ResponseEntity<StudentDtoResponse> create(@Valid @RequestBody StudentDtoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request));
     }

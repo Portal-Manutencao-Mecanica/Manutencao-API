@@ -10,27 +10,16 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
-/**
- * Centraliza o tratamento das exceptions lançadas pelos controllers.
- *
- * O objetivo é evitar que cada controller precise montar respostas
- * diferentes para erros semelhantes.
- *
- * O @RestControllerAdvice faz com que esta classe seja aplicada
- * globalmente a todos os controllers da aplicação.
- */
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-//  Trata erros em DTOs com @Valid.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValid(
             MethodArgumentNotValidException exception,
@@ -41,22 +30,21 @@ public class GlobalExceptionHandler {
                 .stream()
                 .collect(Collectors.toMap(
                         error -> error.getField(),
-                        error -> error.getDefaultMessage() != null
-                                ? error.getDefaultMessage()
-                                : "Invalid value",
-                        (firstMessage, secondMessage) -> firstMessage,
+                        error -> error.getDefaultMessage() == null
+                                ? "Valor inválido."
+                                : error.getDefaultMessage(),
+                        (first, ignored) -> first,
                         LinkedHashMap::new
                 ));
-
-        return buildResponse(
+        return response(
                 HttpStatus.BAD_REQUEST,
-                "Validation failed",
-                request.getRequestURI(),
+                "VALIDATION_ERROR",
+                "Existem campos inválidos.",
+                request,
                 errors
         );
     }
 
-//  Trata validações em parâmetros, query params e path variables.
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
             ConstraintViolationException exception,
@@ -65,89 +53,91 @@ public class GlobalExceptionHandler {
         Map<String, String> errors = exception.getConstraintViolations()
                 .stream()
                 .collect(Collectors.toMap(
-                        violation -> violation
-                                .getPropertyPath()
-                                .toString(),
+                        violation -> violation.getPropertyPath().toString(),
                         violation -> violation.getMessage(),
-                        (firstMessage, secondMessage) -> firstMessage,
+                        (first, ignored) -> first,
                         LinkedHashMap::new
                 ));
-
-        return buildResponse(
+        return response(
                 HttpStatus.BAD_REQUEST,
-                "Validation failed",
-                request.getRequestURI(),
+                "VALIDATION_ERROR",
+                "Existem parâmetros inválidos.",
+                request,
                 errors
         );
     }
 
-//  Trata JSON inválido e enums incorretos.
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidRequestBody(
             HttpMessageNotReadableException exception,
             HttpServletRequest request
     ) {
-        return buildResponse(
+        return response(
                 HttpStatus.BAD_REQUEST,
-                "Request body is invalid",
-                request.getRequestURI(),
+                "INVALID_REQUEST_BODY",
+                "O corpo da requisição é inválido.",
+                request,
                 Map.of()
         );
     }
 
-//  Trata parâmetros obrigatórios ausentes.
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiErrorResponse> handleMissingParameter(
             MissingServletRequestParameterException exception,
             HttpServletRequest request
     ) {
-        Map<String, String> errors = Map.of(
-                exception.getParameterName(),
-                "Parameter is required"
-        );
-
-        return buildResponse(
+        return response(
                 HttpStatus.BAD_REQUEST,
-                "Required parameter is missing",
-                request.getRequestURI(),
-                errors
+                "MISSING_PARAMETER",
+                "Um parâmetro obrigatório não foi informado.",
+                request,
+                Map.of(exception.getParameterName(), "O parâmetro é obrigatório.")
         );
     }
 
-//  É o fallback para erros inesperados. Ele evita expor stack trace ou detalhes internos.
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException exception,
+            HttpServletRequest request
+    ) {
+        return response(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_PARAMETER",
+                "O identificador ou parâmetro informado é inválido.",
+                request,
+                Map.of(exception.getName(), "Valor incompatível com o tipo esperado.")
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpectedError(
             Exception exception,
             HttpServletRequest request
     ) {
-        return buildResponse(
+        return response(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred",
-                request.getRequestURI(),
+                "UNEXPECTED_ERROR",
+                "Ocorreu um erro inesperado.",
+                request,
                 Map.of()
         );
     }
 
-
-//  Monta a resposta padronizada utilizada pelos métodos acima.
-
-    private ResponseEntity<ApiErrorResponse> buildResponse(
+    private ResponseEntity<ApiErrorResponse> response(
             HttpStatus status,
+            String errorCode,
             String message,
-            String path,
+            HttpServletRequest request,
             Map<String, String> errors
     ) {
         ApiErrorResponse response = new ApiErrorResponse(
                 status.value(),
-                status.getReasonPhrase(),
+                errorCode,
                 message,
-                path,
+                request.getRequestURI(),
                 LocalDateTime.now(),
                 errors
         );
-
-        return ResponseEntity
-                .status(status)
-                .body(response);
+        return ResponseEntity.status(status).body(response);
     }
 }

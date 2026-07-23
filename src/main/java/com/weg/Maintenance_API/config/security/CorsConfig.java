@@ -23,6 +23,11 @@ public class CorsConfig {
                 .map(String::trim)
                 .filter(origin -> !origin.isEmpty())
                 .toList();
+        if (this.allowedOrigins.isEmpty() || this.allowedOrigins.contains("*")) {
+            throw new IllegalStateException(
+                    "CORS_ALLOWED_ORIGINS deve informar origens explícitas quando credenciais estão habilitadas."
+            );
+        }
     }
 
     @Bean

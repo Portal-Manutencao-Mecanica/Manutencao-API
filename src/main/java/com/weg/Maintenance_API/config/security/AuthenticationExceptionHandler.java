@@ -1,70 +1,66 @@
 package com.weg.Maintenance_API.config.security;
 
+import com.weg.Maintenance_API.exception.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestControllerAdvice
 public class AuthenticationExceptionHandler {
 
-//    senha ou e-mail inválido no login
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<SecurityErrorResponse> handleBadCredentials(
-            BadCredentialsException exception,
+    @ExceptionHandler({
+            BadCredentialsException.class,
+            DisabledException.class,
+            LockedException.class
+    })
+    public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(
+            RuntimeException exception,
             HttpServletRequest request
     ) {
         return response(
                 HttpStatus.UNAUTHORIZED,
-                "Invalid credentials",
+                "INVALID_CREDENTIALS",
+                "Credenciais inválidas.",
                 request
         );
     }
 
-//    JWT ausente ou inválido em rota protegida
-    @ExceptionHandler(DisabledException.class)
-    public ResponseEntity<SecurityErrorResponse> handleDisabled(
-            DisabledException exception,
+    @ExceptionHandler(CredentialsExpiredException.class)
+    public ResponseEntity<ApiErrorResponse> handleCredentialsExpired(
+            CredentialsExpiredException exception,
             HttpServletRequest request
     ) {
         return response(
                 HttpStatus.UNAUTHORIZED,
-                "User account is disabled",
-                request
-        );
-    }
-//  JWT válido, mas role insuficiente
-    @ExceptionHandler(LockedException.class)
-    public ResponseEntity<SecurityErrorResponse> handleLocked(
-            LockedException exception,
-            HttpServletRequest request
-    ) {
-        return response(
-                HttpStatus.UNAUTHORIZED,
-                "User account is locked",
+                "CREDENTIALS_EXPIRED",
+                "A senha temporária expirou. Solicite novas credenciais.",
                 request
         );
     }
 
-    private ResponseEntity<SecurityErrorResponse> response(
+    private ResponseEntity<ApiErrorResponse> response(
             HttpStatus status,
+            String error,
             String message,
             HttpServletRequest request
     ) {
-        SecurityErrorResponse body = new SecurityErrorResponse(
+        ApiErrorResponse body = new ApiErrorResponse(
                 status.value(),
-                status.getReasonPhrase(),
+                error,
                 message,
                 request.getRequestURI(),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                Map.of()
         );
-
         return ResponseEntity.status(status).body(body);
     }
 }

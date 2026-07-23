@@ -28,7 +28,7 @@ class LoginRateLimitFilterTest {
 
         assertEquals(429, blockedResponse.getStatus());
         assertTrue(blockedResponse.getHeader("Retry-After") != null);
-        assertTrue(blockedResponse.getContentAsString().contains("Too many login attempts"));
+        assertTrue(blockedResponse.getContentAsString().contains("RATE_LIMIT_EXCEEDED"));
         verify(chain, times(5)).doFilter(any(), any());
     }
 

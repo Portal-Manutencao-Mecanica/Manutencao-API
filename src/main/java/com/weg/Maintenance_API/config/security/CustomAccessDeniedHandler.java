@@ -1,5 +1,6 @@
 package com.weg.Maintenance_API.config.security;
 
+import com.weg.Maintenance_API.exception.dto.ApiErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +12,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
@@ -30,12 +32,13 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        SecurityErrorResponse body = new SecurityErrorResponse(
+        ApiErrorResponse body = new ApiErrorResponse(
                 HttpServletResponse.SC_FORBIDDEN,
-                "Forbidden",
-                "You do not have permission to access this resource",
+                "ACCESS_DENIED",
+                "Você não possui permissão para acessar este recurso.",
                 request.getRequestURI(),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                Map.of()
         );
         objectMapper.writeValue(response.getOutputStream(), body);
     }

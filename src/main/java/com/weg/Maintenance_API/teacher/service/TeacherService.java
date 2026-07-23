@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.weg.Maintenance_API.teacher.dto.request.TeacherPatchRequest;
 import com.weg.Maintenance_API.teacher.dto.request.TeacherRequestDto;
@@ -25,10 +26,12 @@ public class TeacherService {
 
     private final TeacherMapper teacherMapper;
     private final TeacherRepository teacherRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public TeacherResponseDto save(TeacherRequestDto teacherRequestDto) {
         Teacher teacher = teacherMapper.toEntity(teacherRequestDto);
+        teacher.setPassword(passwordEncoder.encode(teacherRequestDto.password()));
         teacher = teacherRepository.save(teacher);
         return teacherMapper.toResponse(teacher);
     }
@@ -59,7 +62,7 @@ public class TeacherService {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
         teacher.setName(teacherRequestDto.name());
         teacher.setEmail(teacherRequestDto.email());
-        teacher.setPassword(teacherRequestDto.password());
+        teacher.setPassword(passwordEncoder.encode(teacherRequestDto.password()));
         return teacherMapper.toResponse(teacherRepository.save(teacher));
     }
 
@@ -74,7 +77,7 @@ public class TeacherService {
             teacher.setEmail(request.email());
         }
         if (request.password() != null) {
-            teacher.setPassword(request.password());
+            teacher.setPassword(passwordEncoder.encode(request.password()));
         }
 
         return teacherMapper.toResponse(teacherRepository.save(teacher));
