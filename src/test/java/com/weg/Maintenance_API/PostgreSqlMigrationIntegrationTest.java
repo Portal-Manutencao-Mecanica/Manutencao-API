@@ -3,6 +3,7 @@ package com.weg.Maintenance_API;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -13,11 +14,15 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 import java.util.Map;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers(disabledWithoutDocker = true)
 class PostgreSqlMigrationIntegrationTest {
 
@@ -34,13 +39,30 @@ class PostgreSqlMigrationIntegrationTest {
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
         registry.add("spring.flyway.enabled", () -> true);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
+        registry.add("server.servlet.context-path", () -> "/api");
     }
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @LocalServerPort
+    private int port;
+
     @Test
-    void allMigrationsRunAndEntityPrimaryKeysRemainUuid() {
+    void applicationStartsMigrationsRunAndEntityPrimaryKeysRemainUuid()
+            throws Exception {
+        HttpResponse<String> health = HttpClient.newHttpClient().send(
+                HttpRequest.newBuilder()
+                        .uri(URI.create(
+                                "http://localhost:" + port + "/api/actuator/health"
+                        ))
+                        .GET()
+                        .build(),
+                HttpResponse.BodyHandlers.ofString()
+        );
+        assertEquals(200, health.statusCode());
+        assertTrue(health.body().contains("\"status\":\"UP\""));
+
         Integer migrationCount = jdbcTemplate.queryForObject(
                 """
                 select count(*)

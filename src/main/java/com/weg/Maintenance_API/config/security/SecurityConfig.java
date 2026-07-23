@@ -26,6 +26,7 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 
 import javax.crypto.SecretKey;
@@ -58,8 +59,10 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/actuator/**").hasRole("ADMIN")
+                        .requestMatchers(applicationPathEquals("/actuator/health"))
+                        .permitAll()
+                        .requestMatchers(applicationPathStartsWith("/actuator/"))
+                        .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
@@ -78,6 +81,27 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    private static RequestMatcher applicationPathEquals(String expectedPath) {
+        return request -> applicationPath(request).equals(expectedPath);
+    }
+
+    private static RequestMatcher applicationPathStartsWith(String expectedPrefix) {
+        return request -> applicationPath(request).startsWith(expectedPrefix);
+    }
+
+    private static String applicationPath(
+            jakarta.servlet.http.HttpServletRequest request
+    ) {
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        if (contextPath != null
+                && !contextPath.isBlank()
+                && uri.startsWith(contextPath)) {
+            return uri.substring(contextPath.length());
+        }
+        return uri;
     }
 
     @Bean

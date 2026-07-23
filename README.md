@@ -2,7 +2,7 @@
 
 API REST do Portal de Manutenção, construída com Java 21, Spring Boot 4, Spring Security, JWT, Spring Data JPA, PostgreSQL e Flyway.
 
-O estado atual corresponde à conclusão da base de segurança da Fase 1: identificadores UUID, organizações, autenticação stateless, refresh token rotativo, logout, proteção contra tentativas de login, RBAC inicial, criação manual controlada de usuários e respostas de erro padronizadas.
+O estado atual corresponde à conclusão das Fases 1 e 2: identificadores UUID, organizações, autenticação stateless, ciclo completo de credenciais, importação XLSX, primeiro acesso, recuperação de senha, perfil, administração de usuários, auditoria e respostas de erro padronizadas.
 
 ## Requisitos para execução
 
@@ -26,7 +26,7 @@ MAIL_PASSWORD
 FRONTEND_URL
 ```
 
-`JWT_SECRET` deve ser um valor Base64 que represente pelo menos 32 bytes aleatórios. Não armazene senhas, tokens ou segredos no repositório.
+`JWT_SECRET` deve ser um valor Base64 que represente pelo menos 32 bytes aleatórios. Não armazene senhas, tokens ou segredos no repositório. No perfil `dev`, o seed de administrador só é habilitado quando `DEV_ADMIN_PASSWORD` é fornecida pelo ambiente.
 
 Para iniciar:
 
@@ -157,7 +157,75 @@ Regras aplicadas no backend:
 - a operação gera auditoria e evento de envio de credenciais após o commit;
 - a resposta nunca contém a senha temporária.
 
-As rotas legadas `POST /api/alunos`, `POST /api/professores` e `POST /api/coordenador` estão bloqueadas para impedir que contornem essas regras.
+As rotas legadas `POST /api/alunos`, `POST /api/professores` e `POST /api/coordenador` foram removidas para impedir que contornem essas regras.
+
+## Importação de usuários por Excel
+
+`POST /api/users/import`
+
+Acesso: `ADMIN` ou `COORDENADOR`. Envie `multipart/form-data` com a parte `file`.
+
+Colunas obrigatórias:
+
+```text
+name
+username
+email
+role
+organization
+```
+
+Somente as roles `PROFESSOR` e `ALUNO` são aceitas, inclusive para administradores. Coordenadores importam exclusivamente para a própria organização. Cada linha valida cabeçalho, conteúdo, e-mail, username, domínio, organização, role e duplicidades no arquivo e no banco.
+
+A resposta contém o UUID da importação, totais e erros por linha. Senhas temporárias nunca são gravadas em `user_import_item`, logs ou auditoria; somente o hash BCrypt permanece no usuário e o valor temporário é entregue ao listener de e-mail após o commit.
+
+## Primeiro acesso, recuperação e perfil
+
+Enquanto `passwordChangeRequired=true`, o backend permite somente:
+
+```text
+GET   /api/users/me
+PATCH /api/users/me/password
+POST  /api/auth/logout
+```
+
+Todas as outras operações retornam `403`. A troca de senha valida a senha atual, a política e a confirmação; depois revoga tokens, incrementa a versão de segurança e envia confirmação após o commit.
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| `POST` | `/api/auth/password/forgot` | Público | Solicita recuperação com resposta sempre genérica |
+| `GET` | `/api/auth/password/validate?token=...` | Público | Valida token temporário |
+| `POST` | `/api/auth/password/reset` | Público | Redefine a senha com token de uso único |
+| `GET` | `/api/users/me` | Autenticado | Consulta o próprio perfil |
+| `PATCH` | `/api/users/me` | Autenticado | Altera somente o nome |
+| `PATCH` | `/api/users/me/password` | Autenticado | Altera a própria senha |
+| `POST` | `/api/users/me/photo` | Autenticado | Envia foto JPEG ou PNG validada |
+| `PATCH` | `/api/users/me/preferences` | Autenticado | Altera preferências de notificação |
+
+Tokens de recuperação são aleatórios, expiram, funcionam uma vez e somente o SHA-256 é persistido. A solicitação possui rate limit por IP e e-mail. Fotos usam nome físico aleatório, validação de MIME/assinatura, limite configurável e proteção contra path traversal.
+
+## Administração de usuários
+
+| Método | Endpoint | Acesso |
+|---|---|---|
+| `PATCH` | `/api/users/{id}/block` | `ADMIN`, `COORDENADOR` |
+| `PATCH` | `/api/users/{id}/unblock` | `ADMIN`, `COORDENADOR` |
+| `PATCH` | `/api/users/{id}/deactivate` | `ADMIN`, `COORDENADOR` |
+| `PATCH` | `/api/users/{id}/reactivate` | `ADMIN`, `COORDENADOR` |
+| `PATCH` | `/api/users/{id}/role` | `ADMIN` |
+| `POST` | `/api/users/{id}/resend-credentials` | `ADMIN`, `COORDENADOR` |
+
+As mudanças de status exigem:
+
+```json
+{
+  "reason": "Motivo auditável da alteração"
+}
+```
+
+A troca de role recebe `{"role":"PROFESSOR"}`. Não é permitido alterar a própria role nem remover o último administrador ativo. O coordenador gerencia apenas `PROFESSOR` e `ALUNO` da própria organização e nunca administra `ADMIN` ou `COORDENADOR`.
+
+As operações administrativas revogam refresh tokens e invalidam imediatamente access tokens anteriores por meio da versão de segurança incluída no JWT. O reenvio substitui o hash da senha anterior, renova a expiração, mantém a troca obrigatória, aplica rate limit e envia a nova credencial somente após o commit.
 
 ## Organizações
 
@@ -196,9 +264,9 @@ Todos os parâmetros `{id}` abaixo são UUIDs.
 | `/api/designacao` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
 | `/api/material-apoio` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
 | `/api/turma` | CRUD, `GET /ativos`, `PATCH /{id}/inativar` |
-| `/api/alunos` | consultas, edição, inativação e exclusão legadas |
-| `/api/professores` | consultas, edição, inativação e exclusão legadas |
-| `/api/coordenador` | consultas, edição, inativação e exclusão legadas |
+| `/api/alunos` | consultas legadas |
+| `/api/professores` | consultas legadas |
+| `/api/coordenador` | consultas legadas |
 | `/api/coordernador` | alias legado de `/api/coordenador` |
 
 ### Recursos que exigem autenticação
@@ -215,26 +283,20 @@ Todos os parâmetros `{id}` abaixo são UUIDs.
 
 Esses módulos ainda usam parte do modelo legado. As regras de acesso por organização, propriedade do registro e transição de status serão concluídas nas fases de domínio.
 
-## Rotas temporariamente indisponíveis
+## Rotas legadas removidas
 
 | Método | Endpoint | Motivo |
 |---|---|---|
-| `POST` | `/api/excel/import` | Importador legado bloqueado até aplicar validação por linha, role e organização |
+| `POST` | `/api/excel/import` | Substituído por `POST /api/users/import` |
 | `POST` | `/api/alunos` | Substituído por `POST /api/users` |
 | `POST` | `/api/professores` | Substituído por `POST /api/users` |
 | `POST` | `/api/coordenador` | Substituído por `POST /api/users` |
 
-Os caminhos de recuperação de senha estão reservados na configuração de segurança, mas seus controllers serão implementados na Fase 2:
-
-```text
-POST /api/auth/password/forgot
-GET  /api/auth/password/validate
-POST /api/auth/password/reset
-```
+As rotas legadas de escrita de aluno, professor e coordenador também foram removidas para impedir alteração direta de senha, status, role ou exclusão física sem as regras e auditoria da Fase 2.
 
 ## Identificadores UUID
 
-Todas as 21 entidades JPA e todos os repositories usam `UUID`. O JSON representa UUID como texto:
+Todas as entidades JPA e repositories usam `UUID` como identificador. O JSON representa UUID como texto:
 
 ```json
 {
@@ -244,7 +306,7 @@ Todas as 21 entidades JPA e todos os repositories usam `UUID`. O JSON representa
 
 Um ID malformado retorna `400 INVALID_PARAMETER`. Quantidades, paginação, contadores e o campo de versão otimista continuam numéricos porque não são identificadores de entidade.
 
-As migrations `V12` e `V13` convertem progressivamente IDs e chaves estrangeiras existentes sem converter números diretamente para UUID. As migrations `V14` e `V15` adicionam organizações, estado de segurança, auditoria e refresh tokens.
+As migrations `V12` e `V13` convertem progressivamente IDs e chaves estrangeiras existentes sem converter números diretamente para UUID. `V14` e `V15` adicionam organizações, segurança, auditoria e refresh tokens. `V16` a `V19` adicionam importações, recuperação de senha, perfil, mídia, preferências e metadados administrativos.
 
 ## Respostas de erro
 
@@ -280,6 +342,8 @@ CONCURRENT_UPDATE
 INVALID_TOKEN
 TOKEN_EXPIRED
 RATE_LIMIT_EXCEEDED
+INVALID_STATE
+INVALID_FILE
 UNEXPECTED_ERROR
 ```
 
@@ -292,16 +356,19 @@ Stack traces e detalhes internos não são retornados ao cliente.
 - chave JWT mínima de 256 bits;
 - refresh token aleatório, com hash persistido, expiração, rotação e revogação;
 - logout de uma sessão e de todas as sessões;
+- versão de segurança no JWT para invalidar access tokens após senha, role, bloqueio ou inativação;
 - bloqueio progressivo após grupos de cinco falhas: 5 minutos, 15 minutos e 1 hora;
 - rate limit por IP no endpoint de login;
+- rate limit por IP/e-mail na recuperação e por ator/alvo no reenvio de credenciais;
 - mensagens genéricas para credenciais inválidas;
-- senhas legadas recriptografadas com BCrypt nas rotas de edição;
+- senha temporária e senha definitiva persistidas somente como BCrypt;
+- token de recuperação e refresh token persistidos somente como SHA-256;
 - CORS com origens explícitas e credenciais;
 - Actuator restrito, exceto `health`;
 - Swagger desabilitado em produção;
 - configuração sensível por variável de ambiente;
 - `.env` ignorado pelo Git;
-- auditoria base para login e criação de usuário.
+- auditoria para login, criação, importação, senha, status, role e reenvio de credenciais.
 
 ## Banco e testes
 
@@ -309,23 +376,12 @@ O Hibernate usa `ddl-auto=validate` fora dos testes e o Flyway é responsável p
 
 Estado verificado em 23/07/2026:
 
-- migrations `V1` até `V15` aplicadas com sucesso no PostgreSQL;
+- migrations `V1` até `V19` aplicadas com sucesso no PostgreSQL 17;
 - nenhuma coluna de ID ou foreign key permanece com tipo numérico;
-- 16 testes automatizados passando;
-- fluxo integrado coberto: login, refresh, acesso autenticado e logout;
-- cobertura unitária da geração/hash de token, bloqueio de login, senha temporária, criação manual e matriz de permissões.
+- 32 testes automatizados em 16 classes passando;
+- Testcontainers valida o schema final e todas as chaves primárias UUID;
+- fluxos integrados cobertos: login, refresh, logout, importação parcial, primeiro acesso, recuperação, perfil, bloqueio, inativação, role, reenvio, auditoria e isolamento por organização.
 
 ## Próxima fase
 
-A Fase 2 deve implementar:
-
-1. importação Excel segura para `PROFESSOR` e `ALUNO`;
-2. histórico de importações e erros por linha;
-3. troca obrigatória no primeiro acesso;
-4. recuperação de senha com token de uso único;
-5. revogação de sessões após troca de senha;
-6. perfil do usuário;
-7. bloqueio, inativação, reativação e alteração administrativa de role;
-8. reenvio controlado de credenciais.
-
-Depois disso, os módulos de compras, Livro Máquina, inspeções, máquinas, equipamentos, ocorrências, comentários, mídia, notificações, filtros, dashboard e exportações devem ser evoluídos conforme as fases descritas nos requisitos.
+A Fase 3 deve corrigir os domínios críticos: compras, relacionamentos e mappers, Livro Máquina, inspeções, máquinas/equipamentos e validadores de transição de status. Depois devem ser concluídos ocorrências, comentários, histórico, anexos, notificações por evento, filtros, dashboard e exportações.
