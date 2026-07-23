@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.maintenancerequest.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -36,14 +38,14 @@ public class MaintenanceRequestService {
     @Transactional(readOnly = true)
     public MaintenanceRequestResponse getById(Long id) {
         MaintenanceRequest maintenanceRequest = maintenanceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(""));
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitação de manutenção", id));
         return maintenanceRequestMapper.toResponse(maintenanceRequest);
     }
 
     @Transactional
     public MaintenanceRequestResponse update(Long id, MaintenanceRequestRequest request) {
         MaintenanceRequest maintenanceRequest = maintenanceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(""));
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitação de manutenção", id));
         maintenanceRequest.setSector(request.sector());
         maintenanceRequest.setPriority(request.priority());
         maintenanceRequest.setDescription(request.description());
@@ -53,7 +55,7 @@ public class MaintenanceRequestService {
     @Transactional
     public MaintenanceRequestResponse patch(Long id, MaintenanceRequestPatchRequest request) {
         MaintenanceRequest maintenanceRequest = maintenanceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(""));
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitação de manutenção", id));
 
         if (request.sector() != null) {
             maintenanceRequest.setSector(request.sector());

@@ -3,6 +3,7 @@ package com.weg.Maintenance_API.excel.service;
 import com.weg.Maintenance_API.coordinator.entity.Coordinator;
 import com.weg.Maintenance_API.coordinator.repository.CoordinatorRepository;
 import com.weg.Maintenance_API.enums.Role;
+import com.weg.Maintenance_API.exception.type.InvalidRequestException;
 import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.student.repository.StudentRepository;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
@@ -28,12 +29,12 @@ public class UserImportService {
 
     public void importUsers(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("O arquivo Excel não pode estar vazio.");
+            throw new InvalidRequestException("O arquivo Excel não pode estar vazio.");
         }
 
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             if (workbook.getNumberOfSheets() == 0) {
-                throw new IllegalArgumentException("O arquivo Excel não possui planilhas.");
+                throw new InvalidRequestException("O arquivo Excel não possui planilhas.");
             }
 
             Sheet sheet = workbook.getSheetAt(0);
@@ -53,7 +54,7 @@ public class UserImportService {
                     continue;
                 }
                 if (name.isBlank() || email.isBlank() || roleValue.isBlank()) {
-                    throw new IllegalArgumentException("Linha " + (i + 1)
+                    throw new InvalidRequestException("Linha " + (i + 1)
                             + " inválida: informe nome, e-mail e perfil.");
                 }
 
@@ -62,13 +63,13 @@ public class UserImportService {
                     case ALUNO -> studentRepository.save(createStudent(name, email));
                     case PROFESSOR -> teacherRepository.save(createTeacher(name, email));
                     case COORDENADOR -> coordinatorRepository.save(createCoordinator(name, email));
-                    default -> throw new IllegalArgumentException("Perfil não permitido na linha " + (i + 1));
+                    default -> throw new InvalidRequestException("Perfil não permitido na linha " + (i + 1));
                 }
             }
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Não foi possível importar o arquivo Excel.", e);
+        } catch (InvalidRequestException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new InvalidRequestException("Não foi possível importar o arquivo Excel.");
         }
     }
 
@@ -84,7 +85,7 @@ public class UserImportService {
             case "ALUNO", "STUDENT" -> Role.ALUNO;
             case "PROFESSOR", "TEACHER" -> Role.PROFESSOR;
             case "COORDENADOR", "COORDINATOR" -> Role.COORDENADOR;
-            default -> throw new IllegalArgumentException("Perfil inválido na linha " + rowNumber + ": " + value);
+            default -> throw new InvalidRequestException("Perfil inválido na linha " + rowNumber + ": " + value);
         };
     }
 

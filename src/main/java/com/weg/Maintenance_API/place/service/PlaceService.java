@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.place.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -35,13 +37,13 @@ public class PlaceService {
 
     @Transactional(readOnly = true)
     public PlaceResponse getById(Long id) {
-        Place place = placeRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Place place = placeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Lugar", id));
         return placeMapper.toResponse(place);
     }
 
     @Transactional
     public PlaceResponse update(Long id, PlaceRequest placeRequest) {
-        Place place = placeRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Place place = placeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Lugar", id));
         place.setName(placeRequest.name());
         place = placeRepository.save(place);
         return placeMapper.toResponse(place);
@@ -49,7 +51,7 @@ public class PlaceService {
 
     @Transactional
     public PlaceResponse patch(Long id, PlacePatchRequest request) {
-        Place place = placeRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Place place = placeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Lugar", id));
 
         if (request.name() != null) {
             place.setName(request.name());

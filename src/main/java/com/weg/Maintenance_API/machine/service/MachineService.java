@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.machine.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -35,13 +37,13 @@ public class MachineService {
 
     @Transactional(readOnly = true)
     public MachineResponse getById(Long id) {
-        Machine machine = machineRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Machine machine = machineRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Máquina", id));
         return machineMapper.toResponse(machine);
     }
 
     @Transactional
     public MachineResponse update(Long id, MachineRequest request) {
-        Machine machine = machineRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Machine machine = machineRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Máquina", id));
         machine.setName(request.name());
         machine.setPatrimony(request.patrimony());
         machine.setCondition(request.condition());
@@ -51,7 +53,7 @@ public class MachineService {
 
     @Transactional
     public MachineResponse patch(Long id, MachinePatchRequest request) {
-        Machine machine = machineRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Machine machine = machineRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Máquina", id));
 
         if (request.name() != null) {
             machine.setName(request.name());

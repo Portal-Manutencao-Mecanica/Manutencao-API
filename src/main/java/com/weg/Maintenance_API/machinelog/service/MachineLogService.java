@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.machinelog.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -35,13 +37,13 @@ public class MachineLogService {
 
     @Transactional(readOnly = true)
     public MachineLogResponse getById(Long id) {
-        MachineLog machineLog = machineLogRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        MachineLog machineLog = machineLogRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Log de máquina", id));
         return machineLogMapper.toResponse(machineLog);
     }
 
     @Transactional
     public MachineLogResponse update(Long id, MachineLogRequest request) {
-        MachineLog machineLog = machineLogRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        MachineLog machineLog = machineLogRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Log de máquina", id));
         machineLog.setTitle(request.title());
         machineLog.setDescription(request.description());
         machineLog.setExecutionReport(request.executionReport());
@@ -59,7 +61,7 @@ public class MachineLogService {
 
     @Transactional
     public MachineLogResponse patch(Long id, MachineLogPatchRequest request) {
-        MachineLog machineLog = machineLogRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        MachineLog machineLog = machineLogRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Log de máquina", id));
 
         if (request.title() != null) {
             machineLog.setTitle(request.title());

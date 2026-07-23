@@ -37,6 +37,11 @@ public class StudentController {
         return ResponseEntity.ok(service.getAll());
     }
 
+    @GetMapping("/ativos")
+    public ResponseEntity<List<StudentDtoResponse>> getAllAtivos() {
+        return ResponseEntity.ok(service.getAllAtivos());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<StudentDtoResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
@@ -56,6 +61,11 @@ public class StudentController {
             @RequestBody StudentPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
+    }
+
+    @PatchMapping("/{id}/inativar")
+    public ResponseEntity<StudentDtoResponse> inativar(@PathVariable Long id) {
+        return ResponseEntity.ok(service.inativar(id));
     }
 
     @DeleteMapping("/{id}")

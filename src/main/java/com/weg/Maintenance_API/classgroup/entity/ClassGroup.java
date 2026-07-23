@@ -28,6 +28,9 @@ public class ClassGroup {
     @Column(name = "acronym", nullable = false, unique = true, length = 30)
     private String acronym;
 
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled = true;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "class_group_teacher",
             joinColumns = @JoinColumn(name = "class_group_id"),

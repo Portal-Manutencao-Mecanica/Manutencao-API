@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.helpermaterial.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -36,14 +38,14 @@ public class HelperMaterialService {
     @Transactional(readOnly = true)
     public HelperMaterialResponse getById(Long id) {
         HelperMaterial helperMaterial = helperMaterialRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(""));
+                .orElseThrow(() -> new ResourceNotFoundException("Material de apoio", id));
         return helperMaterialMapper.toResponse(helperMaterial);
     }
 
     @Transactional
     public HelperMaterialResponse update(Long id, HelperMaterialRequest helperMaterialRequest) {
         HelperMaterial helperMaterial = helperMaterialRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(""));
+                .orElseThrow(() -> new ResourceNotFoundException("Material de apoio", id));
         helperMaterial.setTitle(helperMaterialRequest.title());
         helperMaterial.setDescription(helperMaterialRequest.description());
         helperMaterial.setUrl(helperMaterialRequest.url());
@@ -54,7 +56,7 @@ public class HelperMaterialService {
     @Transactional
     public HelperMaterialResponse patch(Long id, HelperMaterialPatchRequest request) {
         HelperMaterial helperMaterial = helperMaterialRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(""));
+                .orElseThrow(() -> new ResourceNotFoundException("Material de apoio", id));
 
         if (request.title() != null) {
             helperMaterial.setTitle(request.title());

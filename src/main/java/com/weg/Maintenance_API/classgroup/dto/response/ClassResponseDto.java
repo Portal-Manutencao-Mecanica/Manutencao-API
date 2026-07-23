@@ -9,6 +9,7 @@ public record ClassResponseDto(
         Long id,
         String numberCard,
         String acronym,
+        boolean enabled,
         List<TeacherResponseDto> teachers,
         List<StudentDtoResponse> students) {
 }

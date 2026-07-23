@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.auth.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import com.weg.Maintenance_API.auth.dto.request.LoginRequestDto;
 import com.weg.Maintenance_API.auth.dto.response.LoginResponseDto;
 import com.weg.Maintenance_API.user.UserRepository;
@@ -58,7 +60,7 @@ public class AuthService {
     public UserResponseDto getCurrentUser(String email) {
         User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() ->
-                        new IllegalStateException("Authenticated user was not found"));
+                        new ResourceNotFoundException("Usuário autenticado"));
 
         return new UserResponseDto(
                 user.getId(),

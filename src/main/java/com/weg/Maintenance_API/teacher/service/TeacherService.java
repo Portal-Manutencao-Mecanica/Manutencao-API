@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.teacher.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -32,16 +34,26 @@ public class TeacherService {
     public List<TeacherResponseDto> getAll() {
         return teacherRepository.findAll().stream().map(teacherMapper::toResponse).toList();
     }
+    @Transactional(readOnly = true)
+    public List<TeacherResponseDto> getAllAtivos() {
+        return teacherRepository.findAllByEnabledTrue().stream().map(teacherMapper::toResponse).toList();
+    }
 
+    @Transactional
+    public TeacherResponseDto inativar(Long id) {
+        Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
+        teacher.setEnabled(false);
+        return teacherMapper.toResponse(teacherRepository.save(teacher));
+    }
     @Transactional(readOnly = true)
     public TeacherResponseDto getById(Long id) {
-        Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
         return teacherMapper.toResponse(teacher);
     }
 
     @Transactional
     public TeacherResponseDto update(TeacherRequestDto teacherRequestDto, Long id) {
-        Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
         teacher.setName(teacherRequestDto.name());
         teacher.setEmail(teacherRequestDto.email());
         teacher.setPassword(teacherRequestDto.password());
@@ -50,7 +62,7 @@ public class TeacherService {
 
     @Transactional
     public TeacherResponseDto patch(Long id, TeacherPatchRequest request) {
-        Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
 
         if (request.name() != null) {
             teacher.setName(request.name());

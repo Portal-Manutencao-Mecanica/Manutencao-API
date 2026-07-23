@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.designation.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -35,13 +37,13 @@ public class DesignationService {
 
     @Transactional(readOnly = true)
     public DesignationDtoResponse getById(Long id) {
-        Designation designation = designationRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Designation designation = designationRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Designação", id));
         return designationMapper.toResponse(designation);
     }
 
     @Transactional
     public DesignationDtoResponse update(Long id, DesignationDtoRequest designationDtoRequest) {
-        Designation designation = designationRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Designation designation = designationRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Designação", id));
         designation.setSector(designationDtoRequest.sector());
         designationRepository.save(designation);
         return designationMapper.toResponse(designation);
@@ -49,7 +51,7 @@ public class DesignationService {
 
     @Transactional
     public DesignationDtoResponse patch(Long id, DesignationPatchRequest request) {
-        Designation designation = designationRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Designation designation = designationRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Designação", id));
 
         if (request.sector() != null) {
             designation.setSector(request.sector());

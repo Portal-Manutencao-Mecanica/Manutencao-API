@@ -37,6 +37,11 @@ public class CoordinatorController {
         return ResponseEntity.ok(service.getAll());
     }
 
+    @GetMapping("/ativos")
+    public ResponseEntity<List<CoordinatorResponseDto>> getAllAtivos() {
+        return ResponseEntity.ok(service.getAllAtivos());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CoordinatorResponseDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
@@ -56,6 +61,11 @@ public class CoordinatorController {
             @RequestBody CoordinatorPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
+    }
+
+    @PatchMapping("/{id}/inativar")
+    public ResponseEntity<CoordinatorResponseDto> inativar(@PathVariable Long id) {
+        return ResponseEntity.ok(service.inativar(id));
     }
 
     @DeleteMapping("/{id}")

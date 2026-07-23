@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.student.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -32,16 +34,26 @@ public class StudentService {
     public List<StudentDtoResponse> getAll() {
         return studentRepository.findAll().stream().map(studentMapper::toResponse).toList();
     }
+    @Transactional(readOnly = true)
+    public List<StudentDtoResponse> getAllAtivos() {
+        return studentRepository.findAllByEnabledTrue().stream().map(studentMapper::toResponse).toList();
+    }
 
+    @Transactional
+    public StudentDtoResponse inativar(Long id) {
+        Student student = studentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Aluno", id));
+        student.setEnabled(false);
+        return studentMapper.toResponse(studentRepository.save(student));
+    }
     @Transactional(readOnly = true)
     public StudentDtoResponse getById(Long id) {
-        Student student = studentRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Student student = studentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Aluno", id));
         return studentMapper.toResponse(student);
     }
 
     @Transactional
     public StudentDtoResponse update(Long id, StudentDtoRequest studentDtoRequest) {
-        Student student = studentRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Student student = studentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Aluno", id));
         student.setName(studentDtoRequest.name());
         student.setEmail(studentDtoRequest.email());
         student.setPassword(studentDtoRequest.password());
@@ -50,7 +62,7 @@ public class StudentService {
 
     @Transactional
     public StudentDtoResponse patch(Long id, StudentPatchRequest request) {
-        Student student = studentRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Student student = studentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Aluno", id));
 
         if (request.name() != null) {
             student.setName(request.name());

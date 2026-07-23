@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.coordinator.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorPatchRequest;
 import com.weg.Maintenance_API.coordinator.dto.request.CoordinatorRequestDto;
 import com.weg.Maintenance_API.coordinator.dto.response.CoordinatorResponseDto;
@@ -30,16 +32,27 @@ public class CoordinatorService {
     public List<CoordinatorResponseDto> getAll(){
         return repository.findAll().stream().map(mapper::toResponse).toList();
     }
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
+    public List<CoordinatorResponseDto> getAllAtivos(){
+        return repository.findAllByEnabledTrue().stream().map(mapper::toResponse).toList();
+    }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    public CoordinatorResponseDto inativar(Long id){
+        Coordinator entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Coordenador", id));
+        entity.setEnabled(false);
+        repository.save(entity);
+        return mapper.toResponse(entity);
+    }
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
     public CoordinatorResponseDto getById(Long id){
-        Coordinator entity = repository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Coordinator entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Coordenador", id));
         return mapper.toResponse(entity);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
     public CoordinatorResponseDto update(Long id, CoordinatorRequestDto request){
-        Coordinator entity = repository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Coordinator entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Coordenador", id));
         entity.setName(request.name());
         entity.setEmail(request.email());
         entity.setPassword(request.password());
@@ -49,7 +62,7 @@ public class CoordinatorService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
     public CoordinatorResponseDto patch(Long id, CoordinatorPatchRequest request){
-        Coordinator entity = repository.findById(id).orElseThrow(() -> new RuntimeException(""));
+        Coordinator entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Coordenador", id));
 
         if (request.name() != null) {
             entity.setName(request.name());

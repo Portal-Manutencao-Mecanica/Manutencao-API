@@ -2,10 +2,14 @@ package com.weg.Maintenance_API.notification.service;
 
 import java.util.List;
 
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.weg.Maintenance_API.exception.type.NotificationDeliveryException;
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 import com.weg.Maintenance_API.notification.dto.Request.NotificationRequest;
 import com.weg.Maintenance_API.notification.dto.Response.NotificationResponse;
 import com.weg.Maintenance_API.notification.entity.Notification;
@@ -22,6 +26,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final JavaMailSender mailSender;
 
+    @Transactional
     public NotificationResponse create(NotificationRequest notificationRequest) {
         Notification notification = notificationMapper.toEntity(notificationRequest);
 
@@ -30,40 +35,60 @@ public class NotificationService {
         email.setTo(notificationRequest.email());
         email.setSubject(notificationRequest.title());
         email.setText(notificationRequest.description());
-        mailSender.send(email);
-        notificationRepository.save(notification);
+
+        try {
+            mailSender.send(email);
+        } catch (MailException exception) {
+            throw new NotificationDeliveryException(exception);
+        }
+
+        notification = notificationRepository.save(notification);
         return notificationMapper.toResponse(notification);
     }
 
+    @Transactional(readOnly = true)
     public List<NotificationResponse> getAll() {
-        List<Notification> notifications = notificationRepository.findAll();
-        return notifications.stream().map(notificationMapper::toResponse).toList();
+        return notificationRepository.findAll().stream()
+                .map(notificationMapper::toResponse)
+                .toList();
     }
 
+    @Transactional(readOnly = true)
     public NotificationResponse getById(Long id) {
-        Notification notification = notificationRepository.findById(id).orElse(null);
-        if (notification == null) {
-            throw new RuntimeException("Notificação não existe");
-        }
-        return notificationMapper.toResponse(notification);
+        return notificationMapper.toResponse(findById(id));
     }
 
+    @Transactional
     public void delete(Long id) {
-        Notification notification = notificationRepository.findById(id).orElse(null);
-        if (notification == null) {
-            throw new RuntimeException("Notifiçao não existe");
-        }
-        notificationRepository.delete(notification);
+        notificationRepository.delete(findById(id));
     }
 
-    public NotificationResponse readNotification(Long id){
-        Notification notification = notificationRepository.findById(id).orElse(null);
-        if(notification == null){
-            throw new RuntimeException("Notificação não existe");
-        }
+    /** Marca a notificação como lida. */
+    @Transactional
+    public NotificationResponse readNotification(Long id) {
+        Notification notification = findById(id);
         notification.setStatusRead(true);
-        notificationRepository.save(notification);
-        return notificationMapper.toResponse(notification);
+        return notificationMapper.toResponse(notificationRepository.save(notification));
     }
 
+    /** Alterna entre lida e não lida. */
+    @Transactional
+    public NotificationResponse toggleReadStatus(Long id) {
+        Notification notification = findById(id);
+        notification.setStatusRead(!notification.isStatusRead());
+        return notificationMapper.toResponse(notificationRepository.save(notification));
+    }
+
+    /** Marca todas as notificações como lidas. */
+    @Transactional
+    public void markAllAsRead() {
+        List<Notification> notifications = notificationRepository.findAll();
+        notifications.forEach(notification -> notification.setStatusRead(true));
+        notificationRepository.saveAll(notifications);
+    }
+
+    private Notification findById(Long id) {
+        return notificationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Notificação", id));
+    }
 }

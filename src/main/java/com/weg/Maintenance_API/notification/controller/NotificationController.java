@@ -63,4 +63,17 @@ public class NotificationController {
     ) {
         return readNotification(id);
     }
+
+    @PatchMapping("/{id}/toggle-read")
+    public ResponseEntity<NotificationResponse> toggleReadStatus(
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok(notificationService.toggleReadStatus(id));
+    }
+
+    @PatchMapping("/read-all")
+    public ResponseEntity<Void> markAllAsRead() {
+        notificationService.markAllAsRead();
+        return ResponseEntity.noContent().build();
+    }
 }

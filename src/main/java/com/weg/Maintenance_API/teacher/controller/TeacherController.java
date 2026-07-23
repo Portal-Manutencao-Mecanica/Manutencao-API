@@ -37,6 +37,11 @@ public class TeacherController {
         return ResponseEntity.ok(service.getAll());
     }
 
+    @GetMapping("/ativos")
+    public ResponseEntity<List<TeacherResponseDto>> getAllAtivos() {
+        return ResponseEntity.ok(service.getAllAtivos());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<TeacherResponseDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
@@ -56,6 +61,11 @@ public class TeacherController {
             @RequestBody TeacherPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
+    }
+
+    @PatchMapping("/{id}/inativar")
+    public ResponseEntity<TeacherResponseDto> inativar(@PathVariable Long id) {
+        return ResponseEntity.ok(service.inativar(id));
     }
 
     @DeleteMapping("/{id}")

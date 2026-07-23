@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.autonomousmaintenance.service;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import com.weg.Maintenance_API.autonomousmaintenance.dto.requests.AutonomousMaintenanceDtoRequest;
 import com.weg.Maintenance_API.autonomousmaintenance.dto.response.AutonomousMaintenanceDtoResponse;
 import com.weg.Maintenance_API.autonomousmaintenance.entity.AutonomousMaintenance;
@@ -46,14 +48,14 @@ public class AutonomousMaintenanceService {
     @Transactional(readOnly = true)
     public AutonomousMaintenanceDtoResponse getById(Long id) {
         AutonomousMaintenance entity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Autonomous maintenance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Manutenção autônoma", id));
         return mapper.toResponse(entity);
     }
 
     @Transactional
     public AutonomousMaintenanceDtoResponse update(Long id, AutonomousMaintenanceDtoRequest request) {
         AutonomousMaintenance entity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Autonomous maintenance not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Manutenção autônoma", id));
 
         entity.setEquipmentSituation(request.equipmentSituation());
         entity.setInspectedAt(request.inspectedAt());
