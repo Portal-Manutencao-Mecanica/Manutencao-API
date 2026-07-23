@@ -1,5 +1,10 @@
 package com.weg.Maintenance_API.buy.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.buy.dto.request.BuyDtoRequest;
 import com.weg.Maintenance_API.buy.dto.request.BuyPatchRequest;
 import com.weg.Maintenance_API.buy.dto.response.BuyDtoResponse;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 @RequestMapping("/compras")
 public class BuyController {
@@ -44,14 +50,14 @@ public class BuyController {
     @GetMapping("/{id}")
     public ResponseEntity<BuyDtoResponse> getById(
             @PathVariable
-            @EntityExists(message = "entity not found", entityClass = Buy.class) Long id
+            @EntityExists(message = "entity not found", entityClass = Buy.class) UUID id
     ) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<BuyDtoResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody BuyDtoRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -59,14 +65,14 @@ public class BuyController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<BuyDtoResponse> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody BuyPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }

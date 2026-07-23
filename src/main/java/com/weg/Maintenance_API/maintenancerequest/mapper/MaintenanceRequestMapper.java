@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.maintenancerequest.mapper;
 
+import java.util.UUID;
+
 import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceRequestRequest;
 import com.weg.Maintenance_API.maintenancerequest.dto.response.MaintenanceRequestResponse;
 import com.weg.Maintenance_API.maintenancerequest.entity.MaintenanceRequest;
@@ -35,7 +37,7 @@ public interface MaintenanceRequestMapper {
     MaintenanceRequestResponse toResponse(MaintenanceRequest maintenanceRequest);
 
     @Named("studentIdsFromStudents")
-    default List<Long> studentIdsFromStudents(List<Student> students) {
+    default List<UUID> studentIdsFromStudents(List<Student> students) {
         if (students == null) {
             return Collections.emptyList();
         }

@@ -1,5 +1,10 @@
 package com.weg.Maintenance_API.event.service;
 
+
+import java.util.UUID;
+
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import com.weg.Maintenance_API.equipment.entity.Equipment;
 import com.weg.Maintenance_API.equipment.repository.EquipmentRepository;
 import com.weg.Maintenance_API.event.dto.request.CalendarCreateRequestDto;
@@ -47,12 +52,12 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public CalendarResponseDto getById(Long id) {
+    public CalendarResponseDto getById(UUID id) {
         return eventMapper.toResponse(findById(id));
     }
 
     @Transactional
-    public CalendarResponseDto update(Long id, CalendarUpdateRequestDto request) {
+    public CalendarResponseDto update(UUID id, CalendarUpdateRequestDto request) {
         Event event = findById(id);
         if (request.scheduledAction() != null) event.setScheduledAction(request.scheduledAction());
         if (request.criticality() != null) event.setCriticality(request.criticality());
@@ -69,7 +74,7 @@ public class EventService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         eventRepository.delete(findById(id));
     }
 
@@ -87,33 +92,33 @@ public class EventService {
         if (request.status() != null) event.setStatus(request.status());
     }
 
-    private Event findById(Long id) {
+    private Event findById(UUID id) {
         return eventRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Evento", id));
     }
 
-    private Student findStudent(Long id) {
+    private Student findStudent(UUID id) {
         return studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno", id));
     }
 
-    private Teacher findTeacher(Long id) {
+    private Teacher findTeacher(UUID id) {
         return teacherRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Professor", id));
     }
 
-    private Equipment findEquipment(Long id) {
+    private Equipment findEquipment(UUID id) {
         return equipmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Equipment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
     }
 
-    private Machine findMachine(Long id) {
+    private Machine findMachine(UUID id) {
         return machineRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Machine not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Máquina", id));
     }
 
-    private Place findPlace(Long id) {
+    private Place findPlace(UUID id) {
         return placeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Place not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Lugar", id));
     }
 }

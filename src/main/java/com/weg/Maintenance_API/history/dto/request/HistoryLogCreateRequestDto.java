@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.history.dto.request;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.HistoryAction;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,7 +19,7 @@ public record HistoryLogCreateRequestDto(
 
         @NotNull
         @Positive
-        Long entityId,
+        UUID entityId,
 
         String description
 ) {

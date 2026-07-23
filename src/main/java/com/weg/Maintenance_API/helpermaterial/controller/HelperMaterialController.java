@@ -1,5 +1,10 @@
 package com.weg.Maintenance_API.helpermaterial.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.helpermaterial.dto.request.HelperMaterialPatchRequest;
 import com.weg.Maintenance_API.helpermaterial.dto.request.HelperMaterialRequest;
 import com.weg.Maintenance_API.helpermaterial.dto.response.HelperMaterialResponse;
@@ -21,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @RequestMapping("/material-apoio")
 public class HelperMaterialController {
@@ -38,13 +44,13 @@ public class HelperMaterialController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<HelperMaterialResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<HelperMaterialResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<HelperMaterialResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody HelperMaterialRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -52,14 +58,14 @@ public class HelperMaterialController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<HelperMaterialResponse> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody HelperMaterialPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

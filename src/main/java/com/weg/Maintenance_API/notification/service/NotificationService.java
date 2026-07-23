@@ -1,14 +1,17 @@
 package com.weg.Maintenance_API.notification.service;
 
 import java.util.List;
+import java.util.UUID;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 import com.weg.Maintenance_API.notification.dto.Request.NotificationRequest;
 import com.weg.Maintenance_API.notification.dto.Response.NotificationResponse;
 import com.weg.Maintenance_API.notification.entity.Notification;
+import com.weg.Maintenance_API.notification.event.NotificationEmailRequestedEvent;
 import com.weg.Maintenance_API.notification.mapper.NotificationMapper;
 import com.weg.Maintenance_API.notification.repository.NotificationRepository;
 
@@ -20,50 +23,77 @@ public class NotificationService {
 
     private final NotificationMapper notificationMapper;
     private final NotificationRepository notificationRepository;
-    private final JavaMailSender mailSender;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public NotificationResponse create(NotificationRequest notificationRequest) {
-        Notification notification = notificationMapper.toEntity(notificationRequest);
+    @Transactional
+    public NotificationResponse create(NotificationRequest request) {
+        Notification notification = notificationRepository.save(
+                notificationMapper.toEntity(request)
+        );
 
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setFrom("portalmanutencaoweg@gmail.com");
-        email.setTo(notificationRequest.email());
-        email.setSubject(notificationRequest.title());
-        email.setText(notificationRequest.description());
-        mailSender.send(email);
-        notificationRepository.save(notification);
+        eventPublisher.publishEvent(new NotificationEmailRequestedEvent(
+                notification.getId(),
+                notification.getEmail(),
+                notification.getTitle(),
+                notification.getDescription()
+        ));
+
         return notificationMapper.toResponse(notification);
     }
 
-    public List<NotificationResponse> getAll() {
-        List<Notification> notifications = notificationRepository.findAll();
-        return notifications.stream().map(notificationMapper::toResponse).toList();
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> getAll(String authenticatedEmail) {
+        return notificationRepository
+                .findAllByEmailIgnoreCaseOrderByIdDesc(authenticatedEmail)
+                .stream()
+                .map(notificationMapper::toResponse)
+                .toList();
     }
 
-    public NotificationResponse getById(Long id) {
-        Notification notification = notificationRepository.findById(id).orElse(null);
-        if (notification == null) {
-            throw new RuntimeException("Notificação não existe");
-        }
-        return notificationMapper.toResponse(notification);
+    @Transactional(readOnly = true)
+    public NotificationResponse getById(UUID id, String authenticatedEmail) {
+        return notificationMapper.toResponse(findById(id, authenticatedEmail));
     }
 
-    public void delete(Long id) {
-        Notification notification = notificationRepository.findById(id).orElse(null);
-        if (notification == null) {
-            throw new RuntimeException("Notifiçao não existe");
-        }
-        notificationRepository.delete(notification);
+    @Transactional
+    public void delete(UUID id, String authenticatedEmail) {
+        notificationRepository.delete(findById(id, authenticatedEmail));
     }
 
-    public NotificationResponse readNotification(Long id){
-        Notification notification = notificationRepository.findById(id).orElse(null);
-        if(notification == null){
-            throw new RuntimeException("Notificação não existe");
-        }
+    @Transactional
+    public NotificationResponse readNotification(
+            UUID id,
+            String authenticatedEmail
+    ) {
+        Notification notification = findById(id, authenticatedEmail);
         notification.setStatusRead(true);
-        notificationRepository.save(notification);
         return notificationMapper.toResponse(notification);
     }
 
+    @Transactional
+    public NotificationResponse toggleReadStatus(
+            UUID id,
+            String authenticatedEmail
+    ) {
+        Notification notification = findById(id, authenticatedEmail);
+        notification.setStatusRead(!notification.isStatusRead());
+        return notificationMapper.toResponse(notification);
+    }
+
+    @Transactional
+    public void markAllAsRead(String authenticatedEmail) {
+        notificationRepository.markAllAsReadByEmail(authenticatedEmail);
+    }
+
+    @Transactional(readOnly = true)
+    public long unreadCount(String authenticatedEmail) {
+        return notificationRepository
+                .countByEmailIgnoreCaseAndStatusReadFalse(authenticatedEmail);
+    }
+
+    private Notification findById(UUID id, String authenticatedEmail) {
+        return notificationRepository
+                .findByIdAndEmailIgnoreCase(id, authenticatedEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Notificação", id));
+    }
 }

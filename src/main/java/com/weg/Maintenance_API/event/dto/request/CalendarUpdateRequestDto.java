@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.event.dto.request;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.MaintenanceType;
 import com.weg.Maintenance_API.enums.TaskCriticality;
 import com.weg.Maintenance_API.enums.TaskSituation;
@@ -19,11 +22,11 @@ public record CalendarUpdateRequestDto(
         TaskCriticality criticality,
         @FutureOrPresent(message = "scheduled for can't be in the past") LocalDateTime scheduledFor,
         @PastOrPresent(message = "requested at can't be in the future") LocalDateTime requestedAt,
-        @EntityExists(entityClass = Student.class, message = "student not found") Long studentId,
-        @EntityExists(entityClass = Teacher.class, message = "teacher not found") Long teacherId,
-        @EntityExists(entityClass = Equipment.class, message = "equipment not found") Long equipmentId,
-        @EntityExists(entityClass = Machine.class, message = "machine not found") Long machineId,
-        @EntityExists(entityClass = Place.class, message = "place not found") Long placeId,
+        @EntityExists(entityClass = Student.class, message = "student not found") UUID studentId,
+        @EntityExists(entityClass = Teacher.class, message = "teacher not found") UUID teacherId,
+        @EntityExists(entityClass = Equipment.class, message = "equipment not found") UUID equipmentId,
+        @EntityExists(entityClass = Machine.class, message = "machine not found") UUID machineId,
+        @EntityExists(entityClass = Place.class, message = "place not found") UUID placeId,
         MaintenanceType maintenanceType,
         TaskSituation status
 ) {

@@ -1,5 +1,10 @@
 package com.weg.Maintenance_API.inconvenience5s.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.inconvenience5s.dto.requests.Inconvenience5SDtoRequest;
 import com.weg.Maintenance_API.inconvenience5s.dto.requests.Inconvenience5SPatchRequest;
 import com.weg.Maintenance_API.inconvenience5s.dto.response.Inconvenience5SDtoResponse;
@@ -21,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 @RequestMapping("/5s")
 public class Inconvenience5sController {
@@ -38,13 +44,13 @@ public class Inconvenience5sController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Inconvenience5SDtoResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<Inconvenience5SDtoResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Inconvenience5SDtoResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody Inconvenience5SDtoRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -52,14 +58,14 @@ public class Inconvenience5sController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<Inconvenience5SDtoResponse> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody Inconvenience5SPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

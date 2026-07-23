@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.buy.entity;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.equipment.entity.Equipment;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,9 +25,9 @@ import lombok.Setter;
 public class BuyItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "buy_item_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "buy_item_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();

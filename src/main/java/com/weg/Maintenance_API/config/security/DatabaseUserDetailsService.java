@@ -29,7 +29,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                 .password(user.getPassword())
                 .roles(user.getRole().name())
                 .disabled(!user.isEnabled())
-                .accountLocked(!user.isAccountNonLocked())
+                .accountLocked(!user.isAccountNonLocked() || user.isTemporarilyLocked())
                 .build();
     }
 }

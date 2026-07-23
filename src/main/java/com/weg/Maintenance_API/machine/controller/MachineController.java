@@ -1,5 +1,10 @@
 package com.weg.Maintenance_API.machine.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.machine.dto.request.MachinePatchRequest;
 import com.weg.Maintenance_API.machine.dto.request.MachineRequest;
 import com.weg.Maintenance_API.machine.dto.response.MachineResponse;
@@ -21,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @RequestMapping("/maquinas")
 public class MachineController {
@@ -38,13 +44,13 @@ public class MachineController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MachineResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<MachineResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<MachineResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody MachineRequest request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -52,14 +58,14 @@ public class MachineController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<MachineResponse> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody MachinePatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

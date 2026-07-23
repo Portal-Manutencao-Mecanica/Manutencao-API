@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.notification.entity;
 
+
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,9 +35,9 @@ import lombok.Setter;
 public class Notification {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "notification_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "notification_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();

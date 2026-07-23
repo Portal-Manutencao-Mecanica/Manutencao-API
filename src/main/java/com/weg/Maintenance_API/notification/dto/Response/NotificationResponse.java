@@ -1,7 +1,10 @@
 package com.weg.Maintenance_API.notification.dto.Response;
 
+
+import java.util.UUID;
+
 public record NotificationResponse (
-    Long id,
+    UUID id,
         String numberCard,
     String email,
     String title,
