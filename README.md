@@ -279,7 +279,7 @@ Todos os parâmetros `{id}` abaixo são UUIDs.
 | `/api/maquina-log` | CRUD |
 | `/api/5s` | CRUD |
 | `/api/manutencao-autonoma` | CRUD, `POST /create-all`, `GET /situacao/{situacao}` |
-| `/api/notification` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}/read`, `PATCH /{id}/toggle-read`, `PATCH /read-all`, `DELETE /{id}` |
+| `/api/notification` | `POST` (ADMIN), `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}/read`, `PATCH /{id}/toggle-read`, `PATCH /read-all`, `GET /unread-count`, `DELETE /{id}`; consultas e alterações são restritas ao e-mail autenticado |
 
 Esses módulos ainda usam parte do modelo legado. As regras de acesso por organização, propriedade do registro e transição de status serão concluídas nas fases de domínio.
 
