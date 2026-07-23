@@ -78,6 +78,18 @@ public abstract class User {
     @Column(name = "lockout_count", nullable = false)
     private int lockoutCount;
 
+    @Column(name = "status_change_reason", length = 500)
+    private String statusChangeReason;
+
+    @Column(name = "status_changed_at")
+    private LocalDateTime statusChangedAt;
+
+    @Column(name = "status_changed_by")
+    private UUID statusChangedBy;
+
+    @Column(name = "security_version", nullable = false)
+    private long securityVersion;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

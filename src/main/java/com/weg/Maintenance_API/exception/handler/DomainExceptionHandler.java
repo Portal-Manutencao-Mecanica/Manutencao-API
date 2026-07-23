@@ -4,6 +4,7 @@ import com.weg.Maintenance_API.exception.dto.ApiErrorResponse;
 import com.weg.Maintenance_API.exception.type.ConflictException;
 import com.weg.Maintenance_API.exception.type.ExpiredTokenException;
 import com.weg.Maintenance_API.exception.type.InvalidRequestException;
+import com.weg.Maintenance_API.exception.type.InvalidStateException;
 import com.weg.Maintenance_API.exception.type.InvalidFileException;
 import com.weg.Maintenance_API.exception.type.InvalidTokenException;
 import com.weg.Maintenance_API.exception.type.NotificationDeliveryException;
@@ -100,6 +101,19 @@ public class DomainExceptionHandler {
         return response(
                 HttpStatus.CONFLICT,
                 "DATA_CONFLICT",
+                exception.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(InvalidStateException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidState(
+            InvalidStateException exception,
+            HttpServletRequest request
+    ) {
+        return response(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                "INVALID_STATE",
                 exception.getMessage(),
                 request
         );

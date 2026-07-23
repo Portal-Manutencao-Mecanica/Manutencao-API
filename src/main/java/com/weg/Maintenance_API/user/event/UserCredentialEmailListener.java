@@ -46,6 +46,24 @@ public class UserCredentialEmailListener {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void resendCredentials(TemporaryCredentialsReissuedEvent event) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(from);
+        message.setTo(event.email());
+        message.setSubject("Novas credenciais do Portal de Manutenção");
+        message.setText("""
+                Olá, %s.
+
+                Uma nova senha temporária foi emitida para sua conta:
+                %s
+
+                A senha anterior não é mais válida. Altere a nova senha no primeiro acesso.
+                Acesse: %s
+                """.formatted(event.name(), event.temporaryPassword(), frontendUrl));
+        send(message, event.userId(), "USER_CREDENTIALS_REISSUED");
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void sendPasswordReset(PasswordResetRequestedEvent event) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);

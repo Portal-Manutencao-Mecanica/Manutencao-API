@@ -21,6 +21,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmailIgnoreCase(String email);
     Optional<User> findByUsernameIgnoreCase(String username);
     boolean existsByUsernameIgnoreCase(String username);
+    long countByRoleAndEnabledTrueAndAccountNonLockedTrue(
+            com.weg.Maintenance_API.enums.Role role
+    );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""

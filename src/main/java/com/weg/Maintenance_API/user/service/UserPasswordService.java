@@ -53,6 +53,7 @@ public class UserPasswordService {
         user.setPasswordChangeRequired(false);
         user.setTemporaryPasswordExpiresAt(null);
         user.setPasswordChangedAt(LocalDateTime.now());
+        user.setSecurityVersion(user.getSecurityVersion() + 1);
         refreshTokenService.revokeAll(user.getId());
 
         auditService.recordInCurrentTransaction(

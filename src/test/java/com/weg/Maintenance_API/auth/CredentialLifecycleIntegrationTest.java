@@ -144,6 +144,16 @@ class CredentialLifecycleIntegrationTest {
 
         mockMvc.perform(get("/maquinas")
                         .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isUnauthorized());
+
+        String newLoginBody = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson(user.getEmail(), NEW_PASSWORD)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String newAccessToken = JsonPath.read(newLoginBody, "$.accessToken");
+        mockMvc.perform(get("/maquinas")
+                        .header("Authorization", "Bearer " + newAccessToken))
                 .andExpect(status().isOk());
     }
 

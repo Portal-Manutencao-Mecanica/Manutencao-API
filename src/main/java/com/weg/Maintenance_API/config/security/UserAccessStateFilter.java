@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -45,7 +46,8 @@ public class UserAccessStateFilter extends OncePerRequestFilter {
                 || !user.isEnabled()
                 || !user.isAccountNonLocked()
                 || user.isTemporarilyLocked()
-                || !user.getOrganization().isActive()) {
+                || !user.getOrganization().isActive()
+                || !matchesCurrentSecurityState(authentication, user)) {
             SecurityContextHolder.clearContext();
             authenticationEntryPoint.commence(
                     request,
@@ -68,6 +70,23 @@ public class UserAccessStateFilter extends OncePerRequestFilter {
             return;
         }
         filterChain.doFilter(request, response);
+    }
+
+    private boolean matchesCurrentSecurityState(
+            Authentication authentication,
+            User user
+    ) {
+        if (!(authentication instanceof JwtAuthenticationToken jwtAuthentication)) {
+            return true;
+        }
+        Object versionClaim = jwtAuthentication.getToken().getClaim("securityVersion");
+        String roleClaim = jwtAuthentication.getToken().getClaimAsString("role");
+        String organizationClaim =
+                jwtAuthentication.getToken().getClaimAsString("organizationId");
+        return versionClaim instanceof Number number
+                && number.longValue() == user.getSecurityVersion()
+                && user.getRole().name().equals(roleClaim)
+                && user.getOrganization().getId().toString().equals(organizationClaim);
     }
 
     private boolean isFirstAccessAllowed(HttpServletRequest request) {

@@ -143,6 +143,7 @@ public class PasswordResetTokenService {
         user.setPasswordChangedAt(now);
         user.setPasswordChangeRequired(false);
         user.setTemporaryPasswordExpiresAt(null);
+        user.setSecurityVersion(user.getSecurityVersion() + 1);
         token.use(now);
         refreshTokenService.revokeAll(user.getId());
         auditService.recordInCurrentTransaction(
