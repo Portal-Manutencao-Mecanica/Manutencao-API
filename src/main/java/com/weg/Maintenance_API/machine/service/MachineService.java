@@ -7,6 +7,9 @@ import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,5 +80,14 @@ public class MachineService {
     @Transactional
     public void delete(UUID id) {
         machineRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Page<MachineResponse> findAll(int page) {
+
+        Pageable pageable = PageRequest.of(page, 6);
+
+        return machineRepository.findAll(pageable)
+                .map(machineMapper::toResponse);
     }
 }

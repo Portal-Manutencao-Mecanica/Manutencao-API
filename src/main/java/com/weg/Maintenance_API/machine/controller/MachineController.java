@@ -11,6 +11,8 @@ import com.weg.Maintenance_API.machine.dto.response.MachineResponse;
 import com.weg.Maintenance_API.machine.service.MachineService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -50,17 +53,15 @@ public class MachineController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MachineResponse> update(
-            @PathVariable UUID id,
-            @Valid @RequestBody MachineRequest request
-    ) {
+            @PathVariable Long id,
+            @Valid @RequestBody MachineRequest request) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<MachineResponse> patch(
-            @PathVariable UUID id,
-            @RequestBody MachinePatchRequest request
-    ) {
+            @PathVariable Long id,
+            @RequestBody MachinePatchRequest request) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
@@ -68,5 +69,12 @@ public class MachineController {
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<MachineResponse>> findAll(
+            @RequestParam(defaultValue = "1") int page) {
+
+        return ResponseEntity.ok(service.findAll(page));
     }
 }
