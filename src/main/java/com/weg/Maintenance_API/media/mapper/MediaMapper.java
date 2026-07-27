@@ -9,7 +9,6 @@ import org.mapstruct.Mapping;
 public interface MediaMapper {
 
     @Mapping(target = "id", source = "id")
-    @Mapping(target = "numberCard", source = "numberCard")
     @Mapping(target = "description", source = "description")
     @Mapping(target = "mediaType", source = "mediaType")
     @Mapping(target = "image", source = "image")

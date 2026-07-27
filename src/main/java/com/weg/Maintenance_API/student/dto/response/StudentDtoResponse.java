@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.weg.Maintenance_API.enums.Role;
 
+// Executa a operacao deste metodo.
 public record StudentDtoResponse(
         UUID id,
         String numberCard,
@@ -20,4 +21,3 @@ public record StudentDtoResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt) {
 }
-

@@ -20,4 +20,3 @@ public interface CoordinatorMapper {
 
     CoordinatorResponseDto toResponse(Coordinator coordinator);
 }
-

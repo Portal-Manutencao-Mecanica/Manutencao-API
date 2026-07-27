@@ -7,9 +7,9 @@ import com.weg.Maintenance_API.enums.MediaType;
 
 import java.time.LocalDateTime;
 
+// Executa a operacao deste metodo.
 public record MediaResponseDto(
         UUID id,
-        String numberCard,
         String description,
         MediaType mediaType,
         String image,

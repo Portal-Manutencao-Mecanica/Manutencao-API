@@ -10,7 +10,6 @@ import com.weg.Maintenance_API.autonomousmaintenance.dto.response.AutonomousMain
 import com.weg.Maintenance_API.autonomousmaintenance.entity.AutonomousMaintenance;
 import com.weg.Maintenance_API.autonomousmaintenance.service.AutonomousMaintenanceService;
 import com.weg.Maintenance_API.enums.EquipmentSituation;
-import com.weg.Maintenance_API.validation.EntityExists;
 import com.weg.Maintenance_API.validation.enumValidator.ValidEnum;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +34,7 @@ public class AutonomousMaintanceController {
 
     private final AutonomousMaintenanceService service;
 
+    // Cria e persiste os dados da operacao.
     @PostMapping
     public ResponseEntity<AutonomousMaintenanceDtoResponse> create(
             @Valid @RequestBody AutonomousMaintenanceDtoRequest request
@@ -42,6 +42,7 @@ public class AutonomousMaintanceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }
 
+    // Cria e persiste os dados da operacao.
     @PostMapping("/create-all")
     public ResponseEntity<List<AutonomousMaintenanceDtoResponse>> createAll(
             @Valid @RequestBody List<AutonomousMaintenanceDtoRequest> requests
@@ -49,19 +50,24 @@ public class AutonomousMaintanceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createAll(requests));
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping
-    public ResponseEntity<List<AutonomousMaintenanceDtoResponse>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<org.springframework.data.domain.Page<AutonomousMaintenanceDtoResponse>> getAll(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.getAll(pageable));
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/{id}")
     public ResponseEntity<AutonomousMaintenanceDtoResponse> getById(
             @PathVariable
-            @EntityExists(message = "entity not found", entityClass = AutonomousMaintenance.class) UUID id
+UUID id
     ) {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @PutMapping("/{id}")
     public ResponseEntity<AutonomousMaintenanceDtoResponse> update(
             @PathVariable UUID id,
@@ -70,17 +76,20 @@ public class AutonomousMaintanceController {
         return ResponseEntity.ok(service.update(id, request));
     }
 
+    // Remove ou invalida os dados solicitados.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/situacao/{situacao}")
-    public ResponseEntity<List<AutonomousMaintenanceDtoResponse>> getBySituacao(
+    public ResponseEntity<org.springframework.data.domain.Page<AutonomousMaintenanceDtoResponse>> getBySituacao(
             @PathVariable
-            @ValidEnum(message = "enum is invalid", enumClass = EquipmentSituation.class) String situacao
+            @ValidEnum(message = "A situacao informada e invalida.", enumClass = EquipmentSituation.class) String situacao,
+            org.springframework.data.domain.Pageable pageable
     ) {
-        return ResponseEntity.ok(service.getBySituacao(situacao));
+        return ResponseEntity.ok(service.getBySituacao(situacao, pageable));
     }
 }

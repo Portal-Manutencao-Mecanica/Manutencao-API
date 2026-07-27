@@ -7,6 +7,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 
+// Executa a operacao deste metodo.
 public record EquipmentRequest(
     @NotBlank(message = "name can't be blank")
     String name,

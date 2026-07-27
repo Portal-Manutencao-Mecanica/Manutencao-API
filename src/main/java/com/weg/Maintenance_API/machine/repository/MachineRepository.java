@@ -12,5 +12,3 @@ import com.weg.Maintenance_API.machine.entity.Machine;
 public interface MachineRepository extends JpaRepository<Machine, UUID>{
     
 }
-
-

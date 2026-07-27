@@ -12,5 +12,3 @@ import com.weg.Maintenance_API.place.entity.Place;
 public interface PlaceRepository extends JpaRepository<Place, UUID>{
     
 }
-
-

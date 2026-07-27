@@ -37,6 +37,7 @@ import java.util.Base64;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    // Configura o componente da aplicacao.
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
@@ -83,14 +84,17 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // Executa a operacao deste metodo.
     private static RequestMatcher applicationPathEquals(String expectedPath) {
         return request -> applicationPath(request).equals(expectedPath);
     }
 
+    // Executa a operacao deste metodo.
     private static RequestMatcher applicationPathStartsWith(String expectedPrefix) {
         return request -> applicationPath(request).startsWith(expectedPrefix);
     }
 
+    // Executa a operacao deste metodo.
     private static String applicationPath(
             jakarta.servlet.http.HttpServletRequest request
     ) {
@@ -104,11 +108,13 @@ public class SecurityConfig {
         return uri;
     }
 
+    // Executa a operacao deste metodo.
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // Executa a operacao deste metodo.
     @Bean
     public AuthenticationProvider authenticationProvider(
             DatabaseUserDetailsService userDetailsService,
@@ -122,6 +128,7 @@ public class SecurityConfig {
         return provider;
     }
 
+    // Executa a operacao deste metodo.
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationProvider authenticationProvider
@@ -129,6 +136,7 @@ public class SecurityConfig {
         return new ProviderManager(authenticationProvider);
     }
 
+    // Configura o componente da aplicacao.
     @Bean
     public SecretKey jwtSecretKey(
             @Value("${app.jwt.secret}") String secret
@@ -143,6 +151,7 @@ public class SecurityConfig {
         return new SecretKeySpec(decodedSecret, "HmacSHA256");
     }
 
+    // Configura o componente da aplicacao.
     @Bean
     public JwtEncoder jwtEncoder(SecretKey secretKey) {
         OctetSequenceKey jwk = new OctetSequenceKey.Builder(secretKey)
@@ -155,6 +164,7 @@ public class SecurityConfig {
         return new NimbusJwtEncoder(jwkSource);
     }
 
+    // Configura o componente da aplicacao.
     @Bean
     public JwtDecoder jwtDecoder(SecretKey secretKey) {
         NimbusJwtDecoder decoder = NimbusJwtDecoder

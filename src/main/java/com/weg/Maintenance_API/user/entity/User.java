@@ -2,7 +2,6 @@ package com.weg.Maintenance_API.user.entity;
 
 import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.organization.entity.Organization;
-import com.weg.Maintenance_API.media.entity.Media;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -62,10 +61,6 @@ public abstract class User {
     @Column(name = "password_changed_at")
     private LocalDateTime passwordChangedAt;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "profile_photo_media_id", unique = true)
-    private Media profilePhoto;
-
     @Column(name = "failed_login_attempts", nullable = false)
     private int failedLoginAttempts;
 
@@ -96,7 +91,7 @@ public abstract class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(name = "number_card",nullable = false,unique = true)
+    @Column(name = "number_card", nullable = false, unique = true)
     private String numberCard = UUID.randomUUID().toString();
 
     @Version
@@ -108,6 +103,10 @@ public abstract class User {
     }
 
     protected User(String name, String email, String password, Role role,String numberCard) {
+        this(name,numberCard, email, password, role, UUID.randomUUID().toString());
+    }
+
+    public User(String name, String numberCard, String email, String password, Role role, String string) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -115,6 +114,7 @@ public abstract class User {
         this.numberCard = numberCard;
     }
 
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
@@ -125,16 +125,19 @@ public abstract class User {
         }
     }
 
+    // Define valores padrao antes da persistencia.
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 
+    // Valida a regra aplicada por este metodo.
     @Transient
     public boolean isTemporarilyLocked() {
         return lockedUntil != null && lockedUntil.isAfter(LocalDateTime.now());
     }
 
+    // Busca os dados necessarios para esta operacao.
     @Transient
     public UserAccountStatus getStatus() {
         if (!enabled) {
@@ -157,6 +160,7 @@ public abstract class User {
         return UserAccountStatus.ACTIVE;
     }
 
+    // Converte os dados para o formato necessario.
     @Override
     public String toString() {
         return "User{" +
@@ -172,6 +176,7 @@ public abstract class User {
                 '}';
     }
 
+    // Executa a operacao deste metodo.
     @Override
     public boolean equals(Object object) {
         if (this == object) {
@@ -183,6 +188,7 @@ public abstract class User {
         return id != null && id.equals(other.id);
     }
 
+    // Valida a regra aplicada por este metodo.
     @Override
     public int hashCode() {
         return Objects.hashCode(id);

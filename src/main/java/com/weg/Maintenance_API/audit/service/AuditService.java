@@ -16,6 +16,7 @@ public class AuditService {
 
     private final AuditLogRepository auditLogRepository;
 
+    // Executa o fluxo de comunicacao ou registro.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(
             User actor,
@@ -44,6 +45,7 @@ public class AuditService {
         ));
     }
 
+    // Executa o fluxo de comunicacao ou registro.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordAnonymous(
             String username,
@@ -70,6 +72,7 @@ public class AuditService {
         ));
     }
 
+    // Executa o fluxo de comunicacao ou registro.
     @Transactional(propagation = Propagation.MANDATORY)
     public void recordInCurrentTransaction(
             User actor,

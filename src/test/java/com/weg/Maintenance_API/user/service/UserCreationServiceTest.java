@@ -6,7 +6,7 @@ import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
 import com.weg.Maintenance_API.coordinator.entity.Coordinator;
 import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.organization.entity.Organization;
-import com.weg.Maintenance_API.organization.entity.OrganizationType;
+import com.weg.Maintenance_API.enums.OrganizationType;
 import com.weg.Maintenance_API.organization.service.OrganizationService;
 import com.weg.Maintenance_API.user.UserRepository;
 import com.weg.Maintenance_API.user.dto.request.CreateUserRequest;

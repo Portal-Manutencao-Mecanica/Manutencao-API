@@ -12,5 +12,3 @@ import com.weg.Maintenance_API.machinelog.entity.MachineLog;
 public interface MachineLogRepository extends JpaRepository<MachineLog, UUID> {
     
 }
-
-

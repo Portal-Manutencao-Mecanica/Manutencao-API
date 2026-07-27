@@ -9,9 +9,9 @@ import com.weg.Maintenance_API.enums.RegistrationPeriod;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Executa a operacao deste metodo.
 public record Inconvenience5SDtoResponse(
         UUID id,
-        String numberCard,
         String inconvenience,
         Inconvenience5SStatus status,
         UUID placeId,

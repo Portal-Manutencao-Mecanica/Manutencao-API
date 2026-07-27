@@ -38,6 +38,6 @@ public interface ClassGroupMapper {
                 .map(this::toStudentResponse)
                 .toList();
 
-        return new ClassResponseDto(classGroup.getId(), classGroup.getNumberCard(), classGroup.getAcronym(), classGroup.isEnabled(), teachers, students);
+        return new ClassResponseDto(classGroup.getId(), classGroup.getAcronym(), classGroup.isEnabled(), teachers, students);
     }
 }

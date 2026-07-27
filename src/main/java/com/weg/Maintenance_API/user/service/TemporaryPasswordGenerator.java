@@ -17,6 +17,7 @@ public class TemporaryPasswordGenerator {
 
     private final SecureRandom secureRandom = new SecureRandom();
 
+    // Executa a operacao deste metodo.
     public String generate() {
         char[] password = new char[16];
         password[0] = random(UPPER);
@@ -30,10 +31,12 @@ public class TemporaryPasswordGenerator {
         return new String(password);
     }
 
+    // Executa a operacao deste metodo.
     private char random(char[] characters) {
         return characters[secureRandom.nextInt(characters.length)];
     }
 
+    // Executa a operacao deste metodo.
     private void shuffle(char[] characters) {
         for (int index = characters.length - 1; index > 0; index--) {
             int selected = secureRandom.nextInt(index + 1);

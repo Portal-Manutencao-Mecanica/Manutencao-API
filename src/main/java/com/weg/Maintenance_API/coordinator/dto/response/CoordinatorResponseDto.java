@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 import com.weg.Maintenance_API.enums.Role;
 
+// Executa a operacao deste metodo.
 public record CoordinatorResponseDto(
         UUID id,
         String numberCard,
@@ -18,4 +19,3 @@ public record CoordinatorResponseDto(
         LocalDateTime createdAt,
         LocalDateTime updatedAt) {
 }
-

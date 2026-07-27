@@ -23,6 +23,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         this.objectMapper = objectMapper;
     }
 
+    // Executa a operacao deste metodo.
     @Override
     public void commence(
             HttpServletRequest request,
@@ -35,7 +36,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         ApiErrorResponse body = new ApiErrorResponse(
                 HttpServletResponse.SC_UNAUTHORIZED,
                 "AUTHENTICATION_REQUIRED",
-                "Autenticação obrigatória.",
+                "AutenticaÃ§Ã£o obrigatÃ³ria.",
                 request.getRequestURI(),
                 LocalDateTime.now(),
                 Map.of()

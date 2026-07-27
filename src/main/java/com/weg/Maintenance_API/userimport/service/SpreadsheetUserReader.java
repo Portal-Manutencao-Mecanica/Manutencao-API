@@ -39,15 +39,16 @@ public class SpreadsheetUserReader {
         this.maxRows = maxRows;
     }
 
+    // Busca os dados necessarios para esta operacao.
     public SpreadsheetData read(MultipartFile file) {
         validateFile(file);
         try (XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream())) {
             if (workbook.getNumberOfSheets() == 0) {
-                throw new InvalidSpreadsheetException("A planilha não possui abas.");
+                throw new InvalidSpreadsheetException("A planilha nÃ£o possui abas.");
             }
             Sheet sheet = workbook.getSheetAt(0);
             if (sheet.getPhysicalNumberOfRows() == 0 || sheet.getRow(0) == null) {
-                throw new InvalidSpreadsheetException("A planilha não possui cabeçalho.");
+                throw new InvalidSpreadsheetException("A planilha nÃ£o possui cabeÃ§alho.");
             }
             if (sheet.getLastRowNum() > maxRows) {
                 throw new InvalidSpreadsheetException(
@@ -63,36 +64,38 @@ public class SpreadsheetUserReader {
                 rows.add(readRow(row, index + 1, columns, formatter));
             }
             if (rows.isEmpty()) {
-                throw new InvalidSpreadsheetException("A planilha não possui registros para importar.");
+                throw new InvalidSpreadsheetException("A planilha nÃ£o possui registros para importar.");
             }
             return new SpreadsheetData(safeFilename(file.getOriginalFilename()), List.copyOf(rows));
         } catch (InvalidSpreadsheetException exception) {
             throw exception;
         } catch (IOException | RuntimeException exception) {
             throw new InvalidSpreadsheetException(
-                    "O arquivo não é uma planilha XLSX válida."
+                    "O arquivo nÃ£o Ã© uma planilha XLSX vÃ¡lida."
             );
         }
     }
 
+    // Valida a regra aplicada por este metodo.
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new InvalidSpreadsheetException("O arquivo XLSX é obrigatório.");
+            throw new InvalidSpreadsheetException("O arquivo XLSX Ã© obrigatÃ³rio.");
         }
         if (file.getSize() > maxFileSizeBytes) {
             throw new InvalidSpreadsheetException(
-                    "O arquivo excede o tamanho máximo permitido."
+                    "O arquivo excede o tamanho mÃ¡ximo permitido."
             );
         }
         String filename = file.getOriginalFilename();
         if (filename == null || !filename.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
-            throw new InvalidSpreadsheetException("Somente arquivos com extensão .xlsx são permitidos.");
+            throw new InvalidSpreadsheetException("Somente arquivos com extensÃ£o .xlsx sÃ£o permitidos.");
         }
         if (!XLSX_CONTENT_TYPE.equalsIgnoreCase(file.getContentType())) {
-            throw new InvalidSpreadsheetException("O MIME type do arquivo XLSX é inválido.");
+            throw new InvalidSpreadsheetException("O MIME type do arquivo XLSX Ã© invÃ¡lido.");
         }
     }
 
+    // Busca os dados necessarios para esta operacao.
     private Map<String, Integer> readHeaders(Row header, DataFormatter formatter) {
         Map<String, Integer> columns = new HashMap<>();
         for (Cell cell : header) {
@@ -101,19 +104,20 @@ public class SpreadsheetUserReader {
             if (!value.isBlank()) {
                 if (columns.putIfAbsent(value, cell.getColumnIndex()) != null) {
                     throw new InvalidSpreadsheetException(
-                            "O cabeçalho possui a coluna duplicada: " + value + "."
+                            "O cabeÃ§alho possui a coluna duplicada: " + value + "."
                     );
                 }
             }
         }
         if (!columns.keySet().containsAll(REQUIRED_HEADERS)) {
             throw new InvalidSpreadsheetException(
-                    "Cabeçalhos obrigatórios: name, username, email e role."
+                    "CabeÃ§alhos obrigatÃ³rios: name, username, email e role."
             );
         }
         return columns;
     }
 
+    // Busca os dados necessarios para esta operacao.
     private SpreadsheetUserRow readRow(
             Row row,
             int rowNumber,
@@ -130,6 +134,7 @@ public class SpreadsheetUserReader {
         );
     }
 
+    // Executa a operacao deste metodo.
     private String value(Row row, Integer column, DataFormatter formatter) {
         if (row == null || column == null) {
             return "";
@@ -142,18 +147,21 @@ public class SpreadsheetUserReader {
         return formatter.formatCellValue(cell).trim();
     }
 
+    // Executa a operacao deste metodo.
     private void rejectFormula(Cell cell) {
         if (cell.getCellType() == CellType.FORMULA) {
             throw new InvalidSpreadsheetException(
-                    "Fórmulas não são permitidas na planilha de importação."
+                    "FÃ³rmulas nÃ£o sÃ£o permitidas na planilha de importaÃ§Ã£o."
             );
         }
     }
 
+    // Executa a operacao deste metodo.
     private String safeFilename(String originalFilename) {
         return Path.of(originalFilename).getFileName().toString();
     }
 
+    // Executa a operacao deste metodo.
     public record SpreadsheetData(
             String filename,
             List<SpreadsheetUserRow> rows

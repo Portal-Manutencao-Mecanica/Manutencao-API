@@ -66,14 +66,17 @@ public class RefreshToken {
         this.userAgent = userAgent;
     }
 
+    // Valida a regra aplicada por este metodo.
     public boolean isExpired(LocalDateTime now) {
         return !expiresAt.isAfter(now);
     }
 
+    // Valida a regra aplicada por este metodo.
     public boolean isRevoked() {
         return revokedAt != null;
     }
 
+    // Remove ou invalida os dados solicitados.
     public void revoke(LocalDateTime now) {
         if (revokedAt == null) {
             revokedAt = now;

@@ -11,5 +11,3 @@ import org.springframework.stereotype.Repository;
 public interface MaintenanceRepository extends JpaRepository<MaintenanceRequest, UUID> {
     
 }
-
-

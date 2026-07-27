@@ -17,6 +17,7 @@ public class UserRolePersistenceService {
     private final JdbcTemplate jdbcTemplate;
     private final EntityManager entityManager;
 
+    // Executa a operacao deste metodo.
     public void transition(UUID userId, Role currentRole, Role targetRole) {
         entityManager.flush();
         try {
@@ -26,7 +27,7 @@ public class UserRolePersistenceService {
             );
             if (deleted != 1) {
                 throw new ConflictException(
-                        "A role atual do usuário está inconsistente. A alteração não foi realizada."
+                        "A role atual do usuÃ¡rio estÃ¡ inconsistente. A alteraÃ§Ã£o nÃ£o foi realizada."
                 );
             }
             jdbcTemplate.update(
@@ -47,17 +48,18 @@ public class UserRolePersistenceService {
             );
             if (updated != 1) {
                 throw new ConflictException(
-                        "O usuário não foi encontrado durante a alteração de role."
+                        "O usuÃ¡rio nÃ£o foi encontrado durante a alteraÃ§Ã£o de role."
                 );
             }
             entityManager.clear();
         } catch (DataAccessException exception) {
             throw new ConflictException(
-                    "A role não pode ser alterada porque o usuário possui vínculos incompatíveis."
+                    "A role nÃ£o pode ser alterada porque o usuÃ¡rio possui vÃ­nculos incompatÃ­veis."
             );
         }
     }
 
+    // Executa a operacao deste metodo.
     private String tableFor(Role role) {
         return switch (role) {
             case ADMIN -> "admin";

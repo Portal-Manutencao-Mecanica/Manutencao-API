@@ -13,6 +13,7 @@ import java.lang.annotation.Target;
  * Validates whether text corresponds to a constant in the given enum.
  *
  * It can be used on DTO fields, controller parameters, and record components.
+
  */
 @Documented
 @Target({

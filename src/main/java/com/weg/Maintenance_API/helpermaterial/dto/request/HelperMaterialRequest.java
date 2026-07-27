@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.URL;
 
+// Executa a operacao deste metodo.
 public record HelperMaterialRequest(
     @NotBlank(message = "title can't be blank")
     String title,
@@ -16,4 +17,3 @@ public record HelperMaterialRequest(
     HelperMaterialType type
 ) {
 }
-

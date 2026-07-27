@@ -25,9 +25,6 @@ public class Media {
     @Column(name = "media_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Column(name = "media_description", length = 255)
     private String description;
 
@@ -61,6 +58,7 @@ public class Media {
     @Column(name = "active", nullable = false)
     private boolean active = true;
 
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

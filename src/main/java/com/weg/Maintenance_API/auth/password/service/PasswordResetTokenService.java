@@ -42,6 +42,7 @@ public class PasswordResetTokenService {
     @Value("${app.password-recovery.expiration-seconds:1800}")
     private long expirationSeconds;
 
+    // Executa a operacao deste metodo.
     @Transactional
     public void requestReset(String rawEmail, ClientRequestMetadata metadata) {
         String email = userIdentityPolicy.normalizeEmail(rawEmail);
@@ -59,7 +60,7 @@ public class PasswordResetTokenService {
                     metadata.ipAddress(),
                     metadata.userAgent(),
                     true,
-                    "Solicitação processada sem divulgação do cadastro."
+                    "SolicitaÃ§Ã£o processada sem divulgaÃ§Ã£o do cadastro."
             );
             return;
         }
@@ -83,7 +84,7 @@ public class PasswordResetTokenService {
                 metadata.ipAddress(),
                 metadata.userAgent(),
                 true,
-                "Token temporário de recuperação gerado."
+                "Token temporÃ¡rio de recuperaÃ§Ã£o gerado."
         );
         eventPublisher.publishEvent(new PasswordResetRequestedEvent(
                 user.getId(),
@@ -93,6 +94,7 @@ public class PasswordResetTokenService {
         ));
     }
 
+    // Valida a regra aplicada por este metodo.
     @Transactional(readOnly = true)
     public boolean validate(String rawToken) {
         if (rawToken == null || rawToken.isBlank()) {
@@ -104,6 +106,7 @@ public class PasswordResetTokenService {
                 .isPresent();
     }
 
+    // Executa a operacao deste metodo.
     @Transactional
     public void reset(
             ResetPasswordRequest request,
@@ -113,18 +116,18 @@ public class PasswordResetTokenService {
                         secureTokenService.hash(request.token())
                 )
                 .orElseThrow(() -> new InvalidTokenException(
-                        "O token de recuperação é inválido."
+                        "O token de recuperaÃ§Ã£o Ã© invÃ¡lido."
                 ));
         LocalDateTime now = LocalDateTime.now();
         if (token.isUsed()) {
             throw new InvalidTokenException(
-                    "O token de recuperação já foi utilizado ou invalidado."
+                    "O token de recuperaÃ§Ã£o jÃ¡ foi utilizado ou invalidado."
             );
         }
         if (token.isExpired(now)) {
             token.use(now);
             throw new ExpiredTokenException(
-                    "O token de recuperação expirou. Solicite um novo."
+                    "O token de recuperaÃ§Ã£o expirou. Solicite um novo."
             );
         }
 
@@ -156,7 +159,7 @@ public class PasswordResetTokenService {
                 metadata.ipAddress(),
                 metadata.userAgent(),
                 true,
-                "Senha redefinida com token de uso único."
+                "Senha redefinida com token de uso Ãºnico."
         );
         eventPublisher.publishEvent(new PasswordChangedEvent(
                 user.getId(),

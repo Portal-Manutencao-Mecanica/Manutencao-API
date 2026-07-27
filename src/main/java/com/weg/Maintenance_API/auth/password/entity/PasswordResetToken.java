@@ -61,14 +61,17 @@ public class PasswordResetToken {
         this.requestedIp = requestedIp;
     }
 
+    // Valida a regra aplicada por este metodo.
     public boolean isExpired(LocalDateTime now) {
         return !expiresAt.isAfter(now);
     }
 
+    // Valida a regra aplicada por este metodo.
     public boolean isUsed() {
         return usedAt != null;
     }
 
+    // Executa a operacao deste metodo.
     public void use(LocalDateTime now) {
         usedAt = now;
     }

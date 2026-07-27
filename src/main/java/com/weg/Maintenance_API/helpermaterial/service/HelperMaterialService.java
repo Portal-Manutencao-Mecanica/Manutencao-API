@@ -3,6 +3,8 @@ package com.weg.Maintenance_API.helpermaterial.service;
 
 import java.util.UUID;
 
+import com.weg.Maintenance_API.enums.HelperMaterialType;
+
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import java.util.List;
@@ -26,6 +28,7 @@ public class HelperMaterialService {
     private final HelperMaterialMapper helperMaterialMapper;
     private final HelperMaterialRepository helperMaterialRepository;
 
+    // Cria e persiste os dados da operacao.
     @Transactional
     public HelperMaterialResponse save(HelperMaterialRequest helperMaterialRequest) {
         HelperMaterial helperMaterial = helperMaterialMapper.toEntity(helperMaterialRequest);
@@ -33,11 +36,15 @@ public class HelperMaterialService {
         return helperMaterialMapper.toResponse(helperMaterial);
     }
 
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
-    public List<HelperMaterialResponse> getAll() {
-        return helperMaterialRepository.findAll().stream().map(helperMaterialMapper::toResponse).toList();
+    public org.springframework.data.domain.Page<HelperMaterialResponse> getAll(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return helperMaterialRepository.findAll(pageable).map(helperMaterialMapper::toResponse);
     }
 
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
     public HelperMaterialResponse getById(UUID id) {
         HelperMaterial helperMaterial = helperMaterialRepository.findById(id)
@@ -45,6 +52,7 @@ public class HelperMaterialService {
         return helperMaterialMapper.toResponse(helperMaterial);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public HelperMaterialResponse update(UUID id, HelperMaterialRequest helperMaterialRequest) {
         HelperMaterial helperMaterial = helperMaterialRepository.findById(id)
@@ -56,6 +64,7 @@ public class HelperMaterialService {
         return helperMaterialMapper.toResponse(helperMaterialRepository.save(helperMaterial));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public HelperMaterialResponse patch(UUID id, HelperMaterialPatchRequest request) {
         HelperMaterial helperMaterial = helperMaterialRepository.findById(id)
@@ -71,14 +80,17 @@ public class HelperMaterialService {
             helperMaterial.setUrl(request.url());
         }
         if (request.type() != null) {
-            helperMaterial.setType(request.type());
+            helperMaterial.setType(HelperMaterialType.valueOf(
+                    request.type().trim().toUpperCase(java.util.Locale.ROOT)
+            ));
         }
 
         return helperMaterialMapper.toResponse(helperMaterialRepository.save(helperMaterial));
     }
 
+    // Remove ou invalida os dados solicitados.
     @Transactional
     public void delete(UUID id) {
-        helperMaterialRepository.deleteById(id);
+        helperMaterialRepository.delete(helperMaterialRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Material auxiliar", id)));
     }
 }

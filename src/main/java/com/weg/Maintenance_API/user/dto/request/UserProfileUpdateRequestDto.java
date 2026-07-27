@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+// Executa a operacao deste metodo.
 public record UserProfileUpdateRequestDto(
         @NotBlank
         @Size(min = 3, max = 120)

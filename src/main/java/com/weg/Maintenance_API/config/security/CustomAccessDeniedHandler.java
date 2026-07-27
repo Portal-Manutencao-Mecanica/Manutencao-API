@@ -23,6 +23,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         this.objectMapper = objectMapper;
     }
 
+    // Executa a operacao deste metodo.
     @Override
     public void handle(
             HttpServletRequest request,
@@ -35,7 +36,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         ApiErrorResponse body = new ApiErrorResponse(
                 HttpServletResponse.SC_FORBIDDEN,
                 "ACCESS_DENIED",
-                "Você não possui permissão para acessar este recurso.",
+                "VocÃª nÃ£o possui permissÃ£o para acessar este recurso.",
                 request.getRequestURI(),
                 LocalDateTime.now(),
                 Map.of()

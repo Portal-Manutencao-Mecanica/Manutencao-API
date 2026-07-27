@@ -15,4 +15,3 @@ public interface DesignationMapper {
 
     DesignationDtoResponse toResponse(Designation designation);
 }
-

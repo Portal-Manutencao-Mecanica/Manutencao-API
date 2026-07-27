@@ -1,5 +1,6 @@
 package com.weg.Maintenance_API.userimport.entity;
 
+import com.weg.Maintenance_API.enums.UserImportStatus;
 import com.weg.Maintenance_API.organization.entity.Organization;
 import com.weg.Maintenance_API.user.entity.User;
 import jakarta.persistence.Column;
@@ -76,6 +77,7 @@ public class UserImport {
         this.status = UserImportStatus.PROCESSING;
     }
 
+    // Executa a operacao deste metodo.
     public void complete(int created, int failed) {
         this.createdCount = created;
         this.failedCount = failed;

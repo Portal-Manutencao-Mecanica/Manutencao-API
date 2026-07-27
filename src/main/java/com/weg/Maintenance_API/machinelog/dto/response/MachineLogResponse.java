@@ -10,9 +10,9 @@ import com.weg.Maintenance_API.enums.TaskSituation;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Executa a operacao deste metodo.
 public record MachineLogResponse(
         UUID id,
-        String numberCard,
         String title,
         String description,
         String executionReport,

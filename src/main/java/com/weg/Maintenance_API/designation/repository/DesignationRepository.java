@@ -13,5 +13,3 @@ public interface DesignationRepository extends JpaRepository<Designation, UUID> 
 
     
 }
-
-

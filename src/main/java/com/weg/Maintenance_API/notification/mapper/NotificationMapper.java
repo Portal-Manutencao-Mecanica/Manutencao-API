@@ -9,6 +9,7 @@ import com.weg.Maintenance_API.notification.entity.Notification;
 @Component
 public class NotificationMapper {
 
+    // Converte os dados para o formato necessario.
     public Notification toEntity(NotificationRequest notificationRequest) {
         return new Notification(
                 notificationRequest.email(),
@@ -17,10 +18,10 @@ public class NotificationMapper {
                 notificationRequest.description());
     }
 
+    // Converte os dados para o formato necessario.
     public NotificationResponse toResponse(Notification notification) {
         return new NotificationResponse(
                 notification.getId(),
-                notification.getNumberCard(),
                 notification.getEmail(),
                 notification.getTitle(),
                 notification.getAbout(),

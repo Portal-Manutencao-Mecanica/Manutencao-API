@@ -25,6 +25,7 @@ public class JwtTokenService {
         this.expirationSeconds = expirationSeconds;
     }
 
+    // Executa a operacao deste metodo.
     public TokenData generateToken(User user) {
         Instant issuedAt = Instant.now();
         Instant expiresAt = issuedAt.plusSeconds(expirationSeconds);
@@ -51,6 +52,7 @@ public class JwtTokenService {
         return new TokenData(accessToken, expirationSeconds);
     }
 
+    // Converte os dados para o formato necessario.
     public record TokenData(
             String accessToken,
             long expiresIn

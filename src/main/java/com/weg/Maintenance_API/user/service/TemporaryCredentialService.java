@@ -14,6 +14,7 @@ public class TemporaryCredentialService {
     private final TemporaryPasswordGenerator temporaryPasswordGenerator;
     private final PasswordEncoder passwordEncoder;
 
+    // Valida a regra aplicada por este metodo.
     public String issue(User user) {
         String temporaryPassword = temporaryPasswordGenerator.generate();
         user.setPassword(passwordEncoder.encode(temporaryPassword));

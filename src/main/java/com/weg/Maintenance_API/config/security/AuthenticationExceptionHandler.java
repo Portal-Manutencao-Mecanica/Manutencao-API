@@ -22,6 +22,7 @@ public class AuthenticationExceptionHandler {
             DisabledException.class,
             LockedException.class
     })
+    // Executa a operacao deste metodo.
     public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(
             RuntimeException exception,
             HttpServletRequest request
@@ -29,11 +30,12 @@ public class AuthenticationExceptionHandler {
         return response(
                 HttpStatus.UNAUTHORIZED,
                 "INVALID_CREDENTIALS",
-                "Credenciais inválidas.",
+                "Credenciais invÃ¡lidas.",
                 request
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(CredentialsExpiredException.class)
     public ResponseEntity<ApiErrorResponse> handleCredentialsExpired(
             CredentialsExpiredException exception,
@@ -42,11 +44,12 @@ public class AuthenticationExceptionHandler {
         return response(
                 HttpStatus.UNAUTHORIZED,
                 "CREDENTIALS_EXPIRED",
-                "A senha temporária expirou. Solicite novas credenciais.",
+                "A senha temporÃ¡ria expirou. Solicite novas credenciais.",
                 request
         );
     }
 
+    // Executa a operacao deste metodo.
     private ResponseEntity<ApiErrorResponse> response(
             HttpStatus status,
             String error,

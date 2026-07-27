@@ -1,6 +1,7 @@
 package com.weg.Maintenance_API.userimport.entity;
 
 import com.weg.Maintenance_API.enums.Role;
+import com.weg.Maintenance_API.enums.UserImportItemStatus;
 import com.weg.Maintenance_API.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -76,6 +77,7 @@ public class UserImportItem {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    // Executa a operacao deste metodo.
     public static UserImportItem success(
             UserImport userImport,
             int rowNumber,
@@ -94,6 +96,7 @@ public class UserImportItem {
         return item;
     }
 
+    // Executa a operacao deste metodo.
     public static UserImportItem failure(
             UserImport userImport,
             int rowNumber,
@@ -116,6 +119,7 @@ public class UserImportItem {
         return item;
     }
 
+    // Executa a operacao deste metodo.
     private static UserImportItem base(
             UserImport userImport,
             int rowNumber,

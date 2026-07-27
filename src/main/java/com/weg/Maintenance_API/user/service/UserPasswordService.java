@@ -28,6 +28,7 @@ public class UserPasswordService {
     private final AuditService auditService;
     private final ApplicationEventPublisher eventPublisher;
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public void changeOwnPassword(
             String email,
@@ -35,9 +36,9 @@ public class UserPasswordService {
             ClientRequestMetadata metadata
     ) {
         User user = userRepository.findByEmailForUpdate(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado"));
+                .orElseThrow(() -> new ResourceNotFoundException("UsuÃ¡rio autenticado"));
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
-            throw new InvalidRequestException("A senha atual está incorreta.");
+            throw new InvalidRequestException("A senha atual estÃ¡ incorreta.");
         }
         passwordPolicyValidator.validate(
                 request.newPassword(),
@@ -66,7 +67,7 @@ public class UserPasswordService {
                 metadata.ipAddress(),
                 metadata.userAgent(),
                 true,
-                "Senha alterada pelo próprio usuário."
+                "Senha alterada pelo prÃ³prio usuÃ¡rio."
         );
         eventPublisher.publishEvent(new PasswordChangedEvent(
                 user.getId(),

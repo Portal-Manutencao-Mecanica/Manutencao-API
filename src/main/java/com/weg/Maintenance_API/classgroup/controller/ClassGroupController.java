@@ -1,5 +1,6 @@
 package com.weg.Maintenance_API.classgroup.controller;
 
+import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 
@@ -9,7 +10,6 @@ import com.weg.Maintenance_API.classgroup.dto.request.ClassPatchRequest;
 import com.weg.Maintenance_API.classgroup.dto.request.ClassRequestDto;
 import com.weg.Maintenance_API.classgroup.dto.response.ClassResponseDto;
 import com.weg.Maintenance_API.classgroup.service.ClassGroupService;
-import com.weg.Maintenance_API.validation.EntityExists;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,26 +34,35 @@ public class ClassGroupController {
 
     private final ClassGroupService service;
 
+    // Cria e persiste os dados da operacao.
     @PostMapping
     public ResponseEntity<ClassResponseDto> create(@Valid @RequestBody ClassRequestDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping
-    public ResponseEntity<List<ClassResponseDto>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<org.springframework.data.domain.Page<ClassResponseDto>> getAll(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.getAll(pageable));
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/ativos")
-    public ResponseEntity<List<ClassResponseDto>> getAllAtivos() {
-        return ResponseEntity.ok(service.getAllAtivos());
+    public ResponseEntity<org.springframework.data.domain.Page<ClassResponseDto>> getAllAtivos(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.getAllAtivos(pageable));
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/{id}")
     public ResponseEntity<ClassResponseDto> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @PutMapping("/{id}")
     public ResponseEntity<ClassResponseDto> update(
             @PathVariable UUID id,
@@ -62,6 +71,7 @@ public class ClassGroupController {
         return ResponseEntity.ok(service.update(id, request));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @PatchMapping("/{id}")
     public ResponseEntity<ClassResponseDto> patch(
             @PathVariable UUID id,
@@ -70,18 +80,17 @@ public class ClassGroupController {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
+    // Executa a operacao deste metodo.
     @PatchMapping("/{id}/inativar")
     public ResponseEntity<ClassResponseDto> inativar(@PathVariable UUID id) {
         return ResponseEntity.ok(service.inativar(id));
     }
 
+    // Remove ou invalida os dados solicitados.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
             @PathVariable
-            @EntityExists(
-                    message = "entity is null",
-                    entityClass = com.weg.Maintenance_API.classgroup.entity.ClassGroup.class
-            ) UUID id
+UUID id
     ) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();

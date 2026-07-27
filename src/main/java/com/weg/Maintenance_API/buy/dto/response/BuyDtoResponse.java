@@ -9,9 +9,9 @@ import com.weg.Maintenance_API.media.dto.response.MediaResponseDto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Executa a operacao deste metodo.
 public record BuyDtoResponse(
         UUID id,
-        String numberCard,
         BuyStatus status,
         UUID createdById,
         String createdByName,

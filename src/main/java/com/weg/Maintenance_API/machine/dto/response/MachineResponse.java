@@ -7,9 +7,9 @@ import com.weg.Maintenance_API.enums.EquipmentCondition;
 
 import java.time.LocalDateTime;
 
+// Executa a operacao deste metodo.
 public record MachineResponse(
         UUID id,
-        String numberCard,
         String name,
         String patrimony,
         EquipmentCondition condition,

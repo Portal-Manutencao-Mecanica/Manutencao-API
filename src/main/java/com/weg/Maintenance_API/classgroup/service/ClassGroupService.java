@@ -24,44 +24,55 @@ public class ClassGroupService {
     private final ClassGroupRepository repository;
     private final ClassGroupMapper mapper;
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    // Cria e persiste os dados da operacao.
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public ClassResponseDto create(ClassRequestDto request){
         ClassGroup entity = mapper.toEntity(request);
         repository.save(entity);
         return mapper.toResponse(entity);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
-    public List<ClassResponseDto> getAll(){
-        return repository.findAll().stream().map(mapper::toResponse).toList();
-    }
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
-    public List<ClassResponseDto> getAllAtivos(){
-        return repository.findAllByEnabledTrue().stream().map(mapper::toResponse).toList();
+    // Busca os dados necessarios para esta operacao.
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
+    public org.springframework.data.domain.Page<ClassResponseDto> getAll(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return repository.findAll(pageable).map(mapper::toResponse);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    // Busca os dados necessarios para esta operacao.
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
+    public org.springframework.data.domain.Page<ClassResponseDto> getAllAtivos(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return repository.findAllByEnabledTrue(pageable).map(mapper::toResponse);
+    }
+
+    // Executa a operacao deste metodo.
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public ClassResponseDto inativar(UUID id){
         ClassGroup entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Turma", id));
         entity.setEnabled(false);
-        repository.save(entity);
         return mapper.toResponse(entity);
     }
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
+
+    // Busca os dados necessarios para esta operacao.
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
     public ClassResponseDto getById(UUID id){
         ClassGroup entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Turma", id));
         return mapper.toResponse(entity);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    // Atualiza o estado conforme os dados informados.
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public ClassResponseDto update(UUID id, ClassRequestDto request){
         ClassGroup entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Turma", id));
         entity.setAcronym(request.acronym());
-        repository.save(entity);
         return mapper.toResponse(entity);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    // Atualiza o estado conforme os dados informados.
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public ClassResponseDto patch(UUID id, ClassPatchRequest request){
         ClassGroup entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Turma", id));
 
@@ -73,8 +84,9 @@ public class ClassGroupService {
         return mapper.toResponse(entity);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    // Remove ou invalida os dados solicitados.
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void deleteById(UUID id){
-        repository.deleteById(id);
+        repository.delete(repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Turma", id)));
     }
 }

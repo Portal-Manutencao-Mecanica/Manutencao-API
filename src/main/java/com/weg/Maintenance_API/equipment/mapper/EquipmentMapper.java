@@ -19,4 +19,3 @@ public interface EquipmentMapper {
     EquipmentResponse toResponse(Equipment equipment);
 
 }
-

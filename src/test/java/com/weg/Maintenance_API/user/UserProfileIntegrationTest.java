@@ -5,10 +5,8 @@ import com.weg.Maintenance_API.admin.entity.Admin;
 import com.weg.Maintenance_API.audit.repository.AuditLogRepository;
 import com.weg.Maintenance_API.auth.password.repository.PasswordResetTokenRepository;
 import com.weg.Maintenance_API.auth.repository.RefreshTokenRepository;
-import com.weg.Maintenance_API.media.repository.MediaRepository;
-import com.weg.Maintenance_API.media.storage.FileStorageService;
 import com.weg.Maintenance_API.organization.entity.Organization;
-import com.weg.Maintenance_API.organization.entity.OrganizationType;
+import com.weg.Maintenance_API.enums.OrganizationType;
 import com.weg.Maintenance_API.organization.repository.OrganizationRepository;
 import com.weg.Maintenance_API.user.preference.repository.NotificationPreferenceRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -18,16 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -35,9 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-        "app.file-storage.path=target/test-profile-storage"
-})
 class UserProfileIntegrationTest {
 
     private static final String PASSWORD = "ProfilePass@123";
@@ -50,10 +42,6 @@ class UserProfileIntegrationTest {
     private OrganizationRepository organizationRepository;
     @Autowired
     private NotificationPreferenceRepository preferenceRepository;
-    @Autowired
-    private MediaRepository mediaRepository;
-    @Autowired
-    private FileStorageService fileStorageService;
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
     @Autowired
@@ -95,13 +83,6 @@ class UserProfileIntegrationTest {
 
     @AfterEach
     void cleanUp() {
-        var users = userRepository.findAll();
-        users.forEach(user -> user.setProfilePhoto(null));
-        userRepository.saveAllAndFlush(users);
-        mediaRepository.findAll().forEach(media -> {
-            fileStorageService.delete(media.getImage());
-            mediaRepository.delete(media);
-        });
         preferenceRepository.deleteAll();
         passwordResetTokenRepository.deleteAll();
         refreshTokenRepository.deleteAll();
@@ -147,48 +128,6 @@ class UserProfileIntegrationTest {
                                 {"name":"Tentativa","role":"ADMIN"}
                                 """))
                 .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void profilePhotoUsesValidatedGeneratedStorageKey() throws Exception {
-        byte[] png = {
-                (byte) 0x89, 0x50, 0x4E, 0x47,
-                0x0D, 0x0A, 0x1A, 0x0A,
-                0x00, 0x01
-        };
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "../../avatar.png",
-                "image/png",
-                png
-        );
-
-        mockMvc.perform(multipart("/users/me/photo")
-                        .file(file)
-                        .header("Authorization", bearer()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contentType").value("image/png"))
-                .andExpect(jsonPath("$.originalFilename").value("avatar.png"));
-
-        var media = mediaRepository.findAll().getFirst();
-        assertTrue(media.getImage().startsWith("profile/"));
-        assertTrue(fileStorageService.load(media.getImage()).exists());
-    }
-
-    @Test
-    void profilePhotoRejectsMismatchedContent() throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "avatar.png",
-                "image/png",
-                "not-an-image".getBytes(java.nio.charset.StandardCharsets.UTF_8)
-        );
-
-        mockMvc.perform(multipart("/users/me/photo")
-                        .file(file)
-                        .header("Authorization", bearer()))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.error").value("INVALID_FILE"));
     }
 
     private String bearer() {

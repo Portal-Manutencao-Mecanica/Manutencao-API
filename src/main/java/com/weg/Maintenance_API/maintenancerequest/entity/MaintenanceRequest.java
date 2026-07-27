@@ -48,9 +48,6 @@ public class MaintenanceRequest {
     @Column(name = "maintenance_request_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private MaintenanceRequestStatus status = MaintenanceRequestStatus.NAO_VISUALIZADA;
@@ -101,6 +98,7 @@ public class MaintenanceRequest {
     @JoinColumn(name = "machine_id", nullable = false)
     private Machine machine;
 
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

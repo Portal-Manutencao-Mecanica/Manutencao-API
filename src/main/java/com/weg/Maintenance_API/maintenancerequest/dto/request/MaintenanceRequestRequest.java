@@ -9,32 +9,30 @@ import com.weg.Maintenance_API.machine.entity.Machine;
 import com.weg.Maintenance_API.place.entity.Place;
 import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
-import com.weg.Maintenance_API.validation.AllEntitiesExist;
-import com.weg.Maintenance_API.validation.EntityExists;
+import com.weg.Maintenance_API.validation.enumValidator.ValidEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
+// Executa a operacao deste metodo.
 public record MaintenanceRequestRequest(
         @NotNull(message = "sector can't be null")
-        Sector sector,
+        @ValidEnum(message = "sector is invalid", enumClass = Sector.class)
+        String sector,
         @NotNull(message = "priority can't be null")
-        Priority priority,
+        @ValidEnum(message = "priority is invalid",enumClass = Priority.class)
+        String priority,
         @NotEmpty(message = "assigned students can't be empty")
-        @AllEntitiesExist(entityClass = Student.class, message = "student not found")
-        List<UUID> assignedStudentIds,
+List<UUID> assignedStudentIds,
         @NotNull(message = "place can't be null")
-        @EntityExists(entityClass = Place.class, message = "place not found")
-        UUID placeId,
+UUID placeId,
         @NotBlank(message = "description can't be blank")
         String description,
         @NotNull(message = "notified teacher can't be null")
-        @EntityExists(entityClass = Teacher.class, message = "teacher not found")
-        UUID notifiedTeacherId,
+UUID notifiedTeacherId,
         @NotNull(message = "machine can't be null")
-        @EntityExists(entityClass = Machine.class, message = "machine not found")
-        UUID machineId
+UUID machineId
 ) {
 }

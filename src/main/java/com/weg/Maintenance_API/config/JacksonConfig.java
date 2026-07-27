@@ -7,7 +7,7 @@ import tools.jackson.databind.DeserializationFeature;
 
 @Configuration
 public class JacksonConfig {
-
+    //faz a configuracao para caso tenho um campo a mais retorne um erro especifico
     @Bean
     JsonMapperBuilderCustomizer rejectUnknownJsonProperties() {
         return builder -> builder.enable(

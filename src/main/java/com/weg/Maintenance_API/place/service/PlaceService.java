@@ -26,6 +26,7 @@ public class PlaceService {
     private final PlaceRepository placeRepository;
     private final PlaceMapper placeMapper;
 
+    // Cria e persiste os dados da operacao.
     @Transactional
     public PlaceResponse save(PlaceRequest placeRequest) {
         Place place = placeMapper.toEntity(placeRequest);
@@ -33,17 +34,20 @@ public class PlaceService {
         return placeMapper.toResponse(place);
     }
 
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
     public List<PlaceResponse> getAll() {
         return placeRepository.findAll().stream().map(placeMapper::toResponse).toList();
     }
 
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
     public PlaceResponse getById(UUID id) {
         Place place = placeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Lugar", id));
         return placeMapper.toResponse(place);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public PlaceResponse update(UUID id, PlaceRequest placeRequest) {
         Place place = placeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Lugar", id));
@@ -52,6 +56,7 @@ public class PlaceService {
         return placeMapper.toResponse(place);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public PlaceResponse patch(UUID id, PlacePatchRequest request) {
         Place place = placeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Lugar", id));
@@ -63,8 +68,9 @@ public class PlaceService {
         return placeMapper.toResponse(placeRepository.save(place));
     }
 
+    // Remove ou invalida os dados solicitados.
     @Transactional
     public void delete(UUID id) {
-        placeRepository.deleteById(id);
+        placeRepository.delete(placeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Lugar", id)));
     }
 }

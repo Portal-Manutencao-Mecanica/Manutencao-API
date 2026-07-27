@@ -6,4 +6,3 @@ public enum MaintenanceType {
     PREDITIVA,
     AUTONOMA
 }
-

@@ -1,10 +1,11 @@
 package com.weg.Maintenance_API.userimport.dto;
 
 import com.weg.Maintenance_API.enums.Role;
-import com.weg.Maintenance_API.userimport.entity.UserImportItemStatus;
+import com.weg.Maintenance_API.enums.UserImportItemStatus;
 
 import java.util.UUID;
 
+// Executa a operacao deste metodo.
 public record UserImportItemResponse(
         UUID id,
         int row,

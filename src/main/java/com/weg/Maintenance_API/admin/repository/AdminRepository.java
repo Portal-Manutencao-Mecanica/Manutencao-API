@@ -12,4 +12,3 @@ import com.weg.Maintenance_API.admin.entity.Admin;
 public interface AdminRepository extends JpaRepository<Admin, UUID> {
     
 }
-

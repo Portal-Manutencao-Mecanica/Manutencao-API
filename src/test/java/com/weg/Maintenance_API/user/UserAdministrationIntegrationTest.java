@@ -8,7 +8,7 @@ import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
 import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.exception.type.InvalidStateException;
 import com.weg.Maintenance_API.organization.entity.Organization;
-import com.weg.Maintenance_API.organization.entity.OrganizationType;
+import com.weg.Maintenance_API.enums.OrganizationType;
 import com.weg.Maintenance_API.organization.repository.OrganizationRepository;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
 import com.weg.Maintenance_API.user.entity.User;

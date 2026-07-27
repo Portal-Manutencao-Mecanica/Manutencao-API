@@ -12,5 +12,3 @@ import com.weg.Maintenance_API.equipment.entity.Equipment;
 public interface EquipmentRepository extends JpaRepository<Equipment, UUID> {
     
 }
-
-

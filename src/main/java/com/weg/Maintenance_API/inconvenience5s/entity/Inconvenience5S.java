@@ -47,9 +47,6 @@ public class Inconvenience5S {
     @Column(name = "inconvenience_5s_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Column(name = "inconvenience", nullable = false, length = 255)
     private String inconvenience;
 
@@ -99,6 +96,7 @@ public class Inconvenience5S {
     @Column(name = "registration_period", nullable = false, length = 30)
     private RegistrationPeriod registrationPeriod;
 
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

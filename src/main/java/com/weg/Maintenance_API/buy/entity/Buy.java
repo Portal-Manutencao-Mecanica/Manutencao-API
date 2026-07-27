@@ -43,9 +43,6 @@ public class Buy {
     @Column(name = "buy_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private BuyStatus status = BuyStatus.NAO_VISUALIZADO;
@@ -84,6 +81,7 @@ public class Buy {
     )
     private List<Media> media = new ArrayList<>();
 
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

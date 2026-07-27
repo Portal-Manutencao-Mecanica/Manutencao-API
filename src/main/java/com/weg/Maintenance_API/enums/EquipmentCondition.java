@@ -4,4 +4,3 @@ public enum EquipmentCondition {
     CONFORME,
     NAO_CONFORME
 }
-

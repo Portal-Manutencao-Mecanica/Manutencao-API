@@ -8,9 +8,9 @@ import com.weg.Maintenance_API.teacher.dto.response.TeacherResponseDto;
 
 import java.util.List;
 
+// Executa a operacao deste metodo.
 public record ClassResponseDto(
         UUID id,
-        String numberCard,
         String acronym,
         boolean enabled,
         List<TeacherResponseDto> teachers,

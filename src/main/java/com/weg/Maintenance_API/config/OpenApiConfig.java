@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
-                title = "Portal de Manutenção API",
+                title = "Portal de ManutenÃƒÂ§ÃƒÂ£o API",
                 version = "1.0",
-                description = "API REST para os fluxos do Portal de Manutenção."
+                description = "API REST para os fluxos do Portal de ManutenÃƒÂ§ÃƒÂ£o."
         ),
         security = @SecurityRequirement(name = "bearerAuth")
 )

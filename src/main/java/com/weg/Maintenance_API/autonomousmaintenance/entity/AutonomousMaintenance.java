@@ -45,9 +45,6 @@ public class AutonomousMaintenance {
     @Column(name = "autonomous_maintenance_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Enumerated(EnumType.STRING)
     @Column(name = "equipment_situation", nullable = false, length = 30)
     private EquipmentSituation equipmentSituation;
@@ -86,10 +83,12 @@ public class AutonomousMaintenance {
     )
     private List<Media> media = new ArrayList<>();
 
+    // Atualiza o estado conforme os dados informados.
     public void setMedia(List<Media> media) {
         this.media = media != null ? media : new ArrayList<>();
     }
 
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         if (inspectedAt == null) {

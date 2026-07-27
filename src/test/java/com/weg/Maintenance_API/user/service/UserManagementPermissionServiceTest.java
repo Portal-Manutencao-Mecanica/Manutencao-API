@@ -4,7 +4,7 @@ import com.weg.Maintenance_API.admin.entity.Admin;
 import com.weg.Maintenance_API.coordinator.entity.Coordinator;
 import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.organization.entity.Organization;
-import com.weg.Maintenance_API.organization.entity.OrganizationType;
+import com.weg.Maintenance_API.enums.OrganizationType;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 

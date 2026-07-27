@@ -13,11 +13,13 @@ public class EnumValidator implements ConstraintValidator<ValidEnum, String> {
 
     private Class<? extends Enum<?>> enumClass;
 
+    // Executa a operacao deste metodo.
     @Override
     public void initialize(ValidEnum annotation) {
         this.enumClass = annotation.enumClass();
     }
 
+    // Valida a regra aplicada por este metodo.
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         // Empty values are validated by @NotBlank when required.

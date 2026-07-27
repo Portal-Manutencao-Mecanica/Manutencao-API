@@ -1,5 +1,6 @@
 package com.weg.Maintenance_API.userimport.service;
 
+// Executa a operacao deste metodo.
 public record SpreadsheetUserRow(
         int rowNumber,
         String name,
@@ -9,6 +10,7 @@ public record SpreadsheetUserRow(
         String organization
 ) {
 
+    // Valida a regra aplicada por este metodo.
     public boolean isEmpty() {
         return name.isBlank()
                 && username.isBlank()

@@ -15,12 +15,14 @@ public class SecureTokenService {
     private static final int TOKEN_BYTES = 48;
     private final SecureRandom secureRandom = new SecureRandom();
 
+    // Executa a operacao deste metodo.
     public String generate() {
         byte[] bytes = new byte[TOKEN_BYTES];
         secureRandom.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
+    // Valida a regra aplicada por este metodo.
     public String hash(String token) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -28,7 +30,7 @@ public class SecureTokenService {
                     digest.digest(token.getBytes(StandardCharsets.UTF_8))
             );
         } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 não está disponível.", exception);
+            throw new IllegalStateException("SHA-256 nÃ£o estÃ¡ disponÃ­vel.", exception);
         }
     }
 }

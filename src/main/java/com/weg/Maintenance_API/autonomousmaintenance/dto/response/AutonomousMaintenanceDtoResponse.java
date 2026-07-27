@@ -8,9 +8,9 @@ import com.weg.Maintenance_API.enums.EquipmentSituation;
 
 import java.time.LocalDateTime;
 
+// Executa a operacao deste metodo.
 public record AutonomousMaintenanceDtoResponse(
         UUID id,
-        String numberCard,
         EquipmentSituation equipmentSituation,
         LocalDateTime inspectedAt,
         UUID inspectedMachineId,
