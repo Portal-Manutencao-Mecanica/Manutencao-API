@@ -4,4 +4,3 @@ public enum EquipmentSituation {
     OPERANDO,
     NAO_OPERANDO
 }
-

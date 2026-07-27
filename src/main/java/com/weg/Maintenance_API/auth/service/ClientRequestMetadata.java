@@ -2,6 +2,7 @@ package com.weg.Maintenance_API.auth.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+// Executa a operacao deste metodo.
 public record ClientRequestMetadata(
         String endpoint,
         String httpMethod,
@@ -9,6 +10,7 @@ public record ClientRequestMetadata(
         String userAgent
 ) {
 
+    // Converte os dados para o formato necessario.
     public static ClientRequestMetadata from(HttpServletRequest request) {
         String forwardedFor = request.getHeader("X-Forwarded-For");
         String ipAddress = forwardedFor == null || forwardedFor.isBlank()

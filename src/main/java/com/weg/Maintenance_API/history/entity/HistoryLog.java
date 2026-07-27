@@ -37,9 +37,6 @@ public class HistoryLog {
     @Column(name = "history_log_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Enumerated(EnumType.STRING)
     @Column(name = "action", nullable = false, length = 40)
     private HistoryAction action;
@@ -65,6 +62,7 @@ public class HistoryLog {
     @JoinColumn(name = "actor_id", nullable = false)
     private User actor;
 
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

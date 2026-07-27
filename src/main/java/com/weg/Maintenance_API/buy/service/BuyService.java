@@ -4,6 +4,7 @@ package com.weg.Maintenance_API.buy.service;
 import java.util.UUID;
 
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+import com.weg.Maintenance_API.service.EntityReferenceService;
 
 import com.weg.Maintenance_API.buy.dto.request.BuyDtoRequest;
 import com.weg.Maintenance_API.buy.dto.request.BuyPatchRequest;
@@ -25,26 +26,39 @@ import java.util.Locale;
 public class BuyService {
     private final BuyRepository repository;
     private final BuyMapper mapper;
+    private final EntityReferenceService references;
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    // Cria e persiste os dados da operacao.
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public BuyDtoResponse create(BuyDtoRequest request){
         Buy entity = mapper.toEntity(request);
+        entity.setClassGroup(references.classGroup(request.classGroupId()));
+        entity.setNotifiedTeacher(request.notifiedTeacherId() == null ? null : references.teacher(request.notifiedTeacherId()));
+        for (int index = 0; index < request.items().size(); index++) {
+            entity.getItems().get(index).setEquipment(references.equipment(request.items().get(index).equipmentId()));
+            entity.getItems().get(index).setBuy(entity);
+        }
         repository.save(entity);
         return mapper.toResponse(entity);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
-    public List<BuyDtoResponse> getAll(){
-        return repository.findAll().stream().map(mapper::toResponse).toList();
+    // Busca os dados necessarios para esta operacao.
+    @Transactional(isolation = Isolation.READ_COMMITTED,  readOnly = true)
+    public org.springframework.data.domain.Page<BuyDtoResponse> getAll(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return repository.findAll(pageable).map(mapper::toResponse);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
+    // Busca os dados necessarios para esta operacao.
+    @Transactional(isolation = Isolation.READ_COMMITTED,  readOnly = true)
     public BuyDtoResponse getById(UUID id){
         Buy entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id));
         return mapper.toResponse(entity);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    // Atualiza o estado conforme os dados informados.
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public BuyDtoResponse update(UUID id, BuyDtoRequest request){
         Buy entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id));
 
@@ -53,8 +67,9 @@ public class BuyService {
         repository.save(entity);
         return mapper.toResponse(entity);
     }
-
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    // READ_COMMITTED sets the transaction isolation level.
+    // It reads only data committed by other transactions.
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public BuyDtoResponse patch(UUID id, BuyPatchRequest request){
         Buy entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id));
 
@@ -66,17 +81,19 @@ public class BuyService {
         return mapper.toResponse(entity);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
+    // Remove ou invalida os dados solicitados.
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void deleteById(UUID id){
-        repository.deleteById(id);
+        repository.delete(repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id)));
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class, readOnly = true)
-    public List<BuyDtoResponse> getByStatus(String status){
+    // Busca os dados necessarios para esta operacao.
+    @Transactional(isolation = Isolation.READ_COMMITTED,  readOnly = true)
+    public org.springframework.data.domain.Page<BuyDtoResponse> getByStatus(
+            String status,
+            org.springframework.data.domain.Pageable pageable
+    ) {
         BuyStatus buyStatus = BuyStatus.valueOf(status.trim().toUpperCase(Locale.ROOT));
-        return repository.findAllByStatus(buyStatus)
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
+        return repository.findAllByStatus(buyStatus, pageable).map(mapper::toResponse);
     }
 }

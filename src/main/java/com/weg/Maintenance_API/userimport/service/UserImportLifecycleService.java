@@ -26,6 +26,7 @@ public class UserImportLifecycleService {
     private final UserImportItemRepository itemRepository;
     private final UserRepository userRepository;
 
+    // Executa a operacao deste metodo.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public UUID start(
             String filename,
@@ -41,12 +42,14 @@ public class UserImportLifecycleService {
         ).getId();
     }
 
+    // Executa a operacao deste metodo.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void complete(UUID importId, int created, int failed) {
         UserImport userImport = userImportRepository.findById(importId).orElseThrow();
         userImport.complete(created, failed);
     }
 
+    // Executa a operacao deste metodo.
     @Transactional(readOnly = true)
     public UserImportResponse response(UUID importId) {
         UserImport userImport = userImportRepository.findById(importId).orElseThrow();
@@ -68,6 +71,7 @@ public class UserImportLifecycleService {
         );
     }
 
+    // Converte os dados para o formato necessario.
     private UserImportItemResponse toResponse(UserImportItem item) {
         return new UserImportItemResponse(
                 item.getId(),

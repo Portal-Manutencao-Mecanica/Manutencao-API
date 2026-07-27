@@ -28,6 +28,7 @@ import java.util.Map;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class DomainExceptionHandler {
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleResourceNotFound(
             ResourceNotFoundException exception,
@@ -41,6 +42,7 @@ public class DomainExceptionHandler {
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(InvalidRequestException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidRequest(
             InvalidRequestException exception,
@@ -54,6 +56,7 @@ public class DomainExceptionHandler {
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiErrorResponse> handleIllegalArgument(
             IllegalArgumentException exception,
@@ -62,11 +65,12 @@ public class DomainExceptionHandler {
         return response(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_REQUEST",
-                "Valor de requisição inválido.",
+                "Valor de requisiÃ§Ã£o invÃ¡lido.",
                 request
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(NotificationDeliveryException.class)
     public ResponseEntity<ApiErrorResponse> handleNotificationDelivery(
             NotificationDeliveryException exception,
@@ -80,6 +84,7 @@ public class DomainExceptionHandler {
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(InvalidFileException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidFile(
             InvalidFileException exception,
@@ -93,6 +98,7 @@ public class DomainExceptionHandler {
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiErrorResponse> handleConflict(
             ConflictException exception,
@@ -106,6 +112,7 @@ public class DomainExceptionHandler {
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(InvalidStateException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidState(
             InvalidStateException exception,
@@ -119,6 +126,7 @@ public class DomainExceptionHandler {
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler({InvalidTokenException.class, ExpiredTokenException.class})
     public ResponseEntity<ApiErrorResponse> handleInvalidToken(
             RuntimeException exception,
@@ -134,6 +142,7 @@ public class DomainExceptionHandler {
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiErrorResponse> handleAccessDenied(
             AccessDeniedException exception,
@@ -147,6 +156,7 @@ public class DomainExceptionHandler {
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleDataIntegrity(
             DataIntegrityViolationException exception,
@@ -155,11 +165,12 @@ public class DomainExceptionHandler {
         return response(
                 HttpStatus.CONFLICT,
                 "DATA_CONFLICT",
-                "A operação viola uma restrição de integridade. Revise os dados relacionados.",
+                "A operaÃ§Ã£o viola uma restriÃ§Ã£o de integridade. Revise os dados relacionados.",
                 request
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<ApiErrorResponse> handleOptimisticLock(
             ObjectOptimisticLockingFailureException exception,
@@ -168,11 +179,12 @@ public class DomainExceptionHandler {
         return response(
                 HttpStatus.CONFLICT,
                 "CONCURRENT_UPDATE",
-                "O registro foi alterado por outro usuário. Atualize os dados e tente novamente.",
+                "O registro foi alterado por outro usuÃ¡rio. Atualize os dados e tente novamente.",
                 request
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(RateLimitExceededException.class)
     public ResponseEntity<ApiErrorResponse> handleRateLimit(
             RateLimitExceededException exception,
@@ -186,6 +198,7 @@ public class DomainExceptionHandler {
         );
     }
 
+    // Executa a operacao deste metodo.
     private ResponseEntity<ApiErrorResponse> response(
             HttpStatus status,
             String errorCode,

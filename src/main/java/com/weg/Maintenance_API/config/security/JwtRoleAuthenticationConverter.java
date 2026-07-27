@@ -19,6 +19,7 @@ import java.util.Set;
 @Component
 public class JwtRoleAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
+    // Converte os dados para o formato necessario.
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
         Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
@@ -27,6 +28,7 @@ public class JwtRoleAuthenticationConverter implements Converter<Jwt, AbstractAu
         return new JwtAuthenticationToken(jwt, authorities, principalName);
     }
 
+    // Executa a operacao deste metodo.
     private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
         Set<String> roles = new LinkedHashSet<>();
         addClaimValues(roles, jwt.getClaim("role"));
@@ -40,6 +42,7 @@ public class JwtRoleAuthenticationConverter implements Converter<Jwt, AbstractAu
                 .toList();
     }
 
+    // Cria e persiste os dados da operacao.
     private void addClaimValues(Set<String> roles, Object claim) {
         if (claim instanceof String role) {
             roles.add(role);
@@ -52,7 +55,7 @@ public class JwtRoleAuthenticationConverter implements Converter<Jwt, AbstractAu
             roles.addAll(List.of(array));
         }
     }
-    //normaliza a ROLE como padrão inicio ROLE_
+    //normaliza a ROLE como padrÃ£o inicio ROLE_
     private String normalizeRole(String role) {
         if (!StringUtils.hasText(role)) {
             return null;

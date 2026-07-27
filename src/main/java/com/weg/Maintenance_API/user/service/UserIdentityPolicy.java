@@ -26,6 +26,7 @@ public class UserIdentityPolicy {
 
     private final UserRepository userRepository;
 
+    // Converte os dados para o formato necessario.
     public String normalizeUsername(String username) {
         if (username == null) {
             return "";
@@ -38,40 +39,50 @@ public class UserIdentityPolicy {
                 .replaceAll("\\s+", ".");
     }
 
+    // Converte os dados para o formato necessario.
     public String normalizeEmail(String email) {
         return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
     }
 
+    // Valida a regra aplicada por este metodo.
     public void validateName(String name) {
         if (name == null || name.isBlank()) {
-            throw new InvalidRequestException("O nome é obrigatório.");
+            throw new InvalidRequestException("O nome Ã© obrigatÃ³rio.");
         }
         if (name.trim().length() > 150) {
-            throw new InvalidRequestException("O nome deve possuir no máximo 150 caracteres.");
+            throw new InvalidRequestException("O nome deve possuir no mÃ¡ximo 150 caracteres.");
         }
     }
 
+    // Valida a regra aplicada por este metodo.
     public void validateUsername(String username) {
         if (RESERVED_USERNAMES.contains(username)) {
-            throw new InvalidRequestException("O username informado é reservado.");
+            throw new InvalidRequestException("O username informado Ã© reservado.");
         }
         if (!USERNAME_PATTERN.matcher(username).matches()) {
             throw new InvalidRequestException(
-                    "O username deve começar com letra ou número e usar apenas letras minúsculas, números, ponto, hífen ou sublinhado."
+                    "O username deve comeÃ§ar com letra ou nÃºmero e usar apenas letras minÃºsculas, nÃºmeros, ponto, hÃ­fen ou sublinhado."
             );
         }
     }
 
+    // Valida a regra aplicada por este metodo.
     public void validateEmail(String email) {
         if (email.isBlank() || email.length() > 150 || !EMAIL_PATTERN.matcher(email).matches()) {
-            throw new InvalidRequestException("O e-mail informado é inválido.");
+            throw new InvalidRequestException("O e-mail informado Ã© invÃ¡lido.");
         }
     }
 
+    // Valida a regra aplicada por este metodo.
     public void validateAvailable(String username, String email) {
         if (userRepository.existsByUsernameIgnoreCase(username)) {
-            throw new ConflictException("O username informado já está cadastrado.");
+            throw new ConflictException("O username informado jÃ¡ estÃ¡ cadastrado.");
         }
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw new ConflictException("O e-mail informado jÃ¡ estÃ¡ cadastrado.");
+        }
+    }    // Valida a disponibilidade do e-mail informado.
+    public void validateEmailAvailable(String email) {
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("O e-mail informado já está cadastrado.");
         }

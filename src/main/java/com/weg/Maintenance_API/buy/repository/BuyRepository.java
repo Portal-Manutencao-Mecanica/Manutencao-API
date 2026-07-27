@@ -8,10 +8,11 @@ import com.weg.Maintenance_API.enums.BuyStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface BuyRepository extends JpaRepository<Buy, UUID> {
 
-    List<Buy> findAllByStatus(BuyStatus status);
+    Page<Buy> findAllByStatus(BuyStatus status, Pageable pageable);
 }

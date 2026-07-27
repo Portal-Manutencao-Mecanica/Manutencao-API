@@ -8,9 +8,9 @@ import com.weg.Maintenance_API.enums.Role;
 
 import java.time.LocalDateTime;
 
+// Executa a operacao deste metodo.
 public record HistoryLogResponseDto(
         UUID id,
-        String numberCard,
         HistoryAction action,
         String entityType,
         UUID entityId,

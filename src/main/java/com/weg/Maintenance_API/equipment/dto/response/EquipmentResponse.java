@@ -5,9 +5,9 @@ import java.util.UUID;
 
 import java.math.BigDecimal;
 
+// Executa a operacao deste metodo.
 public record EquipmentResponse(
         UUID id,
-        String numberCard,
         String name,
         String sap,
         BigDecimal unitPrice,

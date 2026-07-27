@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 import com.weg.Maintenance_API.enums.Role;
 
+// Executa a operacao deste metodo.
 public record AdminResponseDto(
         UUID id,
         String numberCard,

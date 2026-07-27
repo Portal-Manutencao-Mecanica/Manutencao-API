@@ -1,5 +1,6 @@
 package com.weg.Maintenance_API.organization.entity;
 
+import com.weg.Maintenance_API.enums.OrganizationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -67,6 +68,7 @@ public class Organization {
         this.emailDomain = normalizeDomain(emailDomain);
     }
 
+    // Executa a operacao deste metodo.
     public boolean acceptsEmail(String email) {
         if (email == null || !email.contains("@")) {
             return false;
@@ -90,6 +92,7 @@ public class Organization {
         emailDomain = normalizeDomain(emailDomain);
     }
 
+    // Converte os dados para o formato necessario.
     private static String normalizeDomain(String domain) {
         return domain == null
                 ? null

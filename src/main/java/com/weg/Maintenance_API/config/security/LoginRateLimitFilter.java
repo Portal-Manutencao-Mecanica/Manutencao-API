@@ -42,12 +42,14 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         this.window = Duration.ofSeconds(refillSeconds);
     }
 
+    // Executa a operacao deste metodo.
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         return !HttpMethod.POST.matches(request.getMethod())
                 || !request.getRequestURI().endsWith("/auth/login");
     }
 
+    // Executa a operacao deste metodo.
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -85,6 +87,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    // Cria e persiste os dados da operacao.
     private Bucket createBucket() {
         Bandwidth limit = Bandwidth.builder()
                 .capacity(requestsPerWindow)

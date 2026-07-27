@@ -23,6 +23,7 @@ public class UserManagementController {
 
     private final UserCreationService userCreationService;
 
+    // Cria e persiste os dados da operacao.
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")

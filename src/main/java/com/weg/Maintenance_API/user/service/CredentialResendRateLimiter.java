@@ -33,6 +33,7 @@ public class CredentialResendRateLimiter {
         this.window = Duration.ofSeconds(windowSeconds);
     }
 
+    // Executa a operacao deste metodo.
     public void check(UUID actorId, UUID targetId) {
         String key = actorId + ":" + targetId;
         Instant now = Instant.now();

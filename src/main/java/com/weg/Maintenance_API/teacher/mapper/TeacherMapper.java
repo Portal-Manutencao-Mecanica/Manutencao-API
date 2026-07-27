@@ -31,4 +31,3 @@ public interface TeacherMapper {
         return classGroup == null ? null : classGroup.getId();
     }
 }
-

@@ -24,6 +24,7 @@ public class NotificationEmailListener {
     @Value("${app.mail.from}")
     private String mailFrom;
 
+    // Executa o fluxo de comunicacao ou registro.
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void send(NotificationEmailRequestedEvent event) {
         SimpleMailMessage email = new SimpleMailMessage();
@@ -36,7 +37,7 @@ public class NotificationEmailListener {
             mailSender.send(email);
         } catch (MailException exception) {
             LOGGER.error(
-                    "Falha ao enviar notificação por e-mail. notificationId={}",
+                    "Falha ao enviar notificaÃ§Ã£o por e-mail. notificationId={}",
                     event.notificationId(),
                     exception
             );

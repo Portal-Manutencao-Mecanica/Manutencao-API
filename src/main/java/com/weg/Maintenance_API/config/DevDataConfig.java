@@ -1,13 +1,15 @@
 package com.weg.Maintenance_API.config;
 
 import com.weg.Maintenance_API.admin.entity.Admin;
+import com.weg.Maintenance_API.enums.OrganizationType;
+import com.weg.Maintenance_API.organization.entity.Organization;
 import com.weg.Maintenance_API.organization.repository.OrganizationRepository;
 import com.weg.Maintenance_API.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -23,6 +25,7 @@ public class DevDataConfig {
     private final UserRepository userRepository;
     private final OrganizationRepository organizationRepository;
 
+    // Cria a organizacao e o administrador minimos para o ambiente dev.
     @Bean
     CommandLineRunner createDevelopmentAdmin(
             PasswordEncoder passwordEncoder,
@@ -31,26 +34,29 @@ public class DevDataConfig {
         return args -> {
             if (adminPassword == null || adminPassword.isBlank()) {
                 LOGGER.warn(
-                        "Usuário administrador de desenvolvimento não criado. "
+                        "Administrador de desenvolvimento nao criado. "
                                 + "Defina DEV_ADMIN_PASSWORD para habilitar o seed."
                 );
                 return;
             }
             if (userRepository.findByEmailIgnoreCase("admin@local.com").isEmpty()) {
+                Organization organization = organizationRepository
+                        .findByEmailDomainIgnoreCase("local.com")
+                        .orElseGet(() -> organizationRepository.save(
+                                new Organization(
+                                        "Organizacao Local",
+                                        OrganizationType.OTHER,
+                                        "local.com"
+                                )
+                        ));
                 Admin admin = new Admin(
                         "Administrador Local",
                         "admin@local.com",
                         passwordEncoder.encode(adminPassword)
                 );
                 admin.setUsername("admin.local");
-                admin.setOrganization(
-                        organizationRepository.findByEmailDomainIgnoreCase("local.com")
-                                .orElseThrow(() -> new IllegalStateException(
-                                        "A organização local não foi criada pelas migrations."
-                                ))
-                );
+                admin.setOrganization(organization);
                 admin.setPasswordChangeRequired(false);
-
                 userRepository.save(admin);
             }
         };

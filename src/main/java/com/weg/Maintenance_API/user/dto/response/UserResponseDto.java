@@ -9,6 +9,7 @@ import com.weg.Maintenance_API.user.entity.UserAccountStatus;
 
 import java.time.LocalDateTime;
 
+// Executa a operacao deste metodo.
 public record UserResponseDto(
         UUID id,
         String name,

@@ -22,6 +22,7 @@ public class LoginAttemptService {
     private final UserRepository userRepository;
     private final AuditService auditService;
 
+    // Executa o fluxo de comunicacao ou registro.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordFailure(String email, ClientRequestMetadata metadata) {
         String normalizedEmail = normalize(email);
@@ -50,7 +51,7 @@ public class LoginAttemptService {
                     metadata.ipAddress(),
                     metadata.userAgent(),
                     false,
-                    "Credenciais inválidas."
+                    "Credenciais invÃ¡lidas."
             );
         } else {
             auditService.record(
@@ -64,12 +65,13 @@ public class LoginAttemptService {
                     metadata.userAgent(),
                     false,
                     user.isTemporarilyLocked()
-                            ? "Conta bloqueada temporariamente após tentativas inválidas."
-                            : "Credenciais inválidas."
+                            ? "Conta bloqueada temporariamente apÃ³s tentativas invÃ¡lidas."
+                            : "Credenciais invÃ¡lidas."
             );
         }
     }
 
+    // Executa o fluxo de comunicacao ou registro.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordSuccess(UUID userId) {
         userRepository.findByIdForUpdate(userId).ifPresent(user -> {
@@ -80,6 +82,7 @@ public class LoginAttemptService {
         });
     }
 
+    // Executa a operacao deste metodo.
     private Duration lockDuration(int lockoutCount) {
         return switch (lockoutCount) {
             case 1 -> Duration.ofMinutes(5);
@@ -88,6 +91,7 @@ public class LoginAttemptService {
         };
     }
 
+    // Converte os dados para o formato necessario.
     private String normalize(String email) {
         return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
     }

@@ -27,7 +27,7 @@ public class PasswordRecoveryRateLimiter {
     ) {
         if (ipCapacity <= 0 || emailCapacity <= 0 || windowSeconds <= 0) {
             throw new IllegalArgumentException(
-                    "Os limites de recuperação de senha devem ser positivos."
+                    "Os limites de recuperaÃ§Ã£o de senha devem ser positivos."
             );
         }
         this.ipCapacity = ipCapacity;
@@ -35,16 +35,18 @@ public class PasswordRecoveryRateLimiter {
         this.window = Duration.ofSeconds(windowSeconds);
     }
 
+    // Executa a operacao deste metodo.
     public void check(String ipAddress, String email) {
         Instant now = Instant.now();
         if (!acquire(ipAttempts, "ip:" + ipAddress, ipCapacity, now)
                 || !acquire(emailAttempts, "email:" + email, emailCapacity, now)) {
             throw new RateLimitExceededException(
-                    "Muitas solicitações de recuperação. Aguarde antes de tentar novamente."
+                    "Muitas solicitaÃ§Ãµes de recuperaÃ§Ã£o. Aguarde antes de tentar novamente."
             );
         }
     }
 
+    // Executa a operacao deste metodo.
     private boolean acquire(
             Map<String, Deque<Instant>> attempts,
             String key,

@@ -3,6 +3,7 @@ package com.weg.Maintenance_API.user.dto.request;
 import com.weg.Maintenance_API.validation.ValidPassword;
 import jakarta.validation.constraints.NotBlank;
 
+// Atualiza o estado conforme os dados informados.
 public record ChangePasswordRequestDto(
         @NotBlank
         String currentPassword,

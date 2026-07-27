@@ -25,11 +25,12 @@ public class CorsConfig {
                 .toList();
         if (this.allowedOrigins.isEmpty() || this.allowedOrigins.contains("*")) {
             throw new IllegalStateException(
-                    "CORS_ALLOWED_ORIGINS deve informar origens explícitas quando credenciais estão habilitadas."
+                    "CORS_ALLOWED_ORIGINS deve informar origens explÃ­citas quando credenciais estÃ£o habilitadas."
             );
         }
     }
 
+    // Configura o componente da aplicacao.
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

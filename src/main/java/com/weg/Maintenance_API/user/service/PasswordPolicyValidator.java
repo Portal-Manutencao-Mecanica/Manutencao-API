@@ -14,9 +14,10 @@ public class PasswordPolicyValidator {
     private static final Pattern NUMBER = Pattern.compile("\\d");
     private static final Pattern SPECIAL = Pattern.compile("[^A-Za-z0-9]");
 
+    // Valida a regra aplicada por este metodo.
     public void validate(String password, String confirmation) {
         if (!Objects.equals(password, confirmation)) {
-            throw new InvalidRequestException("A nova senha e a confirmação não coincidem.");
+            throw new InvalidRequestException("A nova senha e a confirmaÃ§Ã£o nÃ£o coincidem.");
         }
         if (password == null || password.length() < 8 || password.length() > 128) {
             throw new InvalidRequestException(
@@ -28,7 +29,7 @@ public class PasswordPolicyValidator {
                 || !NUMBER.matcher(password).find()
                 || !SPECIAL.matcher(password).find()) {
             throw new InvalidRequestException(
-                    "A senha deve conter letra maiúscula, letra minúscula, número e caractere especial."
+                    "A senha deve conter letra maiÃºscula, letra minÃºscula, nÃºmero e caractere especial."
             );
         }
     }

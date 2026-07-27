@@ -26,6 +26,7 @@ public class EquipmentService {
     private final EquipmentMapper equipmentMapper;
     private final EquipmentRepository equipmentRepository;
 
+    // Cria e persiste os dados da operacao.
     @Transactional
     public EquipmentResponse save(EquipmentRequest equipmentRequest) {
         Equipment equipment = equipmentMapper.toEntity(equipmentRequest);
@@ -33,17 +34,22 @@ public class EquipmentService {
         return equipmentMapper.toResponse(equipment);
     }
 
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
-    public List<EquipmentResponse> getAll() {
-        return equipmentRepository.findAll().stream().map(equipmentMapper::toResponse).toList();
+    public org.springframework.data.domain.Page<EquipmentResponse> getAll(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return equipmentRepository.findAll(pageable).map(equipmentMapper::toResponse);
     }
 
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
     public EquipmentResponse getById(UUID id) {
         Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
         return equipmentMapper.toResponse(equipment);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public EquipmentResponse update(UUID id, EquipmentRequest equipmentRequest) {
         Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
@@ -55,6 +61,7 @@ public class EquipmentService {
         return equipmentMapper.toResponse(equipment);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public EquipmentResponse patch(UUID id, EquipmentPatchRequest request) {
         Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
@@ -76,8 +83,9 @@ public class EquipmentService {
         return equipmentMapper.toResponse(equipment);
     }
 
+    // Remove ou invalida os dados solicitados.
     @Transactional
     public void delete(UUID id) {
-        equipmentRepository.deleteById(id);
+        equipmentRepository.delete(equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id)));
     }
 }

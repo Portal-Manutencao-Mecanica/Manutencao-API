@@ -15,11 +15,13 @@ public final class RuntimeConfiguredJwtDecoder implements JwtDecoder {
         this.jwkSetUri = jwkSetUri;
     }
 
+    // Executa a operacao deste metodo.
     @Override
     public Jwt decode(String token) throws JwtException {
         return getDelegate().decode(token);
     }
 
+    // Busca os dados necessarios para esta operacao.
     private JwtDecoder getDelegate() {
         if (!StringUtils.hasText(jwkSetUri)) {
             throw new JwtException("JWT validation is not configured");

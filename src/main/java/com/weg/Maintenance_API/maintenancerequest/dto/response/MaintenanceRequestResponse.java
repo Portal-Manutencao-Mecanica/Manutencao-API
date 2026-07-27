@@ -10,9 +10,9 @@ import com.weg.Maintenance_API.enums.Sector;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Executa a operacao deste metodo.
 public record MaintenanceRequestResponse(
         UUID id,
-        String numberCard,
         MaintenanceRequestStatus status,
         Sector sector,
         Priority priority,

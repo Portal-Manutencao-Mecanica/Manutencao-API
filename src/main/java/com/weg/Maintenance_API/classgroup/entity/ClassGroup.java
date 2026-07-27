@@ -25,9 +25,6 @@ public class ClassGroup {
     @Column(name = "class_group_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Column(name = "acronym", nullable = false, unique = true, length = 30)
     private String acronym;
 

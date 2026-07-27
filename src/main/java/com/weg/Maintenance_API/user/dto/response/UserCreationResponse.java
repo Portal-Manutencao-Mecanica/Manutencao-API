@@ -7,6 +7,7 @@ import com.weg.Maintenance_API.user.entity.UserAccountStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+// Executa a operacao deste metodo.
 public record UserCreationResponse(
         UUID id,
         String name,

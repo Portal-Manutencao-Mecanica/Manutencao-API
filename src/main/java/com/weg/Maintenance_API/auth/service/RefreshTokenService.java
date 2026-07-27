@@ -25,24 +25,26 @@ public class RefreshTokenService {
     @Value("${app.jwt.refresh-expiration-seconds:2592000}")
     private long refreshExpirationSeconds;
 
+    // Valida a regra aplicada por este metodo.
     @Transactional
     public IssuedRefreshToken issue(User user, ClientRequestMetadata metadata) {
         return create(user, metadata);
     }
 
+    // Executa a operacao deste metodo.
     @Transactional
     public RotatedRefreshToken rotate(String rawToken, ClientRequestMetadata metadata) {
         String tokenHash = secureTokenService.hash(rawToken);
         RefreshToken currentToken = refreshTokenRepository.findByTokenHashForUpdate(tokenHash)
-                .orElseThrow(() -> new InvalidTokenException("Refresh token inválido."));
+                .orElseThrow(() -> new InvalidTokenException("Refresh token invÃ¡lido."));
 
         LocalDateTime now = LocalDateTime.now();
         if (currentToken.isRevoked()) {
-            throw new InvalidTokenException("Refresh token inválido.");
+            throw new InvalidTokenException("Refresh token invÃ¡lido.");
         }
         if (currentToken.isExpired(now)) {
             currentToken.revoke(now);
-            throw new ExpiredTokenException("Refresh token expirado. Faça login novamente.");
+            throw new ExpiredTokenException("Refresh token expirado. FaÃ§a login novamente.");
         }
 
         User user = currentToken.getUser();
@@ -66,6 +68,7 @@ public class RefreshTokenService {
         return new RotatedRefreshToken(user, nextToken.rawToken(), nextToken.expiresAt());
     }
 
+    // Remove ou invalida os dados solicitados.
     @Transactional
     public void revoke(String rawToken, ClientRequestMetadata metadata) {
         String tokenHash = secureTokenService.hash(rawToken);
@@ -81,11 +84,12 @@ public class RefreshTokenService {
                     metadata.ipAddress(),
                     metadata.userAgent(),
                     true,
-                    "Sessão encerrada."
+                    "SessÃ£o encerrada."
             );
         });
     }
 
+    // Remove ou invalida os dados solicitados.
     @Transactional
     public int revokeAll(UUID userId, ClientRequestMetadata metadata, User actor) {
         int revoked = refreshTokenRepository.revokeAllActiveByUserId(userId, LocalDateTime.now());
@@ -99,16 +103,18 @@ public class RefreshTokenService {
                 metadata.ipAddress(),
                 metadata.userAgent(),
                 true,
-                "Sessões revogadas: " + revoked
+                "SessÃµes revogadas: " + revoked
         );
         return revoked;
     }
 
+    // Remove ou invalida os dados solicitados.
     @Transactional
     public int revokeAll(UUID userId) {
         return refreshTokenRepository.revokeAllActiveByUserId(userId, LocalDateTime.now());
     }
 
+    // Cria e persiste os dados da operacao.
     private IssuedRefreshToken create(User user, ClientRequestMetadata metadata) {
         String rawToken = secureTokenService.generate();
         LocalDateTime expiresAt = LocalDateTime.now().plusSeconds(refreshExpirationSeconds);
@@ -122,16 +128,18 @@ public class RefreshTokenService {
         return new IssuedRefreshToken(rawToken, expiresAt);
     }
 
+    // Valida a regra aplicada por este metodo.
     private void validateUserCanRefresh(User user) {
         if (!user.isEnabled()
                 || !user.isAccountNonLocked()
                 || user.isTemporarilyLocked()
                 || user.isPasswordChangeRequired()
                 || !user.getOrganization().isActive()) {
-            throw new InvalidTokenException("A sessão não pode ser renovada. Faça login novamente.");
+            throw new InvalidTokenException("A sessÃ£o nÃ£o pode ser renovada. FaÃ§a login novamente.");
         }
     }
 
+    // Valida a regra aplicada por este metodo.
     public record IssuedRefreshToken(String rawToken, LocalDateTime expiresAt) {
     }
 

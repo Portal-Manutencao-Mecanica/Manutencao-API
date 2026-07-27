@@ -33,21 +33,27 @@ public class HelperMaterialController {
 
     private final HelperMaterialService service;
 
+    // Cria e persiste os dados da operacao.
     @PostMapping
     public ResponseEntity<HelperMaterialResponse> create(@Valid @RequestBody HelperMaterialRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request));
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping
-    public ResponseEntity<List<HelperMaterialResponse>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<org.springframework.data.domain.Page<HelperMaterialResponse>> getAll(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.getAll(pageable));
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/{id}")
     public ResponseEntity<HelperMaterialResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @PutMapping("/{id}")
     public ResponseEntity<HelperMaterialResponse> update(
             @PathVariable UUID id,
@@ -56,6 +62,7 @@ public class HelperMaterialController {
         return ResponseEntity.ok(service.update(id, request));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @PatchMapping("/{id}")
     public ResponseEntity<HelperMaterialResponse> patch(
             @PathVariable UUID id,
@@ -64,6 +71,7 @@ public class HelperMaterialController {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
+    // Remove ou invalida os dados solicitados.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);

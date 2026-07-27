@@ -12,5 +12,3 @@ public interface MachineRepository extends JpaRepository<Machine, UUID>{
     
     Page<Machine> findAll(Pageable pageable);
 }
-
-

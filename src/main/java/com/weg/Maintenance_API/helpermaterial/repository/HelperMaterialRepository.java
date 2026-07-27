@@ -11,5 +11,3 @@ import com.weg.Maintenance_API.helpermaterial.entity.HelperMaterial;
 public interface HelperMaterialRepository extends JpaRepository<HelperMaterial, UUID>{
     
 }
-
-

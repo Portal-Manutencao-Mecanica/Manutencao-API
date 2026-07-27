@@ -29,13 +29,14 @@ public class UserImportService {
     private final UserIdentityPolicy identityPolicy;
     private final AuditService auditService;
 
+    // Executa a operacao deste metodo.
     public UserImportResponse importUsers(
             MultipartFile file,
             String actorEmail,
             ClientRequestMetadata metadata
     ) {
         User actor = userRepository.findByEmailIgnoreCase(actorEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado"));
+                .orElseThrow(() -> new ResourceNotFoundException("UsuÃ¡rio autenticado"));
         SpreadsheetUserReader.SpreadsheetData spreadsheet;
         try {
             spreadsheet = spreadsheetUserReader.read(file);
@@ -50,7 +51,7 @@ public class UserImportService {
                     metadata.ipAddress(),
                     metadata.userAgent(),
                     false,
-                    "Arquivo de importação rejeitado."
+                    "Arquivo de importaÃ§Ã£o rejeitado."
             );
             throw exception;
         }
@@ -93,7 +94,7 @@ public class UserImportService {
                         new UserImportRowException(
                                 "DATA_CONFLICT",
                                 "email",
-                                "O e-mail ou username já foi cadastrado por outra operação.",
+                                "O e-mail ou username jÃ¡ foi cadastrado por outra operaÃ§Ã£o.",
                                 null
                         )
                 );
@@ -105,7 +106,7 @@ public class UserImportService {
                         new UserImportRowException(
                                 "ROW_PROCESSING_ERROR",
                                 "row",
-                                "A linha não pôde ser processada.",
+                                "A linha nÃ£o pÃ´de ser processada.",
                                 null
                         )
                 );
@@ -130,6 +131,7 @@ public class UserImportService {
         return lifecycleService.response(importId);
     }
 
+    // Busca os dados necessarios para esta operacao.
     private Map<String, Integer> counts(
             List<SpreadsheetUserRow> rows,
             Function<SpreadsheetUserRow, String> extractor
@@ -144,6 +146,7 @@ public class UserImportService {
         return counts;
     }
 
+    // Executa a operacao deste metodo.
     private boolean duplicate(Map<String, Integer> counts, String value) {
         return !value.isBlank() && counts.getOrDefault(value, 0) > 1;
     }

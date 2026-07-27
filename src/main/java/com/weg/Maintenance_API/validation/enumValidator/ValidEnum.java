@@ -10,10 +10,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Valida se um texto corresponde a uma constante do enum informado.
+ * Validates whether text corresponds to a constant in the given enum.
  *
- * Pode ser usada em campos de DTOs, parâmetros de controller e componentes
- * de records.
+ * It can be used on DTO fields, controller parameters, and record components.
+
  */
 @Documented
 @Target({

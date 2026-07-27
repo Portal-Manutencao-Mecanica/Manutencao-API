@@ -36,6 +36,7 @@ public class UserCreationService {
     private final AuditService auditService;
     private final ApplicationEventPublisher eventPublisher;
 
+    // Cria e persiste os dados da operacao.
     @Transactional
     public UserCreationResponse create(
             CreateUserRequest request,
@@ -43,7 +44,7 @@ public class UserCreationService {
             ClientRequestMetadata metadata
     ) {
         User actor = userRepository.findByEmailIgnoreCase(actorEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado"));
+                .orElseThrow(() -> new ResourceNotFoundException("UsuÃ¡rio autenticado"));
         Organization organization = resolveOrganization(actor, request.organizationId());
 
         try {
@@ -65,7 +66,7 @@ public class UserCreationService {
         }
 
         if (!organization.isActive()) {
-            throw new InvalidRequestException("A organização selecionada está inativa.");
+            throw new InvalidRequestException("A organizaÃ§Ã£o selecionada estÃ¡ inativa.");
         }
 
         String username = userIdentityPolicy.normalizeUsername(request.username());
@@ -76,7 +77,7 @@ public class UserCreationService {
         userIdentityPolicy.validateAvailable(username, email);
         if (!organization.acceptsEmail(email)) {
             throw new InvalidRequestException(
-                    "O domínio do e-mail não corresponde à organização selecionada."
+                    "O domÃ­nio do e-mail nÃ£o corresponde Ã  organizaÃ§Ã£o selecionada."
             );
         }
 
@@ -94,7 +95,7 @@ public class UserCreationService {
             userRepository.saveAndFlush(user);
         } catch (DataIntegrityViolationException exception) {
             throw new ConflictException(
-                    "Não foi possível criar o usuário porque o e-mail ou username já está em uso."
+                    "NÃ£o foi possÃ­vel criar o usuÃ¡rio porque o e-mail ou username jÃ¡ estÃ¡ em uso."
             );
         }
 
@@ -109,7 +110,7 @@ public class UserCreationService {
                 metadata.userAgent(),
                 true,
                 "Role criada: " + user.getRole()
-                        + "; organização: " + organization.getName()
+                        + "; organizaÃ§Ã£o: " + organization.getName()
         );
         eventPublisher.publishEvent(new UserCreatedEvent(
                 user.getId(),
@@ -120,18 +121,20 @@ public class UserCreationService {
         return toResponse(user);
     }
 
+    // Executa a operacao deste metodo.
     private Organization resolveOrganization(User actor, UUID requestedOrganizationId) {
         if (actor.getRole() == Role.COORDENADOR) {
             return actor.getOrganization();
         }
         if (requestedOrganizationId == null) {
             throw new InvalidRequestException(
-                    "A organização é obrigatória para a criação feita por administrador."
+                    "A organizaÃ§Ã£o Ã© obrigatÃ³ria para a criaÃ§Ã£o feita por administrador."
             );
         }
         return organizationService.getRequired(requestedOrganizationId);
     }
 
+    // Converte os dados para o formato necessario.
     private UserCreationResponse toResponse(User user) {
         return new UserCreationResponse(
                 user.getId(),

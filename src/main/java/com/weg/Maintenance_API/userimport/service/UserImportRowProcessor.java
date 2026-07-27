@@ -43,6 +43,7 @@ public class UserImportRowProcessor {
     private final ApplicationEventPublisher eventPublisher;
     private final AuditService auditService;
 
+    // Executa a operacao deste metodo.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void process(
             UUID importId,
@@ -57,14 +58,14 @@ public class UserImportRowProcessor {
         User actor = userRepository.findById(actorId).orElseThrow();
 
         if (row.isEmpty()) {
-            throw rowError("EMPTY_ROW", "row", "A linha está vazia.", null);
+            throw rowError("EMPTY_ROW", "row", "A linha estÃ¡ vazia.", null);
         }
         Role role = parseRole(row.role());
         if (duplicateEmailInFile) {
             throw rowError(
                     "DUPLICATE_EMAIL_IN_FILE",
                     "email",
-                    "O e-mail está duplicado dentro da planilha.",
+                    "O e-mail estÃ¡ duplicado dentro da planilha.",
                     role
             );
         }
@@ -72,7 +73,7 @@ public class UserImportRowProcessor {
             throw rowError(
                     "DUPLICATE_USERNAME_IN_FILE",
                     "username",
-                    "O username está duplicado dentro da planilha.",
+                    "O username estÃ¡ duplicado dentro da planilha.",
                     role
             );
         }
@@ -115,8 +116,8 @@ public class UserImportRowProcessor {
                 metadata.ipAddress(),
                 metadata.userAgent(),
                 true,
-                "Importação: " + importId + "; role: " + role
-                        + "; organização: " + organization.getName()
+                "ImportaÃ§Ã£o: " + importId + "; role: " + role
+                        + "; organizaÃ§Ã£o: " + organization.getName()
         );
         eventPublisher.publishEvent(new UserCreatedEvent(
                 user.getId(),
@@ -126,6 +127,7 @@ public class UserImportRowProcessor {
         ));
     }
 
+    // Executa o fluxo de comunicacao ou registro.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordFailure(
             UUID importId,
@@ -148,6 +150,7 @@ public class UserImportRowProcessor {
         ));
     }
 
+    // Valida a regra aplicada por este metodo.
     private void validateIdentity(
             SpreadsheetUserRow row,
             String username,
@@ -171,6 +174,7 @@ public class UserImportRowProcessor {
         }
     }
 
+    // Valida a regra aplicada por este metodo.
     private void validateOrganizationAndPermission(
             User actor,
             Organization organization,
@@ -181,7 +185,7 @@ public class UserImportRowProcessor {
             throw rowError(
                     "INACTIVE_ORGANIZATION",
                     "organization",
-                    "A organização informada está inativa.",
+                    "A organizaÃ§Ã£o informada estÃ¡ inativa.",
                     role
             );
         }
@@ -189,7 +193,7 @@ public class UserImportRowProcessor {
             throw rowError(
                     "EMAIL_DOMAIN_MISMATCH",
                     "email",
-                    "O domínio do e-mail não corresponde à organização.",
+                    "O domÃ­nio do e-mail nÃ£o corresponde Ã  organizaÃ§Ã£o.",
                     role
             );
         }
@@ -203,23 +207,25 @@ public class UserImportRowProcessor {
         }
     }
 
+    // Valida a regra aplicada por este metodo.
     private void validateDatabaseDuplicates(String username, String email, Role role) {
         userRepository.findByEmailIgnoreCase(email).ifPresent(existing -> {
             String message = existing.isEnabled()
-                    ? "O e-mail já está cadastrado."
-                    : "Existe um usuário inativo cadastrado com este e-mail.";
+                    ? "O e-mail jÃ¡ estÃ¡ cadastrado."
+                    : "Existe um usuÃ¡rio inativo cadastrado com este e-mail.";
             throw rowError("DUPLICATE_EMAIL", "email", message, role);
         });
         if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw rowError(
                     "DUPLICATE_USERNAME",
                     "username",
-                    "O username já está cadastrado.",
+                    "O username jÃ¡ estÃ¡ cadastrado.",
                     role
             );
         }
     }
 
+    // Executa a operacao deste metodo.
     private Organization resolveOrganization(User actor, String value, Role role) {
         if (actor.getRole() == Role.COORDENADOR) {
             Organization ownOrganization = actor.getOrganization();
@@ -227,7 +233,7 @@ public class UserImportRowProcessor {
                 throw rowError(
                         "CROSS_ORGANIZATION_IMPORT",
                         "organization",
-                        "Coordenadores só podem importar para sua própria organização.",
+                        "Coordenadores sÃ³ podem importar para sua prÃ³pria organizaÃ§Ã£o.",
                         role
                 );
             }
@@ -237,7 +243,7 @@ public class UserImportRowProcessor {
             throw rowError(
                     "REQUIRED_ORGANIZATION",
                     "organization",
-                    "A organização é obrigatória para importações realizadas por administrador.",
+                    "A organizaÃ§Ã£o Ã© obrigatÃ³ria para importaÃ§Ãµes realizadas por administrador.",
                     role
             );
         }
@@ -247,7 +253,7 @@ public class UserImportRowProcessor {
                     .orElseThrow(() -> rowError(
                             "ORGANIZATION_NOT_FOUND",
                             "organization",
-                            "A organização informada não existe.",
+                            "A organizaÃ§Ã£o informada nÃ£o existe.",
                             role
                     ));
         } catch (IllegalArgumentException ignored) {
@@ -256,12 +262,13 @@ public class UserImportRowProcessor {
                     .orElseThrow(() -> rowError(
                             "ORGANIZATION_NOT_FOUND",
                             "organization",
-                            "A organização informada não existe.",
+                            "A organizaÃ§Ã£o informada nÃ£o existe.",
                             role
                     ));
         }
     }
 
+    // Valida a regra aplicada por este metodo.
     private boolean matchesOrganization(Organization organization, String value) {
         String normalized = value.trim();
         return organization.getId().toString().equalsIgnoreCase(normalized)
@@ -271,28 +278,30 @@ public class UserImportRowProcessor {
                 );
     }
 
+    // Executa a operacao deste metodo.
     private Role parseRole(String value) {
         if (value == null || value.isBlank()) {
-            throw rowError("REQUIRED_ROLE", "role", "A role é obrigatória.", null);
+            throw rowError("REQUIRED_ROLE", "role", "A role Ã© obrigatÃ³ria.", null);
         }
         Role role = switch (value.trim().toUpperCase(Locale.ROOT)) {
             case "PROFESSOR", "TEACHER" -> Role.PROFESSOR;
             case "ALUNO", "STUDENT" -> Role.ALUNO;
             case "ADMIN" -> Role.ADMIN;
             case "COORDENADOR", "COORDINATOR" -> Role.COORDENADOR;
-            default -> throw rowError("INVALID_ROLE", "role", "A role informada é inválida.", null);
+            default -> throw rowError("INVALID_ROLE", "role", "A role informada Ã© invÃ¡lida.", null);
         };
         if (role == Role.ADMIN || role == Role.COORDENADOR) {
             throw rowError(
                     "FORBIDDEN_IMPORT_ROLE",
                     "role",
-                    "A importação permite apenas usuários PROFESSOR ou ALUNO.",
+                    "A importaÃ§Ã£o permite apenas usuÃ¡rios PROFESSOR ou ALUNO.",
                     role
             );
         }
         return role;
     }
 
+    // Executa a operacao deste metodo.
     private UserImportRowException rowError(
             String code,
             String field,

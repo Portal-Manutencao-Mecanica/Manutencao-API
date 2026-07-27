@@ -24,16 +24,19 @@ public class StudentController {
 
     private final StudentService service;
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping
     public ResponseEntity<List<StudentDtoResponse>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/ativos")
     public ResponseEntity<List<StudentDtoResponse>> getAllAtivos() {
         return ResponseEntity.ok(service.getAllAtivos());
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/{id}")
     public ResponseEntity<StudentDtoResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));

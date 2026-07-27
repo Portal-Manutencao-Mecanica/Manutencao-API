@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValid(
             MethodArgumentNotValidException exception,
@@ -31,7 +32,7 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toMap(
                         error -> error.getField(),
                         error -> error.getDefaultMessage() == null
-                                ? "Valor inválido."
+                                ? "Valor invÃ¡lido."
                                 : error.getDefaultMessage(),
                         (first, ignored) -> first,
                         LinkedHashMap::new
@@ -39,12 +40,13 @@ public class GlobalExceptionHandler {
         return response(
                 HttpStatus.BAD_REQUEST,
                 "VALIDATION_ERROR",
-                "Existem campos inválidos.",
+                "Existem campos invÃ¡lidos.",
                 request,
                 errors
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
             ConstraintViolationException exception,
@@ -61,12 +63,13 @@ public class GlobalExceptionHandler {
         return response(
                 HttpStatus.BAD_REQUEST,
                 "VALIDATION_ERROR",
-                "Existem parâmetros inválidos.",
+                "Existem parÃ¢metros invÃ¡lidos.",
                 request,
                 errors
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidRequestBody(
             HttpMessageNotReadableException exception,
@@ -75,12 +78,13 @@ public class GlobalExceptionHandler {
         return response(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_REQUEST_BODY",
-                "O corpo da requisição é inválido.",
+                "O corpo da requisiÃ§Ã£o Ã© invÃ¡lido.",
                 request,
                 Map.of()
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiErrorResponse> handleMissingParameter(
             MissingServletRequestParameterException exception,
@@ -89,12 +93,13 @@ public class GlobalExceptionHandler {
         return response(
                 HttpStatus.BAD_REQUEST,
                 "MISSING_PARAMETER",
-                "Um parâmetro obrigatório não foi informado.",
+                "Um parÃ¢metro obrigatÃ³rio nÃ£o foi informado.",
                 request,
-                Map.of(exception.getParameterName(), "O parâmetro é obrigatório.")
+                Map.of(exception.getParameterName(), "O parÃ¢metro Ã© obrigatÃ³rio.")
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiErrorResponse> handleTypeMismatch(
             MethodArgumentTypeMismatchException exception,
@@ -103,12 +108,13 @@ public class GlobalExceptionHandler {
         return response(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_PARAMETER",
-                "O identificador ou parâmetro informado é inválido.",
+                "O identificador ou parÃ¢metro informado Ã© invÃ¡lido.",
                 request,
-                Map.of(exception.getName(), "Valor incompatível com o tipo esperado.")
+                Map.of(exception.getName(), "Valor incompatÃ­vel com o tipo esperado.")
         );
     }
 
+    // Executa a operacao deste metodo.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpectedError(
             Exception exception,
@@ -123,6 +129,7 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // Executa a operacao deste metodo.
     private ResponseEntity<ApiErrorResponse> response(
             HttpStatus status,
             String errorCode,

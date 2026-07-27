@@ -33,6 +33,7 @@ public class UserAdministrationService {
     private final AuditService auditService;
     private final ApplicationEventPublisher eventPublisher;
 
+    // Executa a operacao deste metodo.
     @Transactional
     public ManagedUserResponse block(
             UUID userId,
@@ -46,11 +47,11 @@ public class UserAdministrationService {
         validateNotSelf(actor, target, "bloquear");
         if (!target.isEnabled()) {
             throw new InvalidStateException(
-                    "O usuário está inativo. Reative-o antes de alterar o bloqueio."
+                    "O usuÃ¡rio estÃ¡ inativo. Reative-o antes de alterar o bloqueio."
             );
         }
         if (!target.isAccountNonLocked()) {
-            throw new InvalidStateException("O usuário já está bloqueado.");
+            throw new InvalidStateException("O usuÃ¡rio jÃ¡ estÃ¡ bloqueado.");
         }
         protectLastActiveAdmin(target);
 
@@ -64,6 +65,7 @@ public class UserAdministrationService {
         return response(target);
     }
 
+    // Executa a operacao deste metodo.
     @Transactional
     public ManagedUserResponse unblock(
             UUID userId,
@@ -76,7 +78,7 @@ public class UserAdministrationService {
         permissionService.validateCanManage(actor, target);
         validateNotSelf(actor, target, "desbloquear");
         if (target.isAccountNonLocked()) {
-            throw new InvalidStateException("O usuário não está bloqueado.");
+            throw new InvalidStateException("O usuÃ¡rio nÃ£o estÃ¡ bloqueado.");
         }
 
         target.setAccountNonLocked(true);
@@ -90,6 +92,7 @@ public class UserAdministrationService {
         return response(target);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public ManagedUserResponse deactivate(
             UUID userId,
@@ -102,7 +105,7 @@ public class UserAdministrationService {
         permissionService.validateCanManage(actor, target);
         validateNotSelf(actor, target, "inativar");
         if (!target.isEnabled()) {
-            throw new InvalidStateException("O usuário já está inativo.");
+            throw new InvalidStateException("O usuÃ¡rio jÃ¡ estÃ¡ inativo.");
         }
         protectLastActiveAdmin(target);
 
@@ -115,6 +118,7 @@ public class UserAdministrationService {
         return response(target);
     }
 
+    // Executa a operacao deste metodo.
     @Transactional
     public ManagedUserResponse reactivate(
             UUID userId,
@@ -127,7 +131,7 @@ public class UserAdministrationService {
         permissionService.validateCanManage(actor, target);
         validateNotSelf(actor, target, "reativar");
         if (target.isEnabled()) {
-            throw new InvalidStateException("O usuário já está ativo.");
+            throw new InvalidStateException("O usuÃ¡rio jÃ¡ estÃ¡ ativo.");
         }
 
         target.setEnabled(true);
@@ -138,6 +142,7 @@ public class UserAdministrationService {
         return response(target);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public ManagedUserResponse changeRole(
             UUID userId,
@@ -151,19 +156,19 @@ public class UserAdministrationService {
         validateNotSelf(actor, target, "alterar a role de");
         if (!target.isEnabled() || !target.isAccountNonLocked()) {
             throw new InvalidStateException(
-                    "Reative e desbloqueie o usuário antes de alterar seus privilégios."
+                    "Reative e desbloqueie o usuÃ¡rio antes de alterar seus privilÃ©gios."
             );
         }
         Role previousRole = target.getRole();
         if (previousRole == targetRole) {
-            throw new InvalidStateException("O usuário já possui a role informada.");
+            throw new InvalidStateException("O usuÃ¡rio jÃ¡ possui a role informada.");
         }
         protectLastActiveAdmin(target);
 
         refreshTokenService.revokeAll(target.getId());
         rolePersistenceService.transition(target.getId(), previousRole, targetRole);
         User changed = userRepository.findById(target.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário"));
+                .orElseThrow(() -> new ResourceNotFoundException("UsuÃ¡rio"));
         auditService.recordInCurrentTransaction(
                 actor,
                 "USER_ROLE_CHANGED",
@@ -179,6 +184,7 @@ public class UserAdministrationService {
         return response(changed);
     }
 
+    // Executa a operacao deste metodo.
     @Transactional
     public CredentialResendResponse resendCredentials(
             UUID userId,
@@ -190,7 +196,7 @@ public class UserAdministrationService {
         permissionService.validateCanResendCredentials(actor, target);
         if (!target.isEnabled() || !target.isAccountNonLocked()) {
             throw new InvalidStateException(
-                    "As credenciais só podem ser reenviadas para um usuário ativo e desbloqueado."
+                    "As credenciais sÃ³ podem ser reenviadas para um usuÃ¡rio ativo e desbloqueado."
             );
         }
         credentialResendRateLimiter.check(actor.getId(), target.getId());
@@ -214,24 +220,28 @@ public class UserAdministrationService {
         );
     }
 
+    // Executa a operacao deste metodo.
     private User actor(String email) {
         return userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado"));
+                .orElseThrow(() -> new ResourceNotFoundException("UsuÃ¡rio autenticado"));
     }
 
+    // Executa a operacao deste metodo.
     private User target(UUID userId) {
         return userRepository.findByIdForUpdate(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário"));
+                .orElseThrow(() -> new ResourceNotFoundException("UsuÃ¡rio"));
     }
 
+    // Valida a regra aplicada por este metodo.
     private void validateNotSelf(User actor, User target, String action) {
         if (actor.getId().equals(target.getId())) {
             throw new InvalidStateException(
-                    "O usuário não pode " + action + " a própria conta."
+                    "O usuÃ¡rio nÃ£o pode " + action + " a prÃ³pria conta."
             );
         }
     }
 
+    // Executa a operacao deste metodo.
     private void protectLastActiveAdmin(User target) {
         if (target.getRole() == Role.ADMIN
                 && target.isEnabled()
@@ -240,21 +250,24 @@ public class UserAdministrationService {
                         Role.ADMIN
                 ) <= 1) {
             throw new InvalidStateException(
-                    "A operação removeria o último administrador ativo."
+                    "A operaÃ§Ã£o removeria o Ãºltimo administrador ativo."
             );
         }
     }
 
+    // Aplica os dados recebidos na entidade.
     private void applyStatusMetadata(User target, User actor, String reason) {
         target.setStatusChangeReason(reason.trim());
         target.setStatusChangedAt(LocalDateTime.now());
         target.setStatusChangedBy(actor.getId());
     }
 
+    // Executa a operacao deste metodo.
     private void incrementSecurityVersion(User user) {
         user.setSecurityVersion(user.getSecurityVersion() + 1);
     }
 
+    // Executa a operacao deste metodo.
     private void audit(
             User actor,
             User target,
@@ -263,7 +276,7 @@ public class UserAdministrationService {
             ClientRequestMetadata metadata
     ) {
         String details = reason == null
-                ? "Operação administrativa concluída."
+                ? "OperaÃ§Ã£o administrativa concluÃ­da."
                 : "Motivo: " + reason.trim();
         auditService.recordInCurrentTransaction(
                 actor,
@@ -279,6 +292,7 @@ public class UserAdministrationService {
         );
     }
 
+    // Executa a operacao deste metodo.
     private ManagedUserResponse response(User user) {
         return new ManagedUserResponse(
                 user.getId(),

@@ -27,6 +27,7 @@ public class UserController {
 
     private final AuthService authService;
 
+    // Executa a operacao deste metodo.
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(
             @Valid @RequestBody LoginRequestDto request,
@@ -37,6 +38,7 @@ public class UserController {
         );
     }
 
+    // Executa a operacao deste metodo.
     @PostMapping("/refresh")
     public ResponseEntity<LoginResponseDto> refresh(
             @Valid @RequestBody RefreshTokenRequest request,
@@ -50,6 +52,7 @@ public class UserController {
         );
     }
 
+    // Executa a operacao deste metodo.
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(
@@ -63,6 +66,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    // Executa a operacao deste metodo.
     @PostMapping("/logout-all")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logoutAll(
@@ -76,6 +80,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    // Executa a operacao deste metodo.
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponseDto> currentUser(Authentication authentication) {

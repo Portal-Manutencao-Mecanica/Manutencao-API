@@ -35,9 +35,6 @@ public class Equipment {
     @Column(name = "equipment_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Column(name = "equipment_name", nullable = false, length = 150)
     private String name;
 

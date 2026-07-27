@@ -33,21 +33,27 @@ public class DesignationController {
 
     private final DesignationService service;
 
+    // Cria e persiste os dados da operacao.
     @PostMapping
     public ResponseEntity<DesignationDtoResponse> create(@Valid @RequestBody DesignationDtoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request));
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping
-    public ResponseEntity<List<DesignationDtoResponse>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<org.springframework.data.domain.Page<DesignationDtoResponse>> getAll(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.getAll(pageable));
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/{id}")
     public ResponseEntity<DesignationDtoResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @PutMapping("/{id}")
     public ResponseEntity<DesignationDtoResponse> update(
             @PathVariable UUID id,
@@ -56,6 +62,7 @@ public class DesignationController {
         return ResponseEntity.ok(service.update(id, request));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @PatchMapping("/{id}")
     public ResponseEntity<DesignationDtoResponse> patch(
             @PathVariable UUID id,
@@ -64,6 +71,7 @@ public class DesignationController {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
+    // Remove ou invalida os dados solicitados.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);

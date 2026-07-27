@@ -50,9 +50,6 @@ public class MachineLog {
     @Column(name = "machine_log_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Column(name = "title", length = 150)
     private String title;
 
@@ -131,6 +128,7 @@ public class MachineLog {
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
 
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         if (registeredAt == null) {

@@ -17,6 +17,7 @@ import com.weg.Maintenance_API.teacher.dto.response.TeacherResponseDto;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
 import com.weg.Maintenance_API.teacher.mapper.TeacherMapper;
 import com.weg.Maintenance_API.teacher.repository.TeacherRepository;
+import com.weg.Maintenance_API.user.service.UserIdentityPolicy;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,36 +28,44 @@ public class TeacherService {
     private final TeacherMapper teacherMapper;
     private final TeacherRepository teacherRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserIdentityPolicy identityPolicy;
 
+    // Cria e persiste os dados da operacao.
     @Transactional
     public TeacherResponseDto save(TeacherRequestDto teacherRequestDto) {
+        identityPolicy.validateEmailAvailable(teacherRequestDto.email());
         Teacher teacher = teacherMapper.toEntity(teacherRequestDto);
         teacher.setPassword(passwordEncoder.encode(teacherRequestDto.password()));
         teacher = teacherRepository.save(teacher);
         return teacherMapper.toResponse(teacher);
     }
 
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
     public List<TeacherResponseDto> getAll() {
         return teacherRepository.findAll().stream().map(teacherMapper::toResponse).toList();
     }
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
     public List<TeacherResponseDto> getAllAtivos() {
         return teacherRepository.findAllByEnabledTrue().stream().map(teacherMapper::toResponse).toList();
     }
 
+    // Executa a operacao deste metodo.
     @Transactional
     public TeacherResponseDto inativar(UUID id) {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
         teacher.setEnabled(false);
         return teacherMapper.toResponse(teacherRepository.save(teacher));
     }
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
     public TeacherResponseDto getById(UUID id) {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
         return teacherMapper.toResponse(teacher);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public TeacherResponseDto update(TeacherRequestDto teacherRequestDto, UUID id) {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
@@ -66,6 +75,7 @@ public class TeacherService {
         return teacherMapper.toResponse(teacherRepository.save(teacher));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public TeacherResponseDto patch(UUID id, TeacherPatchRequest request) {
         Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
@@ -83,8 +93,10 @@ public class TeacherService {
         return teacherMapper.toResponse(teacherRepository.save(teacher));
     }
 
+    // Remove ou invalida os dados solicitados.
     @Transactional
     public void delete(UUID id) {
+        teacherRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Professor", id));
         teacherRepository.deleteById(id);
     }
 }

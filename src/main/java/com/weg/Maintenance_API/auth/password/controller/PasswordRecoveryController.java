@@ -25,10 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class PasswordRecoveryController {
 
     private static final String GENERIC_MESSAGE =
-            "Caso o e-mail esteja cadastrado, as instruções serão enviadas.";
+            "Caso o e-mail esteja cadastrado, as instruÃ§Ãµes serÃ£o enviadas.";
 
     private final PasswordResetTokenService passwordResetTokenService;
 
+    // Executa a operacao deste metodo.
     @PostMapping("/forgot")
     public MessageResponse forgot(
             @Valid @RequestBody ForgotPasswordRequest request,
@@ -41,6 +42,7 @@ public class PasswordRecoveryController {
         return new MessageResponse(GENERIC_MESSAGE);
     }
 
+    // Valida a regra aplicada por este metodo.
     @GetMapping("/validate")
     public ValidatePasswordResetTokenResponse validate(
             @RequestParam @NotBlank String token
@@ -50,6 +52,7 @@ public class PasswordRecoveryController {
         );
     }
 
+    // Executa a operacao deste metodo.
     @PostMapping("/reset")
     public MessageResponse reset(
             @Valid @RequestBody ResetPasswordRequest request,

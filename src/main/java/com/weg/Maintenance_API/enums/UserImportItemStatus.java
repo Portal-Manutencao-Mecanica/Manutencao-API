@@ -1,4 +1,4 @@
-package com.weg.Maintenance_API.userimport.entity;
+package com.weg.Maintenance_API.enums;
 
 public enum UserImportItemStatus {
     CREATED,

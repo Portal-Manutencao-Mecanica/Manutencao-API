@@ -27,9 +27,6 @@ public class Machine {
     @Column(name = "machine_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Column(name = "machine_name", nullable = false)
     private String name;
 
@@ -53,6 +50,7 @@ public class Machine {
     @OneToMany(mappedBy = "machine", fetch = FetchType.LAZY)
     private List<MachineLog> machineLogs = new ArrayList<>();
 
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

@@ -24,16 +24,19 @@ public class TeacherController {
 
     private final TeacherService service;
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping
     public ResponseEntity<List<TeacherResponseDto>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/ativos")
     public ResponseEntity<List<TeacherResponseDto>> getAllAtivos() {
         return ResponseEntity.ok(service.getAllAtivos());
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/{id}")
     public ResponseEntity<TeacherResponseDto> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));

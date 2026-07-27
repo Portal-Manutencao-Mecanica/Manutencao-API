@@ -9,9 +9,9 @@ import com.weg.Maintenance_API.enums.TaskSituation;
 
 import java.time.LocalDateTime;
 
+// Executa a operacao deste metodo.
 public record CalendarResponseDto(
         UUID id,
-        String numberCard,
         String scheduledAction,
         TaskCriticality criticality,
         LocalDateTime createdAt,

@@ -9,6 +9,7 @@ public class ValidPasswordValidator implements ConstraintValidator<ValidPassword
     private static final int MAX_LENGTH = 72;
     private static final String SPECIAL_CHARACTERS = "!@#$%^&*()_+-=[]{};':\\\"|,.<>/?";
 
+    // Valida a regra aplicada por este metodo.
     @Override
     public boolean isValid(String password, ConstraintValidatorContext context) {
         if (password == null) {

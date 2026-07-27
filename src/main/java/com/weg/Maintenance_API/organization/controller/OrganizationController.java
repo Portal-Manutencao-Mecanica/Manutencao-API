@@ -28,6 +28,7 @@ public class OrganizationController {
 
     private final OrganizationService organizationService;
 
+    // Cria e persiste os dados da operacao.
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
@@ -35,18 +36,21 @@ public class OrganizationController {
         return organizationService.create(request);
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")
     public Page<OrganizationResponse> findAll(Pageable pageable) {
         return organizationService.findAll(pageable);
     }
 
+    // Busca os dados necessarios para esta operacao.
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")
     public OrganizationResponse findById(@PathVariable UUID id) {
         return organizationService.findById(id);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public OrganizationResponse update(
@@ -56,12 +60,14 @@ public class OrganizationController {
         return organizationService.update(id, request);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @PatchMapping("/{id}/activate")
     @PreAuthorize("hasRole('ADMIN')")
     public OrganizationResponse activate(@PathVariable UUID id) {
         return organizationService.setActive(id, true);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @PatchMapping("/{id}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public OrganizationResponse deactivate(@PathVariable UUID id) {

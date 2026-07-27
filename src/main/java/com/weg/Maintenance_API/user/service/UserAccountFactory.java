@@ -14,6 +14,7 @@ import java.util.UUID;
 @Component
 public class UserAccountFactory {
 
+    // Cria e persiste os dados da operacao.
     public User create(
             String name,
             String username,

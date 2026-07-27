@@ -20,14 +20,17 @@ public class UserImportRowException extends RuntimeException {
         this.role = role;
     }
 
+    // Executa a operacao deste metodo.
     public String code() {
         return code;
     }
 
+    // Executa a operacao deste metodo.
     public String field() {
         return field;
     }
 
+    // Executa a operacao deste metodo.
     public Role role() {
         return role;
     }

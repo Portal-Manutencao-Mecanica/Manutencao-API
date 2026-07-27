@@ -27,6 +27,7 @@ public class UserAccessStateFilter extends OncePerRequestFilter {
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
+    // Executa a operacao deste metodo.
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -53,7 +54,7 @@ public class UserAccessStateFilter extends OncePerRequestFilter {
                     request,
                     response,
                     new InsufficientAuthenticationException(
-                            "A conta não está disponível."
+                            "A conta nÃ£o estÃ¡ disponÃ­vel."
                     )
             );
             return;
@@ -64,7 +65,7 @@ public class UserAccessStateFilter extends OncePerRequestFilter {
                     request,
                     response,
                     new AccessDeniedException(
-                            "Altere a senha temporária antes de acessar outras funcionalidades."
+                            "Altere a senha temporÃ¡ria antes de acessar outras funcionalidades."
                     )
             );
             return;
@@ -72,6 +73,7 @@ public class UserAccessStateFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    // Valida a regra aplicada por este metodo.
     private boolean matchesCurrentSecurityState(
             Authentication authentication,
             User user
@@ -89,6 +91,7 @@ public class UserAccessStateFilter extends OncePerRequestFilter {
                 && user.getOrganization().getId().toString().equals(organizationClaim);
     }
 
+    // Valida a regra aplicada por este metodo.
     private boolean isFirstAccessAllowed(HttpServletRequest request) {
         String path = request.getRequestURI();
         String contextPath = request.getContextPath();

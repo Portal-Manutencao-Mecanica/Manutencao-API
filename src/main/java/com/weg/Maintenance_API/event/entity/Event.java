@@ -41,9 +41,6 @@ public class Event {
     @Column(name = "event_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Column(name = "scheduled_action", nullable = false, columnDefinition = "TEXT")
     private String scheduledAction;
 
@@ -88,6 +85,7 @@ public class Event {
     @Column(name = "status", nullable = false, length = 30)
     private TaskSituation status = TaskSituation.PENDENTE;
 
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

@@ -8,7 +8,7 @@ import com.weg.Maintenance_API.auth.password.repository.PasswordResetTokenReposi
 import com.weg.Maintenance_API.auth.repository.RefreshTokenRepository;
 import com.weg.Maintenance_API.auth.service.SecureTokenService;
 import com.weg.Maintenance_API.organization.entity.Organization;
-import com.weg.Maintenance_API.organization.entity.OrganizationType;
+import com.weg.Maintenance_API.enums.OrganizationType;
 import com.weg.Maintenance_API.organization.repository.OrganizationRepository;
 import com.weg.Maintenance_API.user.UserRepository;
 import com.weg.Maintenance_API.user.preference.repository.NotificationPreferenceRepository;

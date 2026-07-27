@@ -39,9 +39,6 @@ public class Notification {
     @Column(name = "notification_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "number_card", nullable = false, unique = true, length = 255)
-    private String numberCard = java.util.UUID.randomUUID().toString();
-
     @Column(
             name = "notification_email",
             nullable = false,
@@ -88,9 +85,7 @@ public class Notification {
         this.statusRead = false;
     }
 
-    /**
-     * Garante que toda notificação nova comece como não lida.
-     */
+    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         statusRead = false;

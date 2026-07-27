@@ -5,4 +5,3 @@ public enum TaskSituation {
     EM_ANDAMENTO,
     CONCLUIDA
 }
-

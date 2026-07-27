@@ -25,6 +25,7 @@ public class UserImportController {
             value = "/import",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
+    // Executa a operacao deste metodo.
     @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")
     public UserImportResponse importUsers(
             @RequestPart("file") MultipartFile file,

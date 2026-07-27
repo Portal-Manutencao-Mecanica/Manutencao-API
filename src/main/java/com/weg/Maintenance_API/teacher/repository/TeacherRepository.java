@@ -15,5 +15,3 @@ public interface TeacherRepository extends JpaRepository<Teacher, UUID> {
     
     List<Teacher> findAllByEnabledTrue();
 }
-
-

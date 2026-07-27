@@ -11,5 +11,3 @@ import org.springframework.stereotype.Repository;
 public interface Inconvenience5sRepository extends JpaRepository<Inconvenience5S, UUID> {
     
 }
-
-

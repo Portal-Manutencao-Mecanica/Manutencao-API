@@ -8,9 +8,13 @@ import com.weg.Maintenance_API.enums.EquipmentSituation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface AutonomousMaintenanceRepository extends JpaRepository<AutonomousMaintenance, UUID> {
-    List<AutonomousMaintenance> findAllByEquipmentSituation(EquipmentSituation equipmentSituation);
+    Page<AutonomousMaintenance> findAllByEquipmentSituation(
+            EquipmentSituation equipmentSituation,
+            Pageable pageable
+    );
 }

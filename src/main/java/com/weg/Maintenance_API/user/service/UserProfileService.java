@@ -4,13 +4,11 @@ import com.weg.Maintenance_API.audit.service.AuditService;
 import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
 import com.weg.Maintenance_API.exception.type.InvalidRequestException;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
-import com.weg.Maintenance_API.media.entity.Media;
 import com.weg.Maintenance_API.organization.dto.OrganizationSummaryResponse;
 import com.weg.Maintenance_API.user.UserRepository;
 import com.weg.Maintenance_API.user.dto.request.UpdateNotificationPreferencesRequest;
 import com.weg.Maintenance_API.user.dto.request.UpdateOwnProfileRequest;
 import com.weg.Maintenance_API.user.dto.response.NotificationPreferenceResponse;
-import com.weg.Maintenance_API.user.dto.response.ProfilePhotoResponse;
 import com.weg.Maintenance_API.user.dto.response.UserProfileResponse;
 import com.weg.Maintenance_API.user.entity.User;
 import com.weg.Maintenance_API.user.preference.entity.NotificationPreference;
@@ -28,12 +26,14 @@ public class UserProfileService {
     private final UserIdentityPolicy identityPolicy;
     private final AuditService auditService;
 
+    // Busca os dados necessarios para esta operacao.
     @Transactional
     public UserProfileResponse get(String email) {
         User user = getRequired(email);
         return response(user, preferenceFor(user));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public UserProfileResponse update(
             String email,
@@ -41,7 +41,7 @@ public class UserProfileService {
             ClientRequestMetadata metadata
     ) {
         User user = userRepository.findByEmailForUpdate(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado"));
+                .orElseThrow(() -> new ResourceNotFoundException("UsuÃ¡rio autenticado"));
         identityPolicy.validateName(request.name());
         user.setName(request.name().trim());
         NotificationPreference preference = preferenceFor(user);
@@ -55,11 +55,12 @@ public class UserProfileService {
                 metadata.ipAddress(),
                 metadata.userAgent(),
                 true,
-                "Nome de exibição atualizado."
+                "Nome de exibiÃ§Ã£o atualizado."
         );
         return response(user, preference);
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public UserProfileResponse updatePreferences(
             String email,
@@ -68,7 +69,7 @@ public class UserProfileService {
     ) {
         if (request.isEmpty()) {
             throw new InvalidRequestException(
-                    "Informe ao menos uma preferência para atualização."
+                    "Informe ao menos uma preferÃªncia para atualizaÃ§Ã£o."
             );
         }
         User user = getRequired(email);
@@ -98,11 +99,12 @@ public class UserProfileService {
                 metadata.ipAddress(),
                 metadata.userAgent(),
                 true,
-                "Preferências de notificação atualizadas."
+                "PreferÃªncias de notificaÃ§Ã£o atualizadas."
         );
         return response(user, preference);
     }
 
+    // Executa a operacao deste metodo.
     public UserProfileResponse response(
             User user,
             NotificationPreference preference
@@ -119,18 +121,19 @@ public class UserProfileService {
                         user.getOrganization().getId(),
                         user.getOrganization().getName()
                 ),
-                photo(user.getProfilePhoto()),
                 preference(preference),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
     }
 
+    // Busca os dados necessarios para esta operacao.
     private User getRequired(String email) {
         return userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado"));
+                .orElseThrow(() -> new ResourceNotFoundException("UsuÃ¡rio autenticado"));
     }
 
+    // Define valores padrao antes da persistencia.
     private NotificationPreference preferenceFor(User user) {
         return preferenceRepository.findByUserId(user.getId())
                 .orElseGet(() -> preferenceRepository.save(
@@ -138,18 +141,7 @@ public class UserProfileService {
                 ));
     }
 
-    private ProfilePhotoResponse photo(Media media) {
-        if (media == null || !media.isActive()) {
-            return null;
-        }
-        return new ProfilePhotoResponse(
-                media.getId(),
-                media.getOriginalName(),
-                media.getContentType(),
-                media.getFileSize()
-        );
-    }
-
+    // Define valores padrao antes da persistencia.
     private NotificationPreferenceResponse preference(
             NotificationPreference preference
     ) {

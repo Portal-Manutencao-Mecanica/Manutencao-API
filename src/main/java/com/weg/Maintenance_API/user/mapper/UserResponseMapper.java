@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserResponseMapper {
 
+    // Converte os dados para o formato necessario.
     public UserResponseDto toResponse(User user) {
         return new UserResponseDto(
                 user.getId(),

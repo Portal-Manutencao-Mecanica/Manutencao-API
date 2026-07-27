@@ -22,6 +22,7 @@ public class OrganizationService {
 
     private final OrganizationRepository organizationRepository;
 
+    // Cria e persiste os dados da operacao.
     @Transactional
     public OrganizationResponse create(CreateOrganizationRequest request) {
         String domain = normalizeDomain(request.emailDomain());
@@ -31,16 +32,19 @@ public class OrganizationService {
         return toResponse(organizationRepository.save(organization));
     }
 
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
     public Page<OrganizationResponse> findAll(Pageable pageable) {
         return organizationRepository.findAll(pageable).map(this::toResponse);
     }
 
+    // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
     public OrganizationResponse findById(UUID id) {
         return toResponse(getRequired(id));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public OrganizationResponse update(UUID id, UpdateOrganizationRequest request) {
         Organization organization = getRequired(id);
@@ -58,6 +62,7 @@ public class OrganizationService {
         return toResponse(organizationRepository.save(organization));
     }
 
+    // Atualiza o estado conforme os dados informados.
     @Transactional
     public OrganizationResponse setActive(UUID id, boolean active) {
         Organization organization = getRequired(id);
@@ -65,27 +70,30 @@ public class OrganizationService {
         return toResponse(organizationRepository.save(organization));
     }
 
+    // Busca os dados necessarios para esta operacao.
     public Organization getRequired(UUID id) {
         return organizationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Organização", id));
+                .orElseThrow(() -> new ResourceNotFoundException("OrganizaÃ§Ã£o", id));
     }
 
+    // Valida a regra aplicada por este metodo.
     private void validateUnique(String name, String domain, UUID currentId) {
         boolean duplicatedName = currentId == null
                 ? organizationRepository.existsByNameIgnoreCase(name)
                 : organizationRepository.existsByNameIgnoreCaseAndIdNot(name, currentId);
         if (duplicatedName) {
-            throw new ConflictException("Já existe uma organização com este nome.");
+            throw new ConflictException("JÃ¡ existe uma organizaÃ§Ã£o com este nome.");
         }
 
         boolean duplicatedDomain = currentId == null
                 ? organizationRepository.existsByEmailDomainIgnoreCase(domain)
                 : organizationRepository.existsByEmailDomainIgnoreCaseAndIdNot(domain, currentId);
         if (duplicatedDomain) {
-            throw new ConflictException("Já existe uma organização com este domínio de e-mail.");
+            throw new ConflictException("JÃ¡ existe uma organizaÃ§Ã£o com este domÃ­nio de e-mail.");
         }
     }
 
+    // Converte os dados para o formato necessario.
     private OrganizationResponse toResponse(Organization organization) {
         return new OrganizationResponse(
                 organization.getId(),
@@ -98,6 +106,7 @@ public class OrganizationService {
         );
     }
 
+    // Converte os dados para o formato necessario.
     private String normalizeDomain(String domain) {
         return domain.trim().toLowerCase(Locale.ROOT).replaceFirst("^@", "");
     }
