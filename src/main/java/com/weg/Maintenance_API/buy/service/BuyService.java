@@ -54,6 +54,8 @@ public class BuyService {
         return mapper.toResponse(entity);
     }
 
+    // READ_COMMITTED sets the transaction isolation level.
+    // It reads only data committed by other transactions.
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = RuntimeException.class)
     public BuyDtoResponse patch(UUID id, BuyPatchRequest request){
         Buy entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id));

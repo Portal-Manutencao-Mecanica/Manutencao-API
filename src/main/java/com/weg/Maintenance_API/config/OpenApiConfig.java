@@ -24,4 +24,5 @@ import org.springframework.context.annotation.Configuration;
         description = "Informe o access token JWT."
 )
 public class OpenApiConfig {
+    // This class configures Swagger documentation only; it does not secure the API.
 }
