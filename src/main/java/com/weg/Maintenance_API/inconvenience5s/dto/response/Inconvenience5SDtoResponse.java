@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.inconvenience5s.dto.response;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.Inconvenience5SStatus;
 import com.weg.Maintenance_API.enums.RegistrationPeriod;
 
@@ -7,18 +10,18 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record Inconvenience5SDtoResponse(
-        Long id,
+        UUID id,
         String numberCard,
         String inconvenience,
         Inconvenience5SStatus status,
-        Long placeId,
+        UUID placeId,
         String placeName,
-        Long notifiedTeacherId,
+        UUID notifiedTeacherId,
         String notifiedTeacherName,
         LocalDateTime createdAt,
-        Long classGroupId,
+        UUID classGroupId,
         String classGroupAcronym,
-        List<Long> involvedStudentIds,
+        List<UUID> involvedStudentIds,
         String description,
         RegistrationPeriod registrationPeriod
 ) {

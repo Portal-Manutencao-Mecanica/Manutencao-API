@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.machinelog.mapper;
 
+import java.util.UUID;
+
 import com.weg.Maintenance_API.machinelog.dto.request.MachineLogRequest;
 import com.weg.Maintenance_API.machinelog.dto.response.MachineLogResponse;
 import com.weg.Maintenance_API.machinelog.entity.MachineLog;
@@ -38,7 +40,7 @@ public interface MachineLogMapper {
     MachineLogResponse toResponse(MachineLog machineLog);
 
     @Named("studentIdsFromStudents")
-    default List<Long> studentIdsFromStudents(List<Student> students) {
+    default List<UUID> studentIdsFromStudents(List<Student> students) {
         if (students == null) {
             return Collections.emptyList();
         }

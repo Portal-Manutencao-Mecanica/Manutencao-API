@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.maintenancerequest.entity;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.MaintenanceRequestStatus;
 import com.weg.Maintenance_API.enums.Priority;
 import com.weg.Maintenance_API.enums.Sector;
@@ -41,9 +44,9 @@ import java.util.List;
 public class MaintenanceRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "maintenance_request_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "maintenance_request_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();

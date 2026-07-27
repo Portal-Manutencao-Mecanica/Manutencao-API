@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.buy.dto.request;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
 import com.weg.Maintenance_API.validation.EntityExists;
@@ -14,11 +17,11 @@ public record BuyDtoRequest(
         String purchaseJustification,
         @NotNull(message = "classGroup can't be null")
         @EntityExists(entityClass = ClassGroup.class, message = "class group not found")
-        Long classGroupId,
+        UUID classGroupId,
         @EntityExists(entityClass = Teacher.class, message = "teacher not found")
-        Long notifiedTeacherId,
+        UUID notifiedTeacherId,
         @NotEmpty(message = "items can't be empty")
         List<BuyItemRequest> items,
-        List<Long> mediaIds
+        List<UUID> mediaIds
 ) {
 }

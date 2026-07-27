@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.machinelog.dto.response;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.MaintenanceType;
 import com.weg.Maintenance_API.enums.TaskCriticality;
 import com.weg.Maintenance_API.enums.TaskSituation;
@@ -8,29 +11,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record MachineLogResponse(
-        Long id,
+        UUID id,
         String numberCard,
         String title,
         String description,
         String executionReport,
         TaskSituation taskSituation,
-        Long machineId,
+        UUID machineId,
         String machineName,
         String servicePerformed,
         LocalDateTime teacherConcludedAt,
-        Long responsibleTeacherId,
+        UUID responsibleTeacherId,
         String responsibleTeacherName,
         LocalDateTime registeredAt,
         LocalDateTime executionStartedAt,
         LocalDateTime executionEndedAt,
         String plannedAction,
         TaskCriticality taskCriticality,
-        Long placeId,
+        UUID placeId,
         String placeName,
         MaintenanceType maintenanceType,
-        Long classGroupId,
+        UUID classGroupId,
         String classGroupAcronym,
-        List<Long> assignedStudentIds,
+        List<UUID> assignedStudentIds,
         String reportLink
 ) {
 }

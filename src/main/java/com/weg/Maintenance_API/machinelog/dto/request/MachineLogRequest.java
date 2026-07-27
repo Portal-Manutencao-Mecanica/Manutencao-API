@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.machinelog.dto.request;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
 import com.weg.Maintenance_API.enums.MaintenanceType;
 import com.weg.Maintenance_API.enums.TaskCriticality;
@@ -23,10 +26,10 @@ public record MachineLogRequest(
         TaskSituation taskSituation,
         @NotNull(message = "machine can't be null")
         @EntityExists(entityClass = Machine.class, message = "machine not found")
-        Long machineId,
+        UUID machineId,
         String servicePerformed,
         @EntityExists(entityClass = Teacher.class, message = "teacher not found")
-        Long responsibleTeacherId,
+        UUID responsibleTeacherId,
         LocalDateTime teacherConcludedAt,
         LocalDateTime executionStartedAt,
         LocalDateTime executionEndedAt,
@@ -34,12 +37,12 @@ public record MachineLogRequest(
         @NotNull(message = "task criticality can't be null")
         TaskCriticality taskCriticality,
         @EntityExists(entityClass = Place.class, message = "place not found")
-        Long placeId,
+        UUID placeId,
         MaintenanceType maintenanceType,
         @EntityExists(entityClass = ClassGroup.class, message = "class group not found")
-        Long classGroupId,
+        UUID classGroupId,
         @AllEntitiesExist(entityClass = Student.class, message = "student not found")
-        List<Long> assignedStudentIds,
+        List<UUID> assignedStudentIds,
         String reportLink
 ) {
 }

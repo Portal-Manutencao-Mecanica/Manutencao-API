@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.machine.dto.request;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.EquipmentCondition;
 import com.weg.Maintenance_API.place.entity.Place;
 import com.weg.Maintenance_API.validation.EntityExists;
@@ -17,7 +20,7 @@ public record MachineRequest(
     String tag,
     @NotNull(message = "place can't be null")
     @EntityExists(entityClass = Place.class, message = "place not found")
-    Long placeId
+    UUID placeId
 ) {
 }
 

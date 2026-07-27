@@ -1,9 +1,12 @@
 package com.weg.Maintenance_API.buy.dto.response;
 
+
+import java.util.UUID;
+
 public record BuyItemResponse(
-        Long id,
+        UUID id,
         String numberCard,
-        Long equipmentId,
+        UUID equipmentId,
         String equipmentName,
         Integer quantity,
         String technicalSpecification,

@@ -1,5 +1,10 @@
 package com.weg.Maintenance_API.classgroup.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.classgroup.dto.request.ClassPatchRequest;
 import com.weg.Maintenance_API.classgroup.dto.request.ClassRequestDto;
 import com.weg.Maintenance_API.classgroup.dto.response.ClassResponseDto;
@@ -23,6 +28,7 @@ import java.util.List;
 
 @RequestMapping("/turma")
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class ClassGroupController {
 
@@ -38,14 +44,19 @@ public class ClassGroupController {
         return ResponseEntity.ok(service.getAll());
     }
 
+    @GetMapping("/ativos")
+    public ResponseEntity<List<ClassResponseDto>> getAllAtivos() {
+        return ResponseEntity.ok(service.getAllAtivos());
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<ClassResponseDto> getById(@PathVariable Long id) {
+    public ResponseEntity<ClassResponseDto> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ClassResponseDto> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody ClassRequestDto request
     ) {
         return ResponseEntity.ok(service.update(id, request));
@@ -53,10 +64,15 @@ public class ClassGroupController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<ClassResponseDto> patch(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody ClassPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
+    }
+
+    @PatchMapping("/{id}/inativar")
+    public ResponseEntity<ClassResponseDto> inativar(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.inativar(id));
     }
 
     @DeleteMapping("/{id}")
@@ -65,7 +81,7 @@ public class ClassGroupController {
             @EntityExists(
                     message = "entity is null",
                     entityClass = com.weg.Maintenance_API.classgroup.entity.ClassGroup.class
-            ) Long id
+            ) UUID id
     ) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();

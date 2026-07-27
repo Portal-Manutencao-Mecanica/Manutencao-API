@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.inconvenience5s.dto.requests;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
 import com.weg.Maintenance_API.enums.RegistrationPeriod;
 import com.weg.Maintenance_API.place.entity.Place;
@@ -18,16 +21,16 @@ public record Inconvenience5SDtoRequest(
         String inconvenience,
         @NotNull(message = "place can't be null")
         @EntityExists(entityClass = Place.class, message = "place not found")
-        Long placeId,
+        UUID placeId,
         @NotNull(message = "notified teacher can't be null")
         @EntityExists(entityClass = Teacher.class, message = "teacher not found")
-        Long notifiedTeacherId,
+        UUID notifiedTeacherId,
         @NotNull(message = "class group can't be null")
         @EntityExists(entityClass = ClassGroup.class, message = "class group not found")
-        Long classGroupId,
+        UUID classGroupId,
         @NotEmpty(message = "involved students can't be empty")
         @AllEntitiesExist(entityClass = Student.class, message = "student not found")
-        List<Long> involvedStudentIds,
+        List<UUID> involvedStudentIds,
         String description,
         @NotNull(message = "registration period can't be null")
         RegistrationPeriod registrationPeriod

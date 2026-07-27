@@ -1,5 +1,10 @@
 package com.weg.Maintenance_API.equipment.service;
 
+
+import java.util.UUID;
+
+import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -34,14 +39,14 @@ public class EquipmentService {
     }
 
     @Transactional(readOnly = true)
-    public EquipmentResponse getById(Long id) {
-        Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+    public EquipmentResponse getById(UUID id) {
+        Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
         return equipmentMapper.toResponse(equipment);
     }
 
     @Transactional
-    public EquipmentResponse update(Long id, EquipmentRequest equipmentRequest) {
-        Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+    public EquipmentResponse update(UUID id, EquipmentRequest equipmentRequest) {
+        Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
         equipment.setName(equipmentRequest.name());
         equipment.setSap(equipmentRequest.sap());
         equipment.setUnitPrice(equipmentRequest.unitPrice());
@@ -51,8 +56,8 @@ public class EquipmentService {
     }
 
     @Transactional
-    public EquipmentResponse patch(Long id, EquipmentPatchRequest request) {
-        Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new RuntimeException(""));
+    public EquipmentResponse patch(UUID id, EquipmentPatchRequest request) {
+        Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
 
         if (request.name() != null) {
             equipment.setName(request.name());
@@ -72,7 +77,7 @@ public class EquipmentService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(UUID id) {
         equipmentRepository.deleteById(id);
     }
 }

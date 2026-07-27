@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.event.entity;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.MaintenanceType;
 import com.weg.Maintenance_API.enums.TaskCriticality;
 import com.weg.Maintenance_API.enums.TaskSituation;
@@ -34,9 +37,9 @@ import java.time.LocalDateTime;
 public class Event {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "event_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "event_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();

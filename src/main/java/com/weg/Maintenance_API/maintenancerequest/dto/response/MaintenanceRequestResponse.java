@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.maintenancerequest.dto.response;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.MaintenanceRequestStatus;
 import com.weg.Maintenance_API.enums.Priority;
 import com.weg.Maintenance_API.enums.Sector;
@@ -8,19 +11,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record MaintenanceRequestResponse(
-        Long id,
+        UUID id,
         String numberCard,
         MaintenanceRequestStatus status,
         Sector sector,
         Priority priority,
-        List<Long> assignedStudentIds,
-        Long placeId,
+        List<UUID> assignedStudentIds,
+        UUID placeId,
         String placeName,
         String description,
         LocalDateTime createdAt,
-        Long notifiedTeacherId,
+        UUID notifiedTeacherId,
         String notifiedTeacherName,
-        Long machineId,
+        UUID machineId,
         String machineName
 ) {
 }

@@ -1,5 +1,10 @@
 package com.weg.Maintenance_API.machine.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.machine.dto.request.MachinePatchRequest;
 import com.weg.Maintenance_API.machine.dto.request.MachineRequest;
 import com.weg.Maintenance_API.machine.dto.response.MachineResponse;
@@ -24,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @RequestMapping("/maquinas")
 public class MachineController {
@@ -41,7 +47,7 @@ public class MachineController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MachineResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<MachineResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
@@ -60,7 +66,7 @@ public class MachineController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

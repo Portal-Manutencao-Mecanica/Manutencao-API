@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.inconvenience5s.entity;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
 import com.weg.Maintenance_API.enums.Inconvenience5SStatus;
 import com.weg.Maintenance_API.enums.RegistrationPeriod;
@@ -40,9 +43,9 @@ import java.util.List;
 public class Inconvenience5S {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "inconvenience_5s_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "inconvenience_5s_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();

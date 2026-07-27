@@ -1,6 +1,11 @@
 package com.weg.Maintenance_API.media.entity;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.MediaType;
+import com.weg.Maintenance_API.organization.entity.Organization;
+import com.weg.Maintenance_API.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,9 +21,9 @@ import java.time.LocalDateTime;
 public class Media {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "media_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "media_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();
@@ -44,6 +49,17 @@ public class Media {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uploaded_by", updatable = false)
+    private User uploadedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id", updatable = false)
+    private Organization organization;
+
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
 
     @PrePersist
     protected void onCreate() {

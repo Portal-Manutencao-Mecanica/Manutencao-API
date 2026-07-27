@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.buy.dto.response;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.BuyStatus;
 import com.weg.Maintenance_API.media.dto.response.MediaResponseDto;
 
@@ -7,15 +10,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record BuyDtoResponse(
-        Long id,
+        UUID id,
         String numberCard,
         BuyStatus status,
-        Long createdById,
+        UUID createdById,
         String createdByName,
-        Long notifiedTeacherId,
+        UUID notifiedTeacherId,
         String notifiedTeacherName,
         String purchaseJustification,
-        Long classGroupId,
+        UUID classGroupId,
         String classGroupAcronym,
         LocalDateTime createdAt,
         List<BuyItemResponse> items,

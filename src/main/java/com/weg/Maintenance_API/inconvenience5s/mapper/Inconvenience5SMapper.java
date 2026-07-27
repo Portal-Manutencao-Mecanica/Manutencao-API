@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.inconvenience5s.mapper;
 
+import java.util.UUID;
+
 import com.weg.Maintenance_API.inconvenience5s.dto.requests.Inconvenience5SDtoRequest;
 import com.weg.Maintenance_API.inconvenience5s.dto.response.Inconvenience5SDtoResponse;
 import com.weg.Maintenance_API.inconvenience5s.entity.Inconvenience5S;
@@ -35,7 +37,7 @@ public interface Inconvenience5SMapper {
     Inconvenience5SDtoResponse toResponse(Inconvenience5S inconvenience5S);
 
     @Named("studentIdsFromStudents")
-    default List<Long> studentIdsFromStudents(List<Student> students) {
+    default List<UUID> studentIdsFromStudents(List<Student> students) {
         if (students == null) {
             return Collections.emptyList();
         }

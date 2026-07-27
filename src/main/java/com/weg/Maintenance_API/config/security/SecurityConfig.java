@@ -22,9 +22,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -39,7 +42,8 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtRoleAuthenticationConverter jwtAuthenticationConverter,
             CustomAuthenticationEntryPoint authenticationEntryPoint,
-            CustomAccessDeniedHandler accessDeniedHandler
+            CustomAccessDeniedHandler accessDeniedHandler,
+            UserAccessStateFilter userAccessStateFilter
     ) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
@@ -50,28 +54,54 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
-                        // TODO PRODUCTION:
-                        // Restrict Swagger access outside the development environment.
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/actuator/**").hasRole("ADMIN")
+                        .requestMatchers(applicationPathEquals("/actuator/health"))
+                        .permitAll()
+                        .requestMatchers(applicationPathStartsWith("/actuator/"))
+                        .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/**").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
-                        .anyRequest().permitAll())
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/password/forgot").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/password/validate").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/password/reset").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter))
                         .authenticationEntryPoint(authenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler));
+                        .accessDeniedHandler(accessDeniedHandler))
+                .addFilterAfter(
+                        userAccessStateFilter,
+                        BearerTokenAuthenticationFilter.class
+                );
 
         return http.build();
+    }
+
+    private static RequestMatcher applicationPathEquals(String expectedPath) {
+        return request -> applicationPath(request).equals(expectedPath);
+    }
+
+    private static RequestMatcher applicationPathStartsWith(String expectedPrefix) {
+        return request -> applicationPath(request).startsWith(expectedPrefix);
+    }
+
+    private static String applicationPath(
+            jakarta.servlet.http.HttpServletRequest request
+    ) {
+        String uri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        if (contextPath != null
+                && !contextPath.isBlank()
+                && uri.startsWith(contextPath)) {
+            return uri.substring(contextPath.length());
+        }
+        return uri;
     }
 
     @Bean
@@ -79,7 +109,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    //
     @Bean
     public AuthenticationProvider authenticationProvider(
             DatabaseUserDetailsService userDetailsService,
@@ -99,16 +128,21 @@ public class SecurityConfig {
     ) {
         return new ProviderManager(authenticationProvider);
     }
-// usada pelos dois componentes
+
     @Bean
     public SecretKey jwtSecretKey(
             @Value("${app.jwt.secret}") String secret
     ) {
         byte[] decodedSecret = Base64.getDecoder().decode(secret);
+        if (decodedSecret.length < 32) {
+            throw new IllegalStateException(
+                    "JWT_SECRET deve possuir ao menos 256 bits codificados em Base64."
+            );
+        }
 
         return new SecretKeySpec(decodedSecret, "HmacSHA256");
     }
-// cria e assina o token
+
     @Bean
     public JwtEncoder jwtEncoder(SecretKey secretKey) {
         OctetSequenceKey jwk = new OctetSequenceKey.Builder(secretKey)
@@ -121,13 +155,16 @@ public class SecurityConfig {
         return new NimbusJwtEncoder(jwkSource);
     }
 
-// valida o token recebido
     @Bean
     public JwtDecoder jwtDecoder(SecretKey secretKey) {
-        return NimbusJwtDecoder
+        NimbusJwtDecoder decoder = NimbusJwtDecoder
                 .withSecretKey(secretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+        decoder.setJwtValidator(
+                JwtValidators.createDefaultWithIssuer("portal-manutencao-api")
+        );
+        return decoder;
     }
 
 }

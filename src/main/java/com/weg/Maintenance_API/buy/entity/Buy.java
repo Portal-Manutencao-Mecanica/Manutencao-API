@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.buy.entity;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
 import com.weg.Maintenance_API.enums.BuyStatus;
 import com.weg.Maintenance_API.media.entity.Media;
@@ -36,9 +39,9 @@ import java.util.List;
 public class Buy {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "buy_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "buy_id", nullable = false, updatable = false)
+    private UUID id;
 
     @Column(name = "number_card", nullable = false, unique = true, length = 255)
     private String numberCard = java.util.UUID.randomUUID().toString();

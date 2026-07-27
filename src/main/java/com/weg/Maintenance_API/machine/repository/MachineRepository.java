@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.weg.Maintenance_API.machine.entity.Machine;
 
 @Repository
-public interface MachineRepository extends JpaRepository<Machine, Long>{
+public interface MachineRepository extends JpaRepository<Machine, UUID>{
     
     Page<Machine> findAll(Pageable pageable);
 }

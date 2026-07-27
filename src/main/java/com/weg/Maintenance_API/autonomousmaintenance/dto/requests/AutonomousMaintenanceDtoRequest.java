@@ -1,5 +1,8 @@
 package com.weg.Maintenance_API.autonomousmaintenance.dto.requests;
 
+
+import java.util.UUID;
+
 import com.weg.Maintenance_API.enums.EquipmentCondition;
 import com.weg.Maintenance_API.enums.EquipmentSituation;
 import com.weg.Maintenance_API.machine.entity.Machine;
@@ -20,16 +23,16 @@ public record AutonomousMaintenanceDtoRequest(
         LocalDateTime inspectedAt,
         @NotNull(message = "Machine can't be null")
         @EntityExists(entityClass = Machine.class, message = "machine not found")
-        Long inspectedMachineId,
+        UUID inspectedMachineId,
         @NotNull(message = "Equipment condition can't be null")
         EquipmentCondition equipmentCondition,
         @NotBlank(message = "Identified non conformity can't be blank")
         String identifiedNonconformities,
         @NotNull(message = "Responsible teacher can't be null")
         @EntityExists(entityClass = Teacher.class, message = "teacher not found")
-        Long responsibleTeacherId,
+        UUID responsibleTeacherId,
         @NotNull(message = "Responsible student can't be null")
         @EntityExists(entityClass = Student.class, message = "student not found")
-        Long responsibleStudentId
+        UUID responsibleStudentId
 ) {
 }
