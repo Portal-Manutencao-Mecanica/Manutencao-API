@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.Locale;
 
 import com.weg.Maintenance_API.enums.TaskCriticality;
+import com.weg.Maintenance_API.event.dto.response.EventResponseDto;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
 import com.weg.Maintenance_API.equipment.entity.Equipment;
@@ -49,6 +50,17 @@ public class EventService {
         Event event = new Event();
         applyCreateFields(event, request);
         return eventMapper.toResponse(eventRepository.save(event));
+    }
+
+    @Transactional(readOnly = true)
+    public List<EventResponseDto> getAllEvents() {
+        return eventRepository.findAllForCalendar().stream()
+                .map(event -> new EventResponseDto(
+                        event.getScheduledFor().toLocalDate(),
+                        event.getScheduledFor().toLocalTime(),
+                        event.getScheduledAction()
+                ))
+                .toList();
     }
 
     // Busca os dados necessarios para esta operacao.

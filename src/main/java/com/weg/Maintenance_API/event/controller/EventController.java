@@ -1,8 +1,10 @@
 package com.weg.Maintenance_API.event.controller;
 
+import com.weg.Maintenance_API.event.dto.response.EventResponseDto;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 
+import java.util.List;
 import java.util.UUID;
 
 import com.weg.Maintenance_API.event.dto.request.CalendarCreateRequestDto;
@@ -39,6 +41,11 @@ public class EventController {
     @GetMapping
     public ResponseEntity<Page<CalendarResponseDto>> getAll(Pageable pageable) {
         return ResponseEntity.ok(eventService.getAll(pageable));
+    }
+
+    @GetMapping("/calendario")
+    public ResponseEntity<List<EventResponseDto>> getAllEvents() {
+        return ResponseEntity.ok(eventService.getAllEvents());
     }
 
     // Busca os dados necessarios para esta operacao.
