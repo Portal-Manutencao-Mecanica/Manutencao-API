@@ -488,3 +488,27 @@ export async function api<T>(path: string, init: RequestInit = {}, token?: strin
 ```
 
 Ao usar `FormData` em `/users/import`, passe o `FormData` como `body` e nao sobrescreva o `Content-Type`.
+## Teacher approval for maintenance requests
+
+A maintenance request can only be created by an authenticated `ALUNO`. The logged-in student becomes its sole requester and the initial status is `PENDENTE_APROVACAO_PROFESSOR`.
+
+| Method | Endpoint | Access | Body |
+|---|---|---|---|
+| PATCH | `/solicitao-manutencao/{id}/aprovacao` | Only the notified `PROFESSOR` | `{ "approved": boolean, "reason"?: string }` |
+
+The decision endpoint returns the regular `MaintenanceRequest` plus:
+
+```ts
+approvedById: string | null;
+approvedByName: string | null;
+approvedAt: string | null;
+rejectionReason: string | null;
+```
+
+Possible approval statuses: `PENDENTE_APROVACAO_PROFESSOR`, `APROVADA_PELO_PROFESSOR`, and `REPROVADA_PELO_PROFESSOR`.
+
+## Automatic notifications
+
+The backend creates in-app notifications and, when `emailEnabled` is true, schedules an asynchronous email after the transaction commits. Email delivery failures are logged and never roll back the main operation.
+
+Initial events: a maintenance request goes to its notified teacher; an approval/rejection goes to the requesting student; creation/update of a machine log goes to its responsible teacher and assigned students. SMTP variables remain `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM`, `MAIL_SMTP_AUTH`, and `MAIL_STARTTLS_ENABLED`.

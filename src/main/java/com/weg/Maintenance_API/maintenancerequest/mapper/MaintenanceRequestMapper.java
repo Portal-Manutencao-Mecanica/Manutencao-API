@@ -1,5 +1,7 @@
 package com.weg.Maintenance_API.maintenancerequest.mapper;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceRequestRequest;
@@ -9,9 +11,6 @@ import com.weg.Maintenance_API.student.entity.Student;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-
-import java.util.Collections;
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface MaintenanceRequestMapper {
@@ -25,6 +24,9 @@ public interface MaintenanceRequestMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "notifiedTeacher", ignore = true)
     @Mapping(target = "machine", ignore = true)
+    @Mapping(target = "approvedBy", ignore = true)
+    @Mapping(target = "approvedAt", ignore = true)
+    @Mapping(target = "rejectionReason", ignore = true)
     MaintenanceRequest toEntity(MaintenanceRequestRequest request);
 
     @Mapping(target = "placeId", source = "place.id")
@@ -34,6 +36,8 @@ public interface MaintenanceRequestMapper {
     @Mapping(target = "machineId", source = "machine.id")
     @Mapping(target = "machineName", source = "machine.name")
     @Mapping(target = "assignedStudentIds", source = "assignedStudents", qualifiedByName = "studentIdsFromStudents")
+    @Mapping(target = "approvedById", source = "approvedBy.id")
+    @Mapping(target = "approvedByName", source = "approvedBy.name")
     MaintenanceRequestResponse toResponse(MaintenanceRequest maintenanceRequest);
 
     @Named("studentIdsFromStudents")

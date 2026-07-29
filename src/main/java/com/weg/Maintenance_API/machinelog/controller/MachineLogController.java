@@ -1,8 +1,5 @@
 package com.weg.Maintenance_API.machinelog.controller;
 
-import org.springframework.security.access.prepost.PreAuthorize;
-
-
 import java.util.UUID;
 
 import com.weg.Maintenance_API.machinelog.dto.request.MachineLogPatchRequest;
@@ -13,6 +10,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -23,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
@@ -33,45 +30,31 @@ public class MachineLogController {
 
     private final MachineLogService service;
 
-    // Cria e persiste os dados da operacao.
     @PostMapping
-    public ResponseEntity<MachineLogResponse> create(@Valid @RequestBody MachineLogRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request));
+    public ResponseEntity<MachineLogResponse> create(@Valid @RequestBody MachineLogRequest request, Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request, authentication.getName()));
     }
 
-    // Busca os dados necessarios para esta operacao.
     @GetMapping
-    public ResponseEntity<org.springframework.data.domain.Page<MachineLogResponse>> getAll(
-            org.springframework.data.domain.Pageable pageable
-    ) {
+    public ResponseEntity<org.springframework.data.domain.Page<MachineLogResponse>> getAll(org.springframework.data.domain.Pageable pageable) {
         return ResponseEntity.ok(service.getAll(pageable));
     }
 
-    // Busca os dados necessarios para esta operacao.
     @GetMapping("/{id}")
     public ResponseEntity<MachineLogResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
-    // Atualiza o estado conforme os dados informados.
     @PutMapping("/{id}")
-    public ResponseEntity<MachineLogResponse> update(
-            @PathVariable UUID id,
-            @Valid @RequestBody MachineLogRequest request
-    ) {
+    public ResponseEntity<MachineLogResponse> update(@PathVariable UUID id, @Valid @RequestBody MachineLogRequest request) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
-    // Atualiza o estado conforme os dados informados.
     @PatchMapping("/{id}")
-    public ResponseEntity<MachineLogResponse> patch(
-            @PathVariable UUID id,
-            @RequestBody MachineLogPatchRequest request
-    ) {
+    public ResponseEntity<MachineLogResponse> patch(@PathVariable UUID id, @RequestBody MachineLogPatchRequest request) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
-    // Remove ou invalida os dados solicitados.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
