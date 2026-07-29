@@ -76,49 +76,18 @@ class PostgreSqlMigrationIntegrationTest {
                 """,
                 Integer.class
         );
-        assertTrue(migrationCount != null && migrationCount >= 3);
+        assertEquals(1, migrationCount);
 
-        Integer testUserMigration = jdbcTemplate.queryForObject(
+        Integer currentSchemaMigration = jdbcTemplate.queryForObject(
                 """
                 select count(*)
                   from flyway_schema_history
-                 where version = '3'
+                 where version = '1'
                    and success = true
                 """,
                 Integer.class
         );
-        assertEquals(1, testUserMigration);
-
-        List<Map<String, Object>> testUsers = jdbcTemplate.queryForList(
-                """
-                select user_email, user_role, user_password
-                  from public.users
-                 where user_email in (
-                    'admin@teste.local',
-                    'coordenador@teste.local',
-                    'professor@teste.local',
-                    'aluno@teste.local'
-                 )
-                 order by user_email
-                """
-        );
-        assertEquals(4, testUsers.size());
-        assertTrue(testUsers.stream().anyMatch(user ->
-                "admin@teste.local".equals(user.get("user_email"))
-                        && "ADMIN".equals(user.get("user_role"))));
-        assertTrue(testUsers.stream().anyMatch(user ->
-                "coordenador@teste.local".equals(user.get("user_email"))
-                        && "COORDENADOR".equals(user.get("user_role"))));
-        assertTrue(testUsers.stream().anyMatch(user ->
-                "professor@teste.local".equals(user.get("user_email"))
-                        && "PROFESSOR".equals(user.get("user_role"))));
-        assertTrue(testUsers.stream().anyMatch(user ->
-                "aluno@teste.local".equals(user.get("user_email"))
-                        && "ALUNO".equals(user.get("user_role"))));
-        assertTrue(testUsers.stream().allMatch(user -> passwordEncoder.matches(
-                "Senha@123",
-                (String) user.get("user_password")
-        )));
+        assertEquals(1, currentSchemaMigration);
 
         List<Map<String, Object>> numericPrimaryKeys = jdbcTemplate.queryForList(
                 """

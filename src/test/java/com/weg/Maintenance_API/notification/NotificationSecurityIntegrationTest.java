@@ -115,8 +115,8 @@ class NotificationSecurityIntegrationTest {
         mockMvc.perform(get("/notification")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].email").value(FIRST_EMAIL));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].email").value(FIRST_EMAIL));
 
         mockMvc.perform(get("/notification/{id}", secondNotificationId)
                         .header("Authorization", "Bearer " + accessToken))

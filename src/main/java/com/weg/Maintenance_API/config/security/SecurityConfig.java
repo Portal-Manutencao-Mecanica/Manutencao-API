@@ -70,6 +70,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/password/forgot").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/password/validate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password/reset").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/notification").denyAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
