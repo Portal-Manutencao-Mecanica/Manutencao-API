@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PasswordRecoveryController {
 
     private static final String GENERIC_MESSAGE =
-            "Caso o e-mail esteja cadastrado, as instruÃ§Ãµes serÃ£o enviadas.";
+            "Caso o e-mail esteja cadastrado, as instruções serão enviadas.";
 
     private final PasswordResetTokenService passwordResetTokenService;
 

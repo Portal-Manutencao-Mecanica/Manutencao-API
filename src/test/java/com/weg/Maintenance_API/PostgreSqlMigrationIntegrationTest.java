@@ -71,18 +71,18 @@ class PostgreSqlMigrationIntegrationTest {
                 """,
                 Integer.class
         );
-        assertTrue(migrationCount != null && migrationCount >= 19);
+        assertEquals(1, migrationCount);
 
-        Integer phaseTwoMigration = jdbcTemplate.queryForObject(
+        Integer currentSchemaMigration = jdbcTemplate.queryForObject(
                 """
                 select count(*)
                   from flyway_schema_history
-                 where version = '19'
+                 where version = '1'
                    and success = true
                 """,
                 Integer.class
         );
-        assertEquals(1, phaseTwoMigration);
+        assertEquals(1, currentSchemaMigration);
 
         List<Map<String, Object>> numericPrimaryKeys = jdbcTemplate.queryForList(
                 """
