@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -16,15 +17,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NotificationEmailListener {
 
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(NotificationEmailListener.class);
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationEmailListener.class);
     private final JavaMailSender mailSender;
 
     @Value("${app.mail.from}")
     private String mailFrom;
 
-    // Executa o fluxo de comunicacao ou registro.
+    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void send(NotificationEmailRequestedEvent event) {
         SimpleMailMessage email = new SimpleMailMessage();
@@ -32,15 +31,10 @@ public class NotificationEmailListener {
         email.setTo(event.recipientEmail());
         email.setSubject(event.title());
         email.setText(event.message());
-
         try {
             mailSender.send(email);
         } catch (MailException exception) {
-            LOGGER.error(
-                    "Falha ao enviar notificaÃ§Ã£o por e-mail. notificationId={}",
-                    event.notificationId(),
-                    exception
-            );
+            LOGGER.error("Falha ao enviar notificação por e-mail. notificationId={}", event.notificationId(), exception);
         }
     }
 }

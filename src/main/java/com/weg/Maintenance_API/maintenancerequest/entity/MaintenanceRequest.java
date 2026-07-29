@@ -1,6 +1,8 @@
 package com.weg.Maintenance_API.maintenancerequest.entity;
 
-
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import com.weg.Maintenance_API.enums.MaintenanceRequestStatus;
@@ -32,10 +34,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "maintenance_request")
 @Getter
@@ -49,8 +47,8 @@ public class MaintenanceRequest {
     private UUID id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 30)
-    private MaintenanceRequestStatus status = MaintenanceRequestStatus.NAO_VISUALIZADA;
+    @Column(name = "status", nullable = false, length = 40)
+    private MaintenanceRequestStatus status = MaintenanceRequestStatus.PENDENTE_APROVACAO_PROFESSOR;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "sector", nullable = false, length = 30)
@@ -65,11 +63,7 @@ public class MaintenanceRequest {
     private User createdBy;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "maintenance_request_student",
-            joinColumns = @JoinColumn(name = "maintenance_request_id"),
-            inverseJoinColumns = @JoinColumn(name = "student_id")
-    )
+    @JoinTable(name = "maintenance_request_student", joinColumns = @JoinColumn(name = "maintenance_request_id"), inverseJoinColumns = @JoinColumn(name = "student_id"))
     private List<Student> assignedStudents = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -80,11 +74,7 @@ public class MaintenanceRequest {
     private String description;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(
-            name = "maintenance_request_media",
-            joinColumns = @JoinColumn(name = "maintenance_request_id"),
-            inverseJoinColumns = @JoinColumn(name = "media_id")
-    )
+    @JoinTable(name = "maintenance_request_media", joinColumns = @JoinColumn(name = "maintenance_request_id"), inverseJoinColumns = @JoinColumn(name = "media_id"))
     private List<Media> media = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -98,14 +88,23 @@ public class MaintenanceRequest {
     @JoinColumn(name = "machine_id", nullable = false)
     private Machine machine;
 
-    // Define valores padrao antes da persistencia.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by_user_id")
+    private User approvedBy;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
         if (status == null) {
-            status = MaintenanceRequestStatus.NAO_VISUALIZADA;
+            status = MaintenanceRequestStatus.PENDENTE_APROVACAO_PROFESSOR;
         }
     }
 }

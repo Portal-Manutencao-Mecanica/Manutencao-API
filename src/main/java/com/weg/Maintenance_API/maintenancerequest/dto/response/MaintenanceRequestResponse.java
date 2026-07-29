@@ -1,16 +1,13 @@
 package com.weg.Maintenance_API.maintenancerequest.dto.response;
 
-
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import com.weg.Maintenance_API.enums.MaintenanceRequestStatus;
 import com.weg.Maintenance_API.enums.Priority;
 import com.weg.Maintenance_API.enums.Sector;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-// Executa a operacao deste metodo.
 public record MaintenanceRequestResponse(
         UUID id,
         MaintenanceRequestStatus status,
@@ -24,6 +21,10 @@ public record MaintenanceRequestResponse(
         UUID notifiedTeacherId,
         String notifiedTeacherName,
         UUID machineId,
-        String machineName
+        String machineName,
+        UUID approvedById,
+        String approvedByName,
+        LocalDateTime approvedAt,
+        String rejectionReason
 ) {
 }
