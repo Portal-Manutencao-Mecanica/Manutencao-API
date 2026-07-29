@@ -141,7 +141,7 @@ public class EventService {
     // Busca os dados necessarios para esta operacao.
     private Machine findMachine(UUID id) {
         return machineRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("MÃƒÂ¡quina", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Maquina", id));
     }
 
     // Busca os dados necessarios para esta operacao.
