@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 
 import com.weg.Maintenance_API.machine.entity.Machine;
 
+import java.util.UUID;
+
 @Repository
 public interface MachineRepository extends JpaRepository<Machine, UUID>{
     

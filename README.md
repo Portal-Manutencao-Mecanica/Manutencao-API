@@ -28,6 +28,15 @@ FRONTEND_URL
 
 `JWT_SECRET` deve ser um valor Base64 que represente pelo menos 32 bytes aleatórios. Não armazene senhas, tokens ou segredos no repositório. No perfil `dev`, o seed de administrador só é habilitado quando `DEV_ADMIN_PASSWORD` é fornecida pelo ambiente.
 
+O perfil `dev` também aplica as contas de teste abaixo via Flyway. Em outros ambientes, elas só são criadas se `SEED_TEST_USERS=true` for definido.
+
+| Perfil | E-mail | Senha |
+| --- | --- | --- |
+| ADMIN | `admin@teste.local` | `Senha@123` |
+| COORDENADOR | `coordenador@teste.local` | `Senha@123` |
+| PROFESSOR | `professor@teste.local` | `Senha@123` |
+| ALUNO | `aluno@teste.local` | `Senha@123` |
+
 Para iniciar:
 
 ```powershell

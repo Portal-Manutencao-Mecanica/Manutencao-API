@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -39,11 +40,15 @@ class PostgreSqlMigrationIntegrationTest {
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
         registry.add("spring.flyway.enabled", () -> true);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
+        registry.add("spring.flyway.placeholders.seed_test_users", () -> "true");
         registry.add("server.servlet.context-path", () -> "/api");
     }
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @LocalServerPort
     private int port;
@@ -71,18 +76,49 @@ class PostgreSqlMigrationIntegrationTest {
                 """,
                 Integer.class
         );
-        assertTrue(migrationCount != null && migrationCount >= 19);
+        assertTrue(migrationCount != null && migrationCount >= 3);
 
-        Integer phaseTwoMigration = jdbcTemplate.queryForObject(
+        Integer testUserMigration = jdbcTemplate.queryForObject(
                 """
                 select count(*)
                   from flyway_schema_history
-                 where version = '19'
+                 where version = '3'
                    and success = true
                 """,
                 Integer.class
         );
-        assertEquals(1, phaseTwoMigration);
+        assertEquals(1, testUserMigration);
+
+        List<Map<String, Object>> testUsers = jdbcTemplate.queryForList(
+                """
+                select user_email, user_role, user_password
+                  from public.users
+                 where user_email in (
+                    'admin@teste.local',
+                    'coordenador@teste.local',
+                    'professor@teste.local',
+                    'aluno@teste.local'
+                 )
+                 order by user_email
+                """
+        );
+        assertEquals(4, testUsers.size());
+        assertTrue(testUsers.stream().anyMatch(user ->
+                "admin@teste.local".equals(user.get("user_email"))
+                        && "ADMIN".equals(user.get("user_role"))));
+        assertTrue(testUsers.stream().anyMatch(user ->
+                "coordenador@teste.local".equals(user.get("user_email"))
+                        && "COORDENADOR".equals(user.get("user_role"))));
+        assertTrue(testUsers.stream().anyMatch(user ->
+                "professor@teste.local".equals(user.get("user_email"))
+                        && "PROFESSOR".equals(user.get("user_role"))));
+        assertTrue(testUsers.stream().anyMatch(user ->
+                "aluno@teste.local".equals(user.get("user_email"))
+                        && "ALUNO".equals(user.get("user_role"))));
+        assertTrue(testUsers.stream().allMatch(user -> passwordEncoder.matches(
+                "Senha@123",
+                (String) user.get("user_password")
+        )));
 
         List<Map<String, Object>> numericPrimaryKeys = jdbcTemplate.queryForList(
                 """
