@@ -59,7 +59,7 @@ public class MachineController {
     // Atualiza o estado conforme os dados informados.
     @PutMapping("/{id}")
     public ResponseEntity<MachineResponse> update(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody MachineRequest request) {
         return ResponseEntity.ok(service.update(id, request));
     }
@@ -67,7 +67,7 @@ public class MachineController {
     // Atualiza o estado conforme os dados informados.
     @PatchMapping("/{id}")
     public ResponseEntity<MachineResponse> patch(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @RequestBody MachinePatchRequest request) {
         return ResponseEntity.ok(service.patch(id, request));
     }
