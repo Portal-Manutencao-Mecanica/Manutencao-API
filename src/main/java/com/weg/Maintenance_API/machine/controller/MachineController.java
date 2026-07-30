@@ -1,6 +1,6 @@
 package com.weg.Maintenance_API.machine.controller;
 
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.data.domain.Pageable;
 
 
 import java.util.UUID;
@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @RequestMapping("/maquinas")
 public class MachineController {
@@ -44,8 +43,8 @@ public class MachineController {
 
     // Busca os dados necessarios para esta operacao.
     @GetMapping
-    public ResponseEntity<org.springframework.data.domain.Page<MachineResponse>> getAll(
-            org.springframework.data.domain.Pageable pageable
+    public ResponseEntity<Page<MachineResponse>> getAll(
+            Pageable pageable
     ) {
         return ResponseEntity.ok(service.getAll(pageable));
     }

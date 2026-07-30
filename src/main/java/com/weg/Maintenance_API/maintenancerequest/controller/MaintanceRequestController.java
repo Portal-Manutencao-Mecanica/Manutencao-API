@@ -16,7 +16,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 @RequestMapping("/solicitao-manutencao")
 public class MaintanceRequestController {
@@ -37,7 +35,6 @@ public class MaintanceRequestController {
     private final MaintenanceRequestService service;
 
     @PostMapping
-    @PreAuthorize("hasRole('ALUNO')")
     public ResponseEntity<MaintenanceRequestResponse> create(
             @Valid @RequestBody MaintenanceRequestRequest request,
             Authentication authentication
@@ -60,7 +57,6 @@ public class MaintanceRequestController {
     @ApiResponse(responseCode = "403", description = "Professor não autorizado")
     @ApiResponse(responseCode = "404", description = "Solicitação inexistente")
     @PatchMapping("/{id}/aprovacao")
-    @PreAuthorize("hasRole('PROFESSOR')")
     public ResponseEntity<MaintenanceRequestResponse> approve(
             @PathVariable UUID id,
             @Valid @RequestBody MaintenanceApprovalRequest request,

@@ -1,7 +1,6 @@
 package com.weg.Maintenance_API.classgroup.controller;
 
 import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 
 import java.util.UUID;
@@ -28,7 +27,6 @@ import java.util.List;
 
 @RequestMapping("/turma")
 @RestController
-@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class ClassGroupController {
 

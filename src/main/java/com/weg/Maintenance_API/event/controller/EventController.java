@@ -1,7 +1,6 @@
 package com.weg.Maintenance_API.event.controller;
 
 import com.weg.Maintenance_API.event.dto.response.EventResponseDto;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 
 import java.util.List;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 @RequestMapping("/eventos")
 public class EventController {

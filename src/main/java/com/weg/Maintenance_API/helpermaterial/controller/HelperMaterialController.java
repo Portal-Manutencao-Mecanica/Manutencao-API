@@ -1,6 +1,5 @@
 package com.weg.Maintenance_API.helpermaterial.controller;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 
 
 import java.util.UUID;
@@ -26,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @RequestMapping("/material-apoio")
 public class HelperMaterialController {

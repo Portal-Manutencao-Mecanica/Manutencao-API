@@ -6,7 +6,6 @@ import com.weg.Maintenance_API.userimport.service.UserImportService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +25,6 @@ public class UserImportController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     // Executa a operacao deste metodo.
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")
     public UserImportResponse importUsers(
             @RequestPart("file") MultipartFile file,
             Authentication authentication,
