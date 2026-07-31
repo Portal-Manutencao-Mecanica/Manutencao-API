@@ -137,54 +137,142 @@ Os nomes atuais do projeto foram preservados:
 | `TEACHER` | `PROFESSOR` |
 | `STUDENT` | `ALUNO` |
 
-## Criação manual de usuários
+## Criacao manual de usuarios
 
-`POST /api/users`
+### `POST /api/users`
 
-Acesso: `ADMIN` ou `COORDENADOR`.
+Cria um usuario e, na mesma transacao, o perfil correspondente a sua role. Nao existem endpoints separados para aluno, professor ou coordenador.
+
+**Acesso:** token Bearer de `ADMIN` ou `COORDENADOR`. Sem autenticacao, a rota retorna `401`.
+
+| Campo | Tipo | Obrigatorio | Descricao |
+|---|---|---|---|
+| `name` | string | Sim | Nome do usuario. |
+| `username` | string | Sim | Entre 3 e 50 caracteres; e normalizado e unico. |
+| `email` | string | Sim | E-mail unico, com dominio aceito pela organizacao. |
+| `role` | `Role` | Sim | `ADMIN`, `COORDENADOR`, `PROFESSOR` ou `ALUNO`. |
+| `organizationId` | UUID | Admin: sim | Organizacao do novo usuario. Para coordenador autenticado, a propria organizacao e usada. |
+| `studentData` | objeto | Role `ALUNO` | Dados especificos do aluno. |
+| `teacherData` | objeto | Role `PROFESSOR` | Dados especificos do professor. |
+
+Todos os identificadores sao UUIDs.
+
+#### Payloads por role
+
+Aluno (`ALUNO`):
 
 ```json
 {
-  "name": "João da Silva",
+  "name": "Joao da Silva",
   "username": "joao.silva",
   "email": "joao.silva@sesisenai.org.br",
   "role": "ALUNO",
+  "organizationId": "00000000-0000-4000-8000-000000000001",
+  "studentData": {
+    "classGroupIds": [
+      "00000000-0000-4000-8000-000000000010"
+    ]
+  }
+}
+```
+
+Professor (`PROFESSOR`):
+
+```json
+{
+  "name": "Maria Souza",
+  "username": "maria.souza",
+  "email": "maria.souza@sesisenai.org.br",
+  "role": "PROFESSOR",
+  "organizationId": "00000000-0000-4000-8000-000000000001",
+  "teacherData": {
+    "classGroupIds": [
+      "00000000-0000-4000-8000-000000000010"
+    ]
+  }
+}
+```
+
+Coordenador (`COORDENADOR`):
+
+```json
+{
+  "name": "Ana Lima",
+  "username": "ana.lima",
+  "email": "ana.lima@sesisenai.org.br",
+  "role": "COORDENADOR",
   "organizationId": "00000000-0000-4000-8000-000000000001"
 }
 ```
 
-Regras aplicadas no backend:
+Administrador (`ADMIN`):
 
-- `ADMIN` pode criar `ADMIN`, `COORDENADOR`, `PROFESSOR` e `ALUNO`;
-- `COORDENADOR` pode criar apenas `PROFESSOR` e `ALUNO`;
-- o coordenador sempre cria na própria organização, independentemente do ID enviado;
-- nome de usuário e e-mail são normalizados e devem ser únicos;
-- nomes de usuário reservados são rejeitados;
-- o domínio do e-mail deve corresponder à organização ativa;
-- a senha temporária é aleatória, armazenada somente como hash BCrypt e expira em três dias;
-- a conta é criada com troca de senha obrigatória;
-- a operação gera auditoria e evento de envio de credenciais após o commit;
-- a resposta nunca contém a senha temporária.
+```json
+{
+  "name": "Administrador Local",
+  "username": "admin.local",
+  "email": "admin@sesisenai.org.br",
+  "role": "ADMIN",
+  "organizationId": "00000000-0000-4000-8000-000000000001"
+}
+```
+
+#### Validacao de perfil e autorizacao
+
+- `ALUNO` exige somente `studentData`;
+- `PROFESSOR` exige somente `teacherData`;
+- `COORDENADOR` nao possui dados adicionais de perfil e nao aceita `studentData` ou `teacherData`;
+- `ADMIN` nao aceita dados especificos de perfil;
+- dados de um perfil nunca podem acompanhar outra role;
+- `ADMIN` pode criar qualquer role;
+- `COORDENADOR` pode criar apenas `ALUNO` e `PROFESSOR` da propria organizacao;
+- cada UUID em `classGroupIds` e resolvido antes da associacao; turma inexistente retorna erro e desfaz toda a criacao;
+- `studentData.classGroupIds` e `teacherData.classGroupIds` exigem ao menos uma turma; cada item deve ser um UUID nao nulo;
+- nome de usuario e e-mail sao normalizados e devem ser unicos;
+- a organizacao precisa estar ativa e aceitar o dominio do e-mail.
+
+#### Resposta de sucesso
+
+Retorna `201 Created`. A senha temporaria nunca aparece no response.
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000100",
+  "name": "Joao da Silva",
+  "username": "joao.silva",
+  "email": "joao.silva@sesisenai.org.br",
+  "role": "ALUNO",
+  "status": "PENDING_FIRST_ACCESS",
+  "passwordChangeRequired": true,
+  "organization": {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "name": "Organizacao Local"
+  },
+  "credentialsSent": false,
+  "emailStatus": "PENDING",
+  "createdAt": "2026-07-30T10:00:00"
+}
+```
+
+Erros esperados: `400` para payload invalido, `401` sem autenticacao, `403` para falta de permissao, `404` para organizacao ou turma inexistente e `409` para e-mail ou username ja utilizado.
+
+Os mesmos exemplos estao disponiveis no Swagger em `/api/swagger-ui.html`.
 
 As rotas legadas `POST /api/alunos`, `POST /api/professores` e `POST /api/coordenador` foram removidas para impedir que contornem essas regras.
 
-## Importação de usuários por Excel
+## Importação de usuários por CSV ou Excel
 
 `POST /api/users/import`
 
-Acesso: `ADMIN` ou `COORDENADOR`. Envie `multipart/form-data` com a parte `file`.
+Acesso: `ADMIN` ou `COORDENADOR`. Envie `multipart/form-data` com a parte `file`. O formato recomendado é CSV UTF-8 separado por vírgulas; arquivos XLSX existentes continuam compatíveis.
 
-Colunas obrigatórias:
+Cabeçalho padrão:
 
 ```text
-name
-username
-email
-role
-organization
+name,username,email,role,organization,classGroupIds
 ```
 
-Somente as roles `PROFESSOR` e `ALUNO` são aceitas, inclusive para administradores. Coordenadores importam exclusivamente para a própria organização. Cada linha valida cabeçalho, conteúdo, e-mail, username, domínio, organização, role e duplicidades no arquivo e no banco.
+As colunas `name`, `username`, `email`, `role`, `organization` e `classGroupIds` são obrigatórias no cabeçalho. O valor de `organization` aceita somente `SENAI`, `WEG` ou `OTHER`. Para ADMIN, a organização informada é resolvida pelo tipo e precisa existir e estar ativa; todas as roles são permitidas. Para COORDENADOR, a organização usada é sempre a própria e, quando preenchido, o tipo da planilha precisa ser o mesmo; as roles permitidas são somente `ALUNO` e `PROFESSOR`. Cada linha valida cabeçalho, conteúdo, e-mail, username, domínio, organização, role e duplicidades no arquivo e no banco.
 
 A resposta contém o UUID da importação, totais e erros por linha. Senhas temporárias nunca são gravadas em `user_import_item`, logs ou auditoria; somente o hash BCrypt permanece no usuário e o valor temporário é entregue ao listener de e-mail após o commit.
 

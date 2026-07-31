@@ -25,6 +25,12 @@ class SecurityRoutesIntegrationTest {
     }
 
     @Test
+    void userImportRejectsRequestWithoutToken() throws Exception {
+        mockMvc.perform(post("/users/import"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void loginRouteRemainsPublic() throws Exception {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
