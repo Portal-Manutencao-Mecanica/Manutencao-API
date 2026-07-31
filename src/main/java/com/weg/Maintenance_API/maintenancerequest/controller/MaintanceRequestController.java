@@ -43,13 +43,16 @@ public class MaintanceRequestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MaintenanceRequestResponse>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<List<MaintenanceRequestResponse>> getAll(Authentication authentication) {
+        return ResponseEntity.ok(service.getAll(authentication.getName()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MaintenanceRequestResponse> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(service.getById(id));
+    public ResponseEntity<MaintenanceRequestResponse> getById(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.getById(id, authentication.getName()));
     }
 
     @Operation(summary = "Aprova ou reprova uma solicitação", description = "Somente o professor informado em notifiedTeacherId pode decidir uma solicitação pendente.")
@@ -71,25 +74,46 @@ public class MaintanceRequestController {
         ));
     }
 
+    @Operation(summary = "Aprova ou reprova uma ordem de manutenção", description = "Somente coordenadores podem decidir uma ordem pendente.")
+    @PatchMapping("/{id}/ordem/aprovacao")
+    public ResponseEntity<MaintenanceRequestResponse> approveWorkOrder(
+            @PathVariable UUID id,
+            @Valid @RequestBody MaintenanceApprovalRequest request,
+            Authentication authentication,
+            HttpServletRequest httpRequest
+    ) {
+        return ResponseEntity.ok(service.approveWorkOrder(
+                id,
+                request,
+                authentication.getName(),
+                ClientRequestMetadata.from(httpRequest)
+        ));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<MaintenanceRequestResponse> update(
             @PathVariable UUID id,
-            @Valid @RequestBody MaintenanceRequestRequest request
+            @Valid @RequestBody MaintenanceRequestRequest request,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(service.update(id, request));
+        return ResponseEntity.ok(service.update(id, request, authentication.getName()));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<MaintenanceRequestResponse> patch(
             @PathVariable UUID id,
-            @RequestBody MaintenanceRequestPatchRequest request
+            @RequestBody MaintenanceRequestPatchRequest request,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(service.patch(id, request));
+        return ResponseEntity.ok(service.patch(id, request, authentication.getName()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> deleteById(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+        service.delete(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }

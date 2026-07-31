@@ -8,11 +8,12 @@ import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceRequest
 import com.weg.Maintenance_API.maintenancerequest.dto.response.MaintenanceRequestResponse;
 import com.weg.Maintenance_API.maintenancerequest.entity.MaintenanceRequest;
 import com.weg.Maintenance_API.student.entity.Student;
+import com.weg.Maintenance_API.media.mapper.MediaMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = MediaMapper.class)
 public interface MaintenanceRequestMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -27,6 +28,12 @@ public interface MaintenanceRequestMapper {
     @Mapping(target = "approvedBy", ignore = true)
     @Mapping(target = "approvedAt", ignore = true)
     @Mapping(target = "rejectionReason", ignore = true)
+    @Mapping(target = "workOrderNumber", ignore = true)
+    @Mapping(target = "workOrderCreatedAt", ignore = true)
+    @Mapping(target = "workOrderCreatedBy", ignore = true)
+    @Mapping(target = "coordinatorApprovedBy", ignore = true)
+    @Mapping(target = "coordinatorApprovedAt", ignore = true)
+    @Mapping(target = "coordinatorRejectionReason", ignore = true)
     MaintenanceRequest toEntity(MaintenanceRequestRequest request);
 
     @Mapping(target = "placeId", source = "place.id")
@@ -38,6 +45,11 @@ public interface MaintenanceRequestMapper {
     @Mapping(target = "assignedStudentIds", source = "assignedStudents", qualifiedByName = "studentIdsFromStudents")
     @Mapping(target = "approvedById", source = "approvedBy.id")
     @Mapping(target = "approvedByName", source = "approvedBy.name")
+    @Mapping(target = "workOrderCreatedById", source = "workOrderCreatedBy.id")
+    @Mapping(target = "workOrderCreatedByName", source = "workOrderCreatedBy.name")
+    @Mapping(target = "coordinatorApprovedById", source = "coordinatorApprovedBy.id")
+    @Mapping(target = "coordinatorApprovedByName", source = "coordinatorApprovedBy.name")
+    @Mapping(target = "media", source = "media")
     MaintenanceRequestResponse toResponse(MaintenanceRequest maintenanceRequest);
 
     @Named("studentIdsFromStudents")

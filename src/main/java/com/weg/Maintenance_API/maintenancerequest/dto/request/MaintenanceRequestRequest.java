@@ -1,6 +1,7 @@
 package com.weg.Maintenance_API.maintenancerequest.dto.request;
 
 import java.util.UUID;
+import java.util.List;
 
 import com.weg.Maintenance_API.enums.Priority;
 import com.weg.Maintenance_API.enums.Sector;
@@ -10,6 +11,7 @@ import com.weg.Maintenance_API.teacher.entity.Teacher;
 import com.weg.Maintenance_API.validation.enumValidator.ValidEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public record MaintenanceRequestRequest(
         @NotNull(message = "sector can't be null")
@@ -25,6 +27,8 @@ public record MaintenanceRequestRequest(
         @NotNull(message = "notified teacher can't be null")
         UUID notifiedTeacherId,
         @NotNull(message = "machine can't be null")
-        UUID machineId
+        UUID machineId,
+        @Size(max = 5, message = "at most 5 images can be attached")
+        List<@Size(max = 7_000_000, message = "image is too large") String> images
 ) {
 }

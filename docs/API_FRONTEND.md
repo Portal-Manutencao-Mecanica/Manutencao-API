@@ -355,18 +355,34 @@ type MachineLog = MachineLogRequest & {
 | GET | `/solicitao-manutencao/{id}` | `MaintenanceRequest` |
 | PUT | `/solicitao-manutencao/{id}` | `MaintenanceRequestInput` -> `MaintenanceRequest` |
 | PATCH | `/solicitao-manutencao/{id}` | `{ sector?, priority?, description? }` -> `MaintenanceRequest` |
+| PATCH | `/solicitao-manutencao/{id}/aprovacao` | `MaintenanceApproval` -> `MaintenanceRequest` |
+| PATCH | `/solicitao-manutencao/{id}/ordem/aprovacao` | `MaintenanceApproval` -> `MaintenanceRequest` |
 | DELETE | `/solicitao-manutencao/{id}` | `204` |
 
 ```ts
 type MaintenanceRequestInput = {
-  sector: Sector; priority: Priority; assignedStudentIds: string[]; placeId: string;
+  sector: Sector; priority: Priority; placeId: string;
   description: string; notifiedTeacherId: string; machineId: string;
+  images: string[]; // data:image/...;base64,...; de 1 a 5 imagens, maximo 5 MB cada
 };
 type MaintenanceRequest = MaintenanceRequestInput & {
   id: string; status: MaintenanceRequestStatus; placeName: string; createdAt: string;
   notifiedTeacherName: string; machineName: string;
+  approvedById: string | null; approvedByName: string | null; approvedAt: string | null;
+  rejectionReason: string | null; workOrderNumber: string | null;
+  workOrderCreatedAt: string | null; workOrderCreatedById: string | null;
+  workOrderCreatedByName: string | null; coordinatorApprovedById: string | null;
+  coordinatorApprovedByName: string | null; coordinatorApprovedAt: string | null;
+  coordinatorRejectionReason: string | null;
+  media: Media[];
 };
+type MaintenanceApproval = { approved: boolean; reason?: string };
 ```
+
+Qualquer usuario autenticado pode criar uma solicitacao. `PUT`, `PATCH` e `DELETE` em
+`/solicitao-manutencao/{id}` sao exclusivos de `ADMIN`; a aprovacao continua exclusiva
+do professor notificado. Quando o professor aprova, a API gera uma ordem de manutencao
+e a deixa pendente para decisao de um `COORDENADOR`.
 
 ## Calendario de eventos (qualquer usuario autenticado)
 
@@ -490,7 +506,9 @@ export async function api<T>(path: string, init: RequestInit = {}, token?: strin
 Ao usar `FormData` em `/users/import`, passe o `FormData` como `body` e nao sobrescreva o `Content-Type`.
 ## Teacher approval for maintenance requests
 
-A maintenance request can only be created by an authenticated `ALUNO`. The logged-in student becomes its sole requester and the initial status is `PENDENTE_APROVACAO_PROFESSOR`.
+Any authenticated role can create a maintenance request. When the requester is an `ALUNO`,
+the logged-in student is included as the assigned student; the initial status is
+`PENDENTE_APROVACAO_PROFESSOR`.
 
 | Method | Endpoint | Access | Body |
 |---|---|---|---|
@@ -506,6 +524,17 @@ rejectionReason: string | null;
 ```
 
 Possible approval statuses: `PENDENTE_APROVACAO_PROFESSOR`, `APROVADA_PELO_PROFESSOR`, and `REPROVADA_PELO_PROFESSOR`.
+
+## Coordinator approval for maintenance work orders
+
+When a notified teacher approves a request, the API creates `workOrderNumber` and moves it to
+`PENDENTE_APROVACAO_COORDENADOR`. A coordinator decides it through:
+
+| Method | Endpoint | Access | Body |
+|---|---|---|---|
+| PATCH | `/solicitao-manutencao/{id}/ordem/aprovacao` | `COORDENADOR` | `{ "approved": boolean, "reason"?: string }` |
+
+The final statuses are `APROVADA_PELO_COORDENADOR` and `REPROVADA_PELO_COORDENADOR`.
 
 ## Automatic notifications
 
