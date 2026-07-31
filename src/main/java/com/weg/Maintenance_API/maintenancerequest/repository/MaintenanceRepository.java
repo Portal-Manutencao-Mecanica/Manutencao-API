@@ -1,6 +1,7 @@
 package com.weg.Maintenance_API.maintenancerequest.repository;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 import com.weg.Maintenance_API.maintenancerequest.entity.MaintenanceRequest;
@@ -13,6 +14,12 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MaintenanceRepository extends JpaRepository<MaintenanceRequest, UUID> {
+
+    List<MaintenanceRequest> findAllByCreatedById(UUID userId);
+
+    List<MaintenanceRequest> findAllByNotifiedTeacherId(UUID teacherId);
+
+    List<MaintenanceRequest> findAllByWorkOrderNumberIsNotNull();
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select request from MaintenanceRequest request where request.id = :id")

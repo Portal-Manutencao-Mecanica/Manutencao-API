@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
+import java.util.List;
+import com.weg.Maintenance_API.enums.Role;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
@@ -21,6 +23,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmailIgnoreCase(String email);
     Optional<User> findByUsernameIgnoreCase(String username);
     boolean existsByUsernameIgnoreCase(String username);
+    List<User> findAllByRoleAndEnabledTrueAndAccountNonLockedTrue(Role role);
     long countByRoleAndEnabledTrueAndAccountNonLockedTrue(
             com.weg.Maintenance_API.enums.Role role
     );

@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,7 +53,6 @@ public class UserController {
 
     // Executa a operacao deste metodo.
     @PostMapping("/logout")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(
             @Valid @RequestBody LogoutRequest request,
             HttpServletRequest httpRequest
@@ -68,7 +66,6 @@ public class UserController {
 
     // Executa a operacao deste metodo.
     @PostMapping("/logout-all")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logoutAll(
             Authentication authentication,
             HttpServletRequest httpRequest
@@ -82,7 +79,6 @@ public class UserController {
 
     // Executa a operacao deste metodo.
     @GetMapping("/me")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponseDto> currentUser(Authentication authentication) {
         return ResponseEntity.ok(authService.getCurrentUser(authentication.getName()));
     }

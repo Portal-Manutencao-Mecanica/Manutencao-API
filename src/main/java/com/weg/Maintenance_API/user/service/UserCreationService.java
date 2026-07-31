@@ -2,33 +2,48 @@ package com.weg.Maintenance_API.user.service;
 
 import com.weg.Maintenance_API.audit.service.AuditService;
 import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
+import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
+import com.weg.Maintenance_API.classgroup.repository.ClassGroupRepository;
 import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.exception.type.ConflictException;
 import com.weg.Maintenance_API.exception.type.InvalidRequestException;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 import com.weg.Maintenance_API.organization.dto.OrganizationSummaryResponse;
 import com.weg.Maintenance_API.organization.entity.Organization;
-import com.weg.Maintenance_API.organization.service.OrganizationService;
+import com.weg.Maintenance_API.organization.repository.OrganizationRepository;
+import com.weg.Maintenance_API.student.entity.Student;
+import com.weg.Maintenance_API.teacher.entity.Teacher;
 import com.weg.Maintenance_API.user.UserRepository;
 import com.weg.Maintenance_API.user.dto.request.CreateUserRequest;
+import com.weg.Maintenance_API.user.dto.request.StudentDataRequest;
+import com.weg.Maintenance_API.user.dto.request.TeacherDataRequest;
 import com.weg.Maintenance_API.user.dto.response.UserCreationResponse;
 import com.weg.Maintenance_API.user.entity.User;
 import com.weg.Maintenance_API.user.event.UserCreatedEvent;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
+@Validated
 @RequiredArgsConstructor
 public class UserCreationService {
 
     private final UserRepository userRepository;
-    private final OrganizationService organizationService;
+    private final AuthenticatedUserService authenticatedUserService;
+    private final OrganizationRepository organizationRepository;
+    private final ClassGroupRepository classGroupRepository;
     private final UserManagementPermissionService permissionService;
     private final UserIdentityPolicy userIdentityPolicy;
     private final UserAccountFactory userAccountFactory;
@@ -36,15 +51,13 @@ public class UserCreationService {
     private final AuditService auditService;
     private final ApplicationEventPublisher eventPublisher;
 
-    // Cria e persiste os dados da operacao.
-    @Transactional
+    // Cria o usuario e seu perfil especifico na mesma transacao.
+    @Transactional(rollbackFor = RuntimeException.class)
     public UserCreationResponse create(
-            CreateUserRequest request,
-            String actorEmail,
+            @Valid CreateUserRequest request,
             ClientRequestMetadata metadata
     ) {
-        User actor = userRepository.findByEmailIgnoreCase(actorEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("UsuÃ¡rio autenticado"));
+        User actor = authenticatedUserService.requireCurrentUser();
         Organization organization = resolveOrganization(actor, request.organizationId());
 
         try {
@@ -66,7 +79,7 @@ public class UserCreationService {
         }
 
         if (!organization.isActive()) {
-            throw new InvalidRequestException("A organizaÃ§Ã£o selecionada estÃ¡ inativa.");
+            throw new InvalidRequestException("A organizacao selecionada esta inativa.");
         }
 
         String username = userIdentityPolicy.normalizeUsername(request.username());
@@ -77,7 +90,7 @@ public class UserCreationService {
         userIdentityPolicy.validateAvailable(username, email);
         if (!organization.acceptsEmail(email)) {
             throw new InvalidRequestException(
-                    "O domÃ­nio do e-mail nÃ£o corresponde Ã  organizaÃ§Ã£o selecionada."
+                    "O dominio do e-mail nao corresponde a organizacao selecionada."
             );
         }
 
@@ -95,9 +108,11 @@ public class UserCreationService {
             userRepository.saveAndFlush(user);
         } catch (DataIntegrityViolationException exception) {
             throw new ConflictException(
-                    "NÃ£o foi possÃ­vel criar o usuÃ¡rio porque o e-mail ou username jÃ¡ estÃ¡ em uso."
+                    "Nao foi possivel criar o usuario porque o e-mail ou username ja esta em uso."
             );
         }
+
+        configureSpecificProfile(user, request);
 
         auditService.record(
                 actor,
@@ -110,7 +125,7 @@ public class UserCreationService {
                 metadata.userAgent(),
                 true,
                 "Role criada: " + user.getRole()
-                        + "; organizaÃ§Ã£o: " + organization.getName()
+                        + "; organizacao: " + organization.getName()
         );
         eventPublisher.publishEvent(new UserCreatedEvent(
                 user.getId(),
@@ -121,17 +136,97 @@ public class UserCreationService {
         return toResponse(user);
     }
 
-    // Executa a operacao deste metodo.
+    // Configura dados do subtipo persistido pelo mapeamento JPA JOINED.
+    private void configureSpecificProfile(User user, CreateUserRequest request) {
+        switch (request.role()) {
+            case ALUNO -> assignStudentToClassGroups(
+                    requireStudent(user),
+                    request.studentData()
+            );
+            case PROFESSOR -> assignTeacherToClassGroups(
+                    requireTeacher(user),
+                    request.teacherData()
+            );
+            case COORDENADOR, ADMIN -> {
+                // Coordinator and admin do not have additional persisted profile data.
+            }
+        }
+    }
+
+    // Resolve turmas e atualiza o lado proprietario do relacionamento com aluno.
+    private void assignStudentToClassGroups(
+            Student student,
+            StudentDataRequest profileData
+    ) {
+        List<ClassGroup> classGroups = resolveClassGroups(profileData.classGroupIds());
+        student.setClassGroups(new ArrayList<>(classGroups));
+        for (ClassGroup classGroup : classGroups) {
+            if (!classGroup.getStudents().contains(student)) {
+                classGroup.getStudents().add(student);
+            }
+        }
+        classGroupRepository.saveAll(classGroups);
+    }
+
+    // Resolve turmas e atualiza o lado proprietario do relacionamento com professor.
+    private void assignTeacherToClassGroups(
+            Teacher teacher,
+            TeacherDataRequest profileData
+    ) {
+        List<ClassGroup> classGroups = resolveClassGroups(profileData.classGroupIds());
+        teacher.setClassGroups(new ArrayList<>(classGroups));
+        for (ClassGroup classGroup : classGroups) {
+            if (!classGroup.getTeachers().contains(teacher)) {
+                classGroup.getTeachers().add(teacher);
+            }
+        }
+        classGroupRepository.saveAll(classGroups);
+    }
+
+    // Resolve cada UUID de turma pelo repository, sem consultas em mappers.
+    private List<ClassGroup> resolveClassGroups(List<UUID> classGroupIds) {
+        if (classGroupIds == null || classGroupIds.isEmpty()) {
+            return List.of();
+        }
+
+        Set<UUID> uniqueIds = new LinkedHashSet<>(classGroupIds);
+        return uniqueIds.stream()
+                .map(id -> classGroupRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Turma", id)))
+                .toList();
+    }
+
+    // Garante que a factory criou o subtipo compativel com a role.
+    private Student requireStudent(User user) {
+        if (user instanceof Student student) {
+            return student;
+        }
+        throw new IllegalStateException("O perfil de aluno nao foi criado para o usuario.");
+    }
+
+    // Garante que a factory criou o subtipo compativel com a role.
+    private Teacher requireTeacher(User user) {
+        if (user instanceof Teacher teacher) {
+            return teacher;
+        }
+        throw new IllegalStateException("O perfil de professor nao foi criado para o usuario.");
+    }
+
+    // Resolve a organizacao pelo repository conforme a permissao do ator.
     private Organization resolveOrganization(User actor, UUID requestedOrganizationId) {
         if (actor.getRole() == Role.COORDENADOR) {
             return actor.getOrganization();
         }
         if (requestedOrganizationId == null) {
             throw new InvalidRequestException(
-                    "A organizaÃ§Ã£o Ã© obrigatÃ³ria para a criaÃ§Ã£o feita por administrador."
+                    "A organizacao e obrigatoria para a criacao feita por administrador."
             );
         }
-        return organizationService.getRequired(requestedOrganizationId);
+        return organizationRepository.findById(requestedOrganizationId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Organizacao",
+                        requestedOrganizationId
+                ));
     }
 
     // Converte os dados para o formato necessario.

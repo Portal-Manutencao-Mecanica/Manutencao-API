@@ -1,9 +1,5 @@
 package com.weg.Maintenance_API.classgroup.controller;
 
-import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
-import org.springframework.security.access.prepost.PreAuthorize;
-
-
 import java.util.UUID;
 
 import com.weg.Maintenance_API.classgroup.dto.request.ClassPatchRequest;
@@ -24,11 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RequestMapping("/turma")
 @RestController
-@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class ClassGroupController {
 
@@ -84,6 +77,11 @@ public class ClassGroupController {
     @PatchMapping("/{id}/inativar")
     public ResponseEntity<ClassResponseDto> inativar(@PathVariable UUID id) {
         return ResponseEntity.ok(service.inativar(id));
+    }
+
+    @PatchMapping("/{id}/reativar")
+    public ResponseEntity<ClassResponseDto> reativar(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.reativar(id));
     }
 
     // Remove ou invalida os dados solicitados.

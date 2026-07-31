@@ -11,10 +11,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.weg.Maintenance_API.audit.service.AuditService;
+import com.weg.Maintenance_API.admin.entity.Admin;
+import com.weg.Maintenance_API.coordinator.entity.Coordinator;
 import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
 import com.weg.Maintenance_API.enums.MaintenanceRequestStatus;
+import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceApprovalRequest;
+import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceRequestRequest;
 import com.weg.Maintenance_API.maintenancerequest.entity.MaintenanceRequest;
 import com.weg.Maintenance_API.maintenancerequest.mapper.MaintenanceRequestMapper;
 import com.weg.Maintenance_API.maintenancerequest.repository.MaintenanceRepository;
@@ -54,10 +58,12 @@ class MaintenanceRequestApprovalServiceTest {
         notifiedTeacher.setId(UUID.randomUUID());
         notifiedTeacher.setName("Notified teacher");
         notifiedTeacher.setEmail("teacher@example.test");
+        notifiedTeacher.setRole(Role.PROFESSOR);
         requester = new Student();
         requester.setId(UUID.randomUUID());
         requester.setName("Requester student");
         requester.setEmail("student@example.test");
+        requester.setRole(Role.ALUNO);
         request = new MaintenanceRequest();
         request.setId(requestId);
         request.setNotifiedTeacher(notifiedTeacher);
@@ -73,8 +79,9 @@ class MaintenanceRequestApprovalServiceTest {
 
         service.approve(requestId, new MaintenanceApprovalRequest(true, null), notifiedTeacher.getEmail(), metadata);
 
-        assertEquals(MaintenanceRequestStatus.APROVADA_PELO_PROFESSOR, request.getStatus());
+        assertEquals(MaintenanceRequestStatus.PENDENTE_APROVACAO_COORDENADOR, request.getStatus());
         assertEquals(notifiedTeacher, request.getApprovedBy());
+        assertEquals(notifiedTeacher, request.getWorkOrderCreatedBy());
         verify(auditService).recordInCurrentTransaction(any(), any(), any(), any(), any(), any(), any(), any(), any(Boolean.class), any());
         verify(notificationService).notifyUser(any(), any(), any(), any());
     }
@@ -106,5 +113,65 @@ class MaintenanceRequestApprovalServiceTest {
 
         assertThrows(ResourceNotFoundException.class, () -> service.approve(
                 missingId, new MaintenanceApprovalRequest(true, null), notifiedTeacher.getEmail(), metadata));
+    }
+    @Test
+    void authenticatedNonStudentCanCreateRequest() {
+        MaintenanceRequestRequest input = new MaintenanceRequestRequest(
+                "CENTRO_WEG", "MEDIA", UUID.randomUUID(), "Broken machine",
+                notifiedTeacher.getId(), UUID.randomUUID(), java.util.List.of("data:image/png;base64,aQ==")
+        );
+        MaintenanceRequest created = new MaintenanceRequest();
+        when(userRepository.findByEmailIgnoreCase(notifiedTeacher.getEmail())).thenReturn(Optional.of(notifiedTeacher));
+        when(mapper.toEntity(input)).thenReturn(created);
+        when(repository.save(created)).thenReturn(created);
+
+        service.save(input, notifiedTeacher.getEmail());
+
+        assertEquals(notifiedTeacher, created.getCreatedBy());
+        assertEquals(java.util.List.of(), created.getAssignedStudents());
+        assertEquals(1, created.getMedia().size());
+        assertEquals("data:image/png;base64,aQ==", created.getMedia().getFirst().getImage());
+        assertEquals(MaintenanceRequestStatus.PENDENTE_APROVACAO_PROFESSOR, created.getStatus());
+    }
+
+    @Test
+    void nonAdminCannotUpdateRequest() {
+        MaintenanceRequestRequest input = new MaintenanceRequestRequest(
+                "CENTRO_WEG", "MEDIA", UUID.randomUUID(), "Updated description",
+                notifiedTeacher.getId(), UUID.randomUUID(), java.util.List.of()
+        );
+        when(userRepository.findByEmailIgnoreCase(notifiedTeacher.getEmail())).thenReturn(Optional.of(notifiedTeacher));
+
+        assertThrows(AccessDeniedException.class, () ->
+                service.update(requestId, input, notifiedTeacher.getEmail()));
+    }
+
+    @Test
+    void adminCanDeleteRequest() {
+        Admin admin = new Admin();
+        admin.setEmail("admin@example.test");
+        admin.setRole(Role.ADMIN);
+        when(userRepository.findByEmailIgnoreCase(admin.getEmail())).thenReturn(Optional.of(admin));
+        when(repository.findById(requestId)).thenReturn(Optional.of(request));
+
+        service.delete(requestId, admin.getEmail());
+
+        verify(repository).delete(request);
+    }
+
+    @Test
+    void coordinatorCanApproveGeneratedWorkOrder() {
+        Coordinator coordinator = new Coordinator();
+        coordinator.setId(UUID.randomUUID());
+        coordinator.setEmail("coordinator@example.test");
+        coordinator.setRole(Role.COORDENADOR);
+        request.setStatus(MaintenanceRequestStatus.PENDENTE_APROVACAO_COORDENADOR);
+        request.setWorkOrderNumber("OS-2026-00000001");
+        when(userRepository.findByEmailIgnoreCase(coordinator.getEmail())).thenReturn(Optional.of(coordinator));
+
+        service.approveWorkOrder(requestId, new MaintenanceApprovalRequest(true, null), coordinator.getEmail(), metadata);
+
+        assertEquals(MaintenanceRequestStatus.APROVADA_PELO_COORDENADOR, request.getStatus());
+        assertEquals(coordinator, request.getCoordinatorApprovedBy());
     }
 }

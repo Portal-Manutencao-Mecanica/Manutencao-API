@@ -4,12 +4,18 @@ import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
 import com.weg.Maintenance_API.user.dto.request.CreateUserRequest;
 import com.weg.Maintenance_API.user.dto.response.UserCreationResponse;
 import com.weg.Maintenance_API.user.service.UserCreationService;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,18 +29,47 @@ public class UserManagementController {
 
     private final UserCreationService userCreationService;
 
-    // Cria e persiste os dados da operacao.
+    // Cria usuario e perfil especifico no endpoint manual unico.
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")
+    @Operation(
+            summary = "Cria usuario e perfil especifico",
+            description = "Envie somente o bloco correspondente a role: studentData para ALUNO, teacherData para PROFESSOR e nenhum bloco especifico para COORDENADOR ou ADMIN. ADMIN cria qualquer role. COORDENADOR cria apenas ALUNO ou PROFESSOR da propria organizacao.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = CreateUserRequest.class),
+                            examples = {
+                                    @ExampleObject(name = "ALUNO", value = """
+                                            {"name":"Joao da Silva","username":"joao.silva","email":"joao@organizacao.com","role":"ALUNO","organizationId":"00000000-0000-4000-8000-000000000001","studentData":{"classGroupIds":["00000000-0000-4000-8000-000000000010"]}}
+                                            """),
+                                    @ExampleObject(name = "PROFESSOR", value = """
+                                            {"name":"Maria Souza","username":"maria.souza","email":"maria@organizacao.com","role":"PROFESSOR","organizationId":"00000000-0000-4000-8000-000000000001","teacherData":{"classGroupIds":["00000000-0000-4000-8000-000000000010"]}}
+                                            """),
+                                    @ExampleObject(name = "COORDENADOR", value = """
+                                            {"name":"Ana Lima","username":"ana.lima","email":"ana@organizacao.com","role":"COORDENADOR","organizationId":"00000000-0000-4000-8000-000000000001"}
+                                            """),
+                                    @ExampleObject(name = "ADMIN", value = """
+                                            {"name":"Administrador","username":"admin.local","email":"admin@organizacao.com","role":"ADMIN","organizationId":"00000000-0000-4000-8000-000000000001"}
+                                            """)
+                            }
+                    )
+            )
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Usuario e perfil criados."),
+            @ApiResponse(responseCode = "400", description = "Dados do perfil nao correspondem a role."),
+            @ApiResponse(responseCode = "403", description = "Ator sem permissao para a role ou organizacao."),
+            @ApiResponse(responseCode = "404", description = "Organizacao ou turma nao encontrada."),
+            @ApiResponse(responseCode = "409", description = "Username ou e-mail ja utilizado.")
+    })
     public UserCreationResponse create(
             @Valid @RequestBody CreateUserRequest request,
-            Authentication authentication,
             HttpServletRequest httpRequest
     ) {
         return userCreationService.create(
                 request,
-                authentication.getName(),
                 ClientRequestMetadata.from(httpRequest)
         );
     }

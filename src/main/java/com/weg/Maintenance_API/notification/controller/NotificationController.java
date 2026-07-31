@@ -5,7 +5,6 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +21,6 @@ import com.weg.Maintenance_API.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 @RequestMapping("/notification")
 public class NotificationController {

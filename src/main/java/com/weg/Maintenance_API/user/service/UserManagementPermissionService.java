@@ -49,22 +49,7 @@ public class UserManagementPermissionService {
             Role targetRole,
             Organization targetOrganization
     ) {
-        if (targetRole != Role.PROFESSOR && targetRole != Role.ALUNO) {
-            throw new AccessDeniedException(
-                    "A importaÃ§Ã£o permite apenas usuÃ¡rios com as roles PROFESSOR ou ALUNO."
-            );
-        }
-        if (actor.getRole() == Role.ADMIN) {
-            return;
-        }
-        if (actor.getRole() != Role.COORDENADOR) {
-            throw new AccessDeniedException("VocÃª nÃ£o possui permissÃ£o para importar usuÃ¡rios.");
-        }
-        if (!sameOrganization(actor.getOrganization(), targetOrganization)) {
-            throw new AccessDeniedException(
-                    "Coordenadores sÃ³ podem importar usuÃ¡rios para sua prÃ³pria organizaÃ§Ã£o."
-            );
-        }
+        validateCanCreate(actor, targetRole, targetOrganization);
     }
 
     // Valida a regra aplicada por este metodo.

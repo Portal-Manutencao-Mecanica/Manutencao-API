@@ -98,6 +98,26 @@ public class MaintenanceRequest {
     @Column(name = "rejection_reason", columnDefinition = "TEXT")
     private String rejectionReason;
 
+    @Column(name = "work_order_number", unique = true, length = 40)
+    private String workOrderNumber;
+
+    @Column(name = "work_order_created_at")
+    private LocalDateTime workOrderCreatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "work_order_created_by_user_id")
+    private User workOrderCreatedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coordinator_approved_by_user_id")
+    private User coordinatorApprovedBy;
+
+    @Column(name = "coordinator_approved_at")
+    private LocalDateTime coordinatorApprovedAt;
+
+    @Column(name = "coordinator_rejection_reason", columnDefinition = "TEXT")
+    private String coordinatorRejectionReason;
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

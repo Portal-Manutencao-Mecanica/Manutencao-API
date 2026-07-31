@@ -19,24 +19,24 @@ class SpreadsheetUserReaderTest {
             new SpreadsheetUserReader(1024 * 1024, 10);
 
     @Test
-    void readsRequiredColumnsAndOptionalOrganization() throws Exception {
+    void readsRequiredColumnsIncludingOrganizationTypeAndClassGroups() throws Exception {
         MockMultipartFile file = workbook(
-                new String[]{"name", "username", "email", "role", "organization"},
-                new String[]{"Aluno", "aluno.teste", "aluno@local.com", "ALUNO", "Local"}
+                new String[]{"name", "username", "email", "role", "organization", "classGroupIds"},
+                new String[]{"Aluno", "aluno.teste", "aluno@local.com", "ALUNO", "OTHER", ""}
         );
 
         SpreadsheetUserReader.SpreadsheetData data = reader.read(file);
 
         assertEquals(1, data.rows().size());
         assertEquals("aluno.teste", data.rows().getFirst().username());
-        assertEquals("Local", data.rows().getFirst().organization());
+        assertEquals("OTHER", data.rows().getFirst().organization());
     }
 
     @Test
     void rejectsMissingHeader() throws Exception {
         MockMultipartFile file = workbook(
-                new String[]{"name", "email", "role"},
-                new String[]{"Aluno", "aluno@local.com", "ALUNO"}
+                new String[]{"name", "email", "role", "organization", "classGroupIds"},
+                new String[]{"Aluno", "aluno@local.com", "ALUNO", "OTHER", ""}
         );
 
         assertThrows(InvalidSpreadsheetException.class, () -> reader.read(file));
@@ -52,6 +52,24 @@ class SpreadsheetUserReaderTest {
         );
 
         assertThrows(InvalidSpreadsheetException.class, () -> reader.read(file));
+    }
+
+    @Test
+    void readsCsvWithQuotedValuesAndUtf8Bom() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "users.csv",
+                "text/csv",
+                ("\uFEFFname,username,email,role,organization,classGroupIds\n"
+                        + "\"Aluno, Teste\",aluno.teste,aluno@local.com,ALUNO,OTHER,\n")
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+
+        SpreadsheetUserReader.SpreadsheetData data = reader.read(file);
+
+        assertEquals(1, data.rows().size());
+        assertEquals("Aluno, Teste", data.rows().getFirst().name());
+        assertEquals("ALUNO", data.rows().getFirst().role());
     }
 
     private MockMultipartFile workbook(

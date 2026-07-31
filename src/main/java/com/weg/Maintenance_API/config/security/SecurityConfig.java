@@ -46,6 +46,43 @@ public class SecurityConfig {
             CustomAccessDeniedHandler accessDeniedHandler,
             UserAccessStateFilter userAccessStateFilter
     ) throws Exception {
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .cors(Customizer.withDefaults())
+//                .sessionManagement(session -> session
+//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .exceptionHandling(exceptions -> exceptions
+//                        .authenticationEntryPoint(authenticationEntryPoint)
+//                        .accessDeniedHandler(accessDeniedHandler))
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(
+//                                "/swagger-ui.html",
+//                                "/swagger-ui/**",
+//                                "/v3/api-docs/**"
+//                        ).permitAll()
+//                        .requestMatchers(applicationPathEquals("/actuator/health"))
+//                        .permitAll()
+//                        .requestMatchers(applicationPathStartsWith("/actuator/"))
+//                        .hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/auth/password/forgot").permitAll()
+//                        .requestMatchers(HttpMethod.GET, "/auth/password/validate").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/auth/password/reset").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/notification").denyAll()
+//                        .requestMatchers("/admin/**").hasRole("ADMIN")
+//                        .anyRequest().authenticated())
+//                .oauth2ResourceServer(oauth2 -> oauth2
+//                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter))
+//                        .authenticationEntryPoint(authenticationEntryPoint)
+//                        .accessDeniedHandler(accessDeniedHandler))
+//                .addFilterAfter(
+//                        userAccessStateFilter,
+//                        BearerTokenAuthenticationFilter.class
+//                );
+//
+//        return http.build();
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
@@ -55,32 +92,35 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
+                        // TODO PRODUCTION:
+                        // Restrict Swagger access outside the development environment.
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        .requestMatchers(applicationPathEquals("/actuator/health"))
-                        .permitAll()
-                        .requestMatchers(applicationPathStartsWith("/actuator/"))
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/password/forgot").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth/password/validate").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/password/reset").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/notification").denyAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated())
+                        .requestMatchers("/actuator/health").permitAll()
+                         .requestMatchers("/actuator/**").hasRole("ADMIN")
+                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                         .requestMatchers(HttpMethod.DELETE, "/solicitao-manutencao/*").hasRole("ADMIN")
+                         .requestMatchers(HttpMethod.PUT, "/solicitao-manutencao/*").hasRole("ADMIN")
+                         .requestMatchers(HttpMethod.PATCH, "/solicitao-manutencao/*/ordem/aprovacao").hasRole("COORDENADOR")
+                         .requestMatchers(HttpMethod.PATCH, "/solicitao-manutencao/*/aprovacao").hasRole("PROFESSOR")
+                         .requestMatchers(HttpMethod.PATCH, "/solicitao-manutencao/*").hasRole("ADMIN")
+                         .requestMatchers(HttpMethod.DELETE, "/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/**").permitAll()
+                         .requestMatchers(HttpMethod.POST, "/users", "/users/import")
+                         .hasAnyRole("ADMIN", "COORDENADOR")
+                         .requestMatchers(HttpMethod.POST, "/solicitao-manutencao").authenticated()
+                         .requestMatchers(HttpMethod.GET, "/solicitao-manutencao/**").authenticated()
+                         .requestMatchers(HttpMethod.POST, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                        .anyRequest().permitAll())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter))
                         .authenticationEntryPoint(authenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler))
-                .addFilterAfter(
-                        userAccessStateFilter,
-                        BearerTokenAuthenticationFilter.class
-                );
+                        .accessDeniedHandler(accessDeniedHandler));
 
         return http.build();
     }

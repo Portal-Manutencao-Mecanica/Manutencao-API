@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +30,6 @@ public class UserAdministrationController {
 
     // Executa a operacao deste metodo.
     @PatchMapping("/{id}/block")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")
     public ManagedUserResponse block(
             @PathVariable UUID id,
             @Valid @RequestBody UserStatusChangeRequest request,
@@ -48,7 +46,6 @@ public class UserAdministrationController {
 
     // Executa a operacao deste metodo.
     @PatchMapping("/{id}/unblock")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")
     public ManagedUserResponse unblock(
             @PathVariable UUID id,
             @Valid @RequestBody UserStatusChangeRequest request,
@@ -65,7 +62,6 @@ public class UserAdministrationController {
 
     // Atualiza o estado conforme os dados informados.
     @PatchMapping("/{id}/deactivate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")
     public ManagedUserResponse deactivate(
             @PathVariable UUID id,
             @Valid @RequestBody UserStatusChangeRequest request,
@@ -82,7 +78,6 @@ public class UserAdministrationController {
 
     // Executa a operacao deste metodo.
     @PatchMapping("/{id}/reactivate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")
     public ManagedUserResponse reactivate(
             @PathVariable UUID id,
             @Valid @RequestBody UserStatusChangeRequest request,
@@ -99,7 +94,6 @@ public class UserAdministrationController {
 
     // Atualiza o estado conforme os dados informados.
     @PatchMapping("/{id}/role")
-    @PreAuthorize("hasRole('ADMIN')")
     public ManagedUserResponse changeRole(
             @PathVariable UUID id,
             @Valid @RequestBody ChangeUserRoleRequest request,
@@ -117,7 +111,6 @@ public class UserAdministrationController {
     // Executa a operacao deste metodo.
     @PostMapping("/{id}/resend-credentials")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDENADOR')")
     public CredentialResendResponse resendCredentials(
             @PathVariable UUID id,
             Authentication authentication,
