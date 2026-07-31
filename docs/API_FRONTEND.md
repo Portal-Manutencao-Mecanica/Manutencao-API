@@ -155,7 +155,7 @@ type UserImportResponse = {
 };
 ```
 
-Para a importacao, envie um arquivo XLSX em `FormData` com a chave exata `file`; nao defina manualmente o header `Content-Type`, pois o navegador inclui o boundary. As colunas esperadas sao `name`, `username`, `email`, `role` e `organization`.
+Para a importacao, envie um arquivo CSV UTF-8 (ou XLSX) em `FormData` com a chave exata `file`; nao defina manualmente o header `Content-Type`, pois o navegador inclui o boundary. O cabecalho padrao do CSV e `name,username,email,role,organization,classGroupIds`. O campo `organization` aceita somente `SENAI`, `WEG` ou `OTHER`. Para ADMIN, o tipo e resolvido para uma organizacao existente e ativa; todas as roles sao permitidas. Para COORDENADOR, a organizacao e sempre a propria e a role e limitada a `ALUNO` ou `PROFESSOR`.
 
 ## Organizacoes
 
