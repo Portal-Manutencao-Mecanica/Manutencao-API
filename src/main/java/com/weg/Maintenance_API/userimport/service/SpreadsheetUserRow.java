@@ -7,7 +7,8 @@ public record SpreadsheetUserRow(
         String username,
         String email,
         String role,
-        String organization
+        String organization,
+        String classGroupIds
 ) {
 
     // Valida a regra aplicada por este metodo.
@@ -16,6 +17,7 @@ public record SpreadsheetUserRow(
                 && username.isBlank()
                 && email.isBlank()
                 && role.isBlank()
-                && organization.isBlank();
+                && organization.isBlank()
+                && classGroupIds.isBlank();
     }
 }

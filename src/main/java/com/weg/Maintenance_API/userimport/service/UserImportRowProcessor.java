@@ -3,6 +3,7 @@ package com.weg.Maintenance_API.userimport.service;
 import com.weg.Maintenance_API.audit.service.AuditService;
 import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
 import com.weg.Maintenance_API.enums.Role;
+import com.weg.Maintenance_API.enums.OrganizationType;
 import com.weg.Maintenance_API.exception.type.ConflictException;
 import com.weg.Maintenance_API.exception.type.InvalidRequestException;
 import com.weg.Maintenance_API.organization.entity.Organization;
@@ -229,7 +230,7 @@ public class UserImportRowProcessor {
     private Organization resolveOrganization(User actor, String value, Role role) {
         if (actor.getRole() == Role.COORDENADOR) {
             Organization ownOrganization = actor.getOrganization();
-            if (!value.isBlank() && !matchesOrganization(ownOrganization, value)) {
+            if (!value.isBlank() && ownOrganization.getType() != parseOrganizationType(value, role)) {
                 throw rowError(
                         "CROSS_ORGANIZATION_IMPORT",
                         "organization",
@@ -248,8 +249,16 @@ public class UserImportRowProcessor {
             );
         }
         try {
-            UUID id = UUID.fromString(value.trim());
-            return organizationRepository.findById(id)
+            OrganizationType organizationType = parseOrganizationType(value, role);
+            if (organizationRepository.findAllByType(organizationType).size() > 1) {
+                throw rowError(
+                        "AMBIGUOUS_ORGANIZATION_TYPE",
+                        "organization",
+                        "Há mais de uma organização cadastrada para o tipo " + organizationType + ".",
+                        role
+                );
+            }
+            return organizationRepository.findByType(organizationType)
                     .orElseThrow(() -> rowError(
                             "ORGANIZATION_NOT_FOUND",
                             "organization",
@@ -278,6 +287,19 @@ public class UserImportRowProcessor {
                 );
     }
 
+    private OrganizationType parseOrganizationType(String value, Role role) {
+        try {
+            return OrganizationType.valueOf(value.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+            throw rowError(
+                    "INVALID_ORGANIZATION",
+                    "organization",
+                    "Organização inválida. Valores permitidos: SENAI, WEG ou OTHER.",
+                    role
+            );
+        }
+    }
+
     // Executa a operacao deste metodo.
     private Role parseRole(String value) {
         if (value == null || value.isBlank()) {
@@ -290,14 +312,6 @@ public class UserImportRowProcessor {
             case "COORDENADOR", "COORDINATOR" -> Role.COORDENADOR;
             default -> throw rowError("INVALID_ROLE", "role", "A role informada Ã© invÃ¡lida.", null);
         };
-        if (role == Role.ADMIN || role == Role.COORDENADOR) {
-            throw rowError(
-                    "FORBIDDEN_IMPORT_ROLE",
-                    "role",
-                    "A importaÃ§Ã£o permite apenas usuÃ¡rios PROFESSOR ou ALUNO.",
-                    role
-            );
-        }
         return role;
     }
 

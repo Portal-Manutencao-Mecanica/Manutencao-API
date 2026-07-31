@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 class UserImportIntegrationTest {
 
+    private static final String CSV = "text/csv";
     private static final String XLSX =
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -70,18 +71,18 @@ class UserImportIntegrationTest {
     }
 
     @Test
-    void adminImportsValidRowsAndReportsForbiddenRole() throws Exception {
+    void adminImportsEveryRoleFromCsv() throws Exception {
         Organization organization = organization("Local", "local.test");
         Admin admin = admin(organization);
 
-        MockMultipartFile file = workbook(List.<String[]>of(
+        MockMultipartFile file = csv(List.<String[]>of(
                 new String[]{
                         "Professor Teste", "prof.teste", "prof@local.test",
-                        "PROFESSOR", organization.getId().toString()
+                        "PROFESSOR", "OTHER"
                 },
                 new String[]{
                         "Admin Indevido", "admin.indevido", "admin2@local.test",
-                        "ADMIN", organization.getId().toString()
+                        "ADMIN", "OTHER"
                 }
         ));
 
@@ -91,11 +92,11 @@ class UserImportIntegrationTest {
                 metadata()
         );
 
-        assertEquals(UserImportStatus.COMPLETED_WITH_ERRORS, response.status());
-        assertEquals(1, response.created());
-        assertEquals(1, response.failed());
+        assertEquals(UserImportStatus.COMPLETED, response.status());
+        assertEquals(2, response.created());
+        assertEquals(0, response.failed());
         assertEquals(UserImportItemStatus.CREATED, response.items().get(0).status());
-        assertEquals("FORBIDDEN_IMPORT_ROLE", response.items().get(1).errorCode());
+        assertEquals(UserImportItemStatus.CREATED, response.items().get(1).status());
         var imported = userRepository.findByEmailIgnoreCase("prof@local.test").orElseThrow();
         assertTrue(imported.isPasswordChangeRequired());
         assertFalse(imported.getPassword().isBlank());
@@ -104,8 +105,8 @@ class UserImportIntegrationTest {
 
     @Test
     void coordinatorCannotImportIntoAnotherOrganization() throws Exception {
-        Organization own = organization("Own", "own.test");
-        Organization other = organization("Other", "other.test");
+        Organization own = organization("Own", OrganizationType.SENAI, "own.test");
+        Organization other = organization("Other", OrganizationType.WEG, "other.test");
         Coordinator coordinator = new Coordinator(
                 "Coordenador",
                 "coord@own.test",
@@ -118,7 +119,7 @@ class UserImportIntegrationTest {
         MockMultipartFile file = workbook(List.<String[]>of(
                 new String[]{
                         "Aluno", "aluno.outro", "aluno@other.test",
-                        "ALUNO", other.getName()
+                        "ALUNO", "WEG"
                 }
         ));
 
@@ -134,17 +135,71 @@ class UserImportIntegrationTest {
     }
 
     @Test
+    void adminRejectsInvalidOrganizationType() {
+        Organization organization = organization("Local", "local.test");
+        Admin admin = admin(organization);
+        MockMultipartFile file = csv(List.<String[]>of(new String[]{
+                "Aluno", "aluno.invalido", "aluno@local.test", "ALUNO", "ACME"
+        }));
+
+        UserImportResponse response = userImportService.importUsers(
+                file,
+                admin.getEmail(),
+                metadata()
+        );
+
+        assertEquals(0, response.created());
+        assertEquals(1, response.failed());
+        assertEquals("INVALID_ORGANIZATION", response.items().getFirst().errorCode());
+        assertEquals(
+                "Organização inválida. Valores permitidos: SENAI, WEG ou OTHER.",
+                response.items().getFirst().message()
+        );
+    }
+
+    @Test
+    void coordinatorCannotImportAdministrator() throws Exception {
+        Organization own = organization("Own", OrganizationType.SENAI, "own.test");
+        Coordinator coordinator = new Coordinator(
+                "Coordenador",
+                "coord@own.test",
+                passwordEncoder.encode("ValidPass@123")
+        );
+        coordinator.setUsername("coordenador");
+        coordinator.setOrganization(own);
+        userRepository.saveAndFlush(coordinator);
+
+        MockMultipartFile file = csv(List.<String[]>of(
+                new String[]{
+                        "Admin Indevido", "admin.indevido", "admin@own.test",
+                        "ADMIN", "SENAI"
+                }
+        ));
+
+        UserImportResponse response = userImportService.importUsers(
+                file,
+                coordinator.getEmail(),
+                metadata()
+        );
+
+        assertEquals(0, response.created());
+        assertEquals(1, response.failed());
+        assertEquals("ACCESS_DENIED", response.items().getFirst().errorCode());
+        assertEquals("role", response.items().getFirst().field());
+    }
+
+    @Test
     void duplicateEmailsInsideFileFailEveryDuplicateRow() throws Exception {
         Organization organization = organization("Duplicate", "dup.test");
         Admin admin = admin(organization);
         MockMultipartFile file = workbook(List.<String[]>of(
                 new String[]{
                         "Aluno Um", "aluno.um", "duplicado@dup.test",
-                        "ALUNO", organization.getName()
+                        "ALUNO", "OTHER"
                 },
                 new String[]{
                         "Aluno Dois", "aluno.dois", "duplicado@dup.test",
-                        "ALUNO", organization.getName()
+                        "ALUNO", "OTHER"
                 }
         ));
 
@@ -161,8 +216,12 @@ class UserImportIntegrationTest {
     }
 
     private Organization organization(String name, String domain) {
+        return organization(name, OrganizationType.OTHER, domain);
+    }
+
+    private Organization organization(String name, OrganizationType type, String domain) {
         return organizationRepository.saveAndFlush(
-                new Organization(name + UUID.randomUUID(), OrganizationType.OTHER, domain)
+                new Organization(name + UUID.randomUUID(), type, domain)
         );
     }
 
@@ -182,7 +241,7 @@ class UserImportIntegrationTest {
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             var sheet = workbook.createSheet("users");
             var header = sheet.createRow(0);
-            String[] headers = {"name", "username", "email", "role", "organization"};
+            String[] headers = {"name", "username", "email", "role", "organization", "classGroupIds"};
             for (int index = 0; index < headers.length; index++) {
                 header.createCell(index).setCellValue(headers[index]);
             }
@@ -201,6 +260,19 @@ class UserImportIntegrationTest {
                     output.toByteArray()
             );
         }
+    }
+
+    private MockMultipartFile csv(List<String[]> rows) {
+        StringBuilder content = new StringBuilder("name,username,email,role,organization,classGroupIds\n");
+        for (String[] row : rows) {
+            content.append(String.join(",", row)).append('\n');
+        }
+        return new MockMultipartFile(
+                "file",
+                "users.csv",
+                CSV,
+                content.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
     }
 
     private ClientRequestMetadata metadata() {
