@@ -375,10 +375,10 @@ Todos os parâmetros `{id}` abaixo são UUIDs.
 | `/api/eventos` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `DELETE /{id}` |
 | `/api/maquina-log` | CRUD |
 | `/api/5s` | CRUD |
-| `/api/manutencao-autonoma` | CRUD, `POST /create-all`, `GET /situacao/{situacao}` |
-| `/api/notification` | `POST` (ADMIN), `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}/read`, `PATCH /{id}/toggle-read`, `PATCH /read-all`, `GET /unread-count`, `DELETE /{id}`; consultas e alterações são restritas ao e-mail autenticado |
+| `/api/manutencao-autonoma` | fluxo professor -> coordenador, listagem paginada por visibilidade e aprovacao em `PATCH /{id}/aprovacao` |
+| `/api/notification` | `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}/read`, `PATCH /{id}/toggle-read`, `PATCH /read-all`, `GET /unread-count`, `DELETE /{id}`; não há criação manual e cada usuário acessa somente as próprias notificações |
 
-Esses módulos ainda usam parte do modelo legado. As regras de acesso por organização, propriedade do registro e transição de status serão concluídas nas fases de domínio.
+Os módulos legados continuam autenticados. Em manutenção autônoma, organização, propriedade, atribuição e transições de status são validadas no backend.
 
 ## Rotas legadas removidas
 

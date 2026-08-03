@@ -76,7 +76,7 @@ class PostgreSqlMigrationIntegrationTest {
                 """,
                 Integer.class
         );
-        assertEquals(1, migrationCount);
+        assertEquals(5, migrationCount);
 
         Integer currentSchemaMigration = jdbcTemplate.queryForObject(
                 """

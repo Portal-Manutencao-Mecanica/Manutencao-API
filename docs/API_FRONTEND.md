@@ -233,31 +233,94 @@ type Coordinator = {
 
 Use `/coordenador` no codigo novo. `/coordernador` existe apenas como alias retrocompativel.
 
-## Operacoes de manutencao (qualquer usuario autenticado)
+## Operacoes de manutencao (autenticacao obrigatoria)
 
-### Manutencao autonoma
+## Manutencao autonoma
 
-| Metodo | Rota | Request/Resposta |
-|---|---|---|
-| POST | `/manutencao-autonoma` | `AutonomousMaintenanceRequest` -> `201 AutonomousMaintenance` |
-| POST | `/manutencao-autonoma/create-all` | `AutonomousMaintenanceRequest[]` -> `201 AutonomousMaintenance[]` |
-| GET | `/manutencao-autonoma` | `Page<AutonomousMaintenance>` |
-| GET | `/manutencao-autonoma/{id}` | `AutonomousMaintenance` |
-| PUT | `/manutencao-autonoma/{id}` | `AutonomousMaintenanceRequest` -> `AutonomousMaintenance` |
-| DELETE | `/manutencao-autonoma/{id}` | `204` |
-| GET | `/manutencao-autonoma/situacao/{situacao}` | `Page<AutonomousMaintenance>`; `situacao` e `OPERANDO` ou `NAO_OPERANDO` |
+O fluxo e iniciado exclusivamente por `PROFESSOR`. O professor responsavel e o
+usuario autenticado; o frontend nao envia `responsibleTeacherId`. Todas as rotas
+exigem JWT.
+
+| Metodo | Rota | Permissao | Request/Resposta |
+|---|---|---|---|
+| POST | `/manutencao-autonoma` | `PROFESSOR` | `AutonomousMaintenanceRequest` -> `201 AutonomousMaintenance` |
+| GET | `/manutencao-autonoma` | `PROFESSOR`, `COORDENADOR`, `ALUNO`, `ADMIN` | `Page<AutonomousMaintenance>` |
+| GET | `/manutencao-autonoma/{id}` | mesmos papeis, sujeito a visibilidade | `AutonomousMaintenance` |
+| PUT | `/manutencao-autonoma/{id}` | professor criador ou `ADMIN`, somente pendente | `AutonomousMaintenanceRequest` -> `AutonomousMaintenance` |
+| PATCH | `/manutencao-autonoma/{id}/aprovacao` | `COORDENADOR` da mesma organizacao | `AutonomousMaintenanceApproval` -> `AutonomousMaintenance` |
+| DELETE | `/manutencao-autonoma/{id}` | professor criador ou `ADMIN`, somente pendente | `204` |
+
+`GET /manutencao-autonoma` aceita `page`, `size`, `sort` e o filtro opcional
+`status`. Exemplo: `?status=PENDENTE_APROVACAO_COORDENADOR&sort=scheduledFor,asc`.
 
 ```ts
+type AutonomousMaintenanceStatus =
+  | "PENDENTE_APROVACAO_COORDENADOR"
+  | "APROVADA_PELO_COORDENADOR"
+  | "REPROVADA_PELO_COORDENADOR";
+
 type AutonomousMaintenanceRequest = {
-  equipmentSituation: EquipmentSituation; inspectedAt: string; inspectedMachineId: string;
-  equipmentCondition: EquipmentCondition; identifiedNonconformities: string;
-  responsibleTeacherId: string; responsibleStudentId: string;
+  equipmentSituation: EquipmentSituation;
+  scheduledFor: string; // ISO-8601, presente ou futuro
+  inspectedAt?: string | null; // ISO-8601, data real da inspecao
+  inspectedMachineId: string;
+  equipmentCondition: EquipmentCondition;
+  identifiedNonconformities?: string | null;
+  studentIds: string[]; // minimo 1; duplicados sao normalizados
 };
-type AutonomousMaintenance = AutonomousMaintenanceRequest & {
-  id: string; inspectedMachineName: string; responsibleTeacherName: string;
-  responsibleStudentName: string;
+
+type AutonomousMaintenanceApproval = {
+  approved: boolean;
+  reason?: string | null; // obrigatorio e nao vazio quando approved=false
+};
+
+type AutonomousMaintenanceStudent = {
+  id: string;
+  name: string;
+  email: string;
+  numberCard: string;
+};
+
+type AutonomousMaintenance = {
+  id: string;
+  equipmentSituation: EquipmentSituation;
+  scheduledFor: string;
+  inspectedAt: string | null;
+  inspectedMachineId: string;
+  inspectedMachineName: string;
+  equipmentCondition: EquipmentCondition;
+  identifiedNonconformities: string | null;
+  responsibleTeacherId: string;
+  responsibleTeacherName: string;
+  students: AutonomousMaintenanceStudent[];
+  status: AutonomousMaintenanceStatus;
+  coordinatorApproverId: string | null;
+  coordinatorApproverName: string | null;
+  approvedAt: string | null; // instante da decisao, inclusive reprovacao
+  rejectionReason: string | null;
+  calendarEventId: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 ```
+
+Visibilidade aplicada pelo backend:
+
+- `PROFESSOR`: somente registros criados por ele.
+- `COORDENADOR`: registros da propria organizacao.
+- `ALUNO`: somente aprovados em que esteja na lista `students`.
+- `ADMIN`: acesso administrativo global conforme o padrao da API.
+
+Os alunos precisam estar ativos, desbloqueados e na organizacao do professor.
+Quando o professor possui turmas ativas, tambem precisam pertencer a pelo menos
+uma delas. Criacao e alteracoes pendentes notificam coordenadores ativos da
+organizacao. A aprovacao notifica professor e alunos; a reprovacao notifica o
+professor e inclui o motivo.
+
+A aprovacao cria uma unica vez, na mesma transacao, um evento de calendario com
+`maintenanceType = "AUTONOMA"`, a maquina, seu local, o professor e
+`scheduledFor`. Nesse tipo de evento, `equipmentId` e `equipmentName` sao `null`.
+Uma segunda decisao retorna `422 INVALID_STATE` e nao cria outro evento.
 
 ### Compras
 
@@ -406,7 +469,7 @@ type CalendarUpdate = Partial<CalendarCreateRequest>;
 type CalendarEvent = {
   id: string; scheduledAction: string; criticality: TaskCriticality; createdAt: string;
   scheduledFor: string; requestedAt: string; studentId: string | null; studentName: string | null;
-  teacherId: string; teacherName: string; equipmentId: string; equipmentName: string;
+  teacherId: string; teacherName: string; equipmentId: string | null; equipmentName: string | null;
   machineId: string; machineName: string; placeId: string; placeName: string;
   maintenanceType: MaintenanceType; status: TaskSituation;
 };

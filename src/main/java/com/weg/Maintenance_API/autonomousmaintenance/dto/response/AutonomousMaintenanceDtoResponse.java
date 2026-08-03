@@ -1,17 +1,17 @@
 package com.weg.Maintenance_API.autonomousmaintenance.dto.response;
 
-
-import java.util.UUID;
-
+import com.weg.Maintenance_API.enums.AutonomousMaintenanceStatus;
 import com.weg.Maintenance_API.enums.EquipmentCondition;
 import com.weg.Maintenance_API.enums.EquipmentSituation;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
-// Executa a operacao deste metodo.
 public record AutonomousMaintenanceDtoResponse(
         UUID id,
         EquipmentSituation equipmentSituation,
+        LocalDateTime scheduledFor,
         LocalDateTime inspectedAt,
         UUID inspectedMachineId,
         String inspectedMachineName,
@@ -19,7 +19,14 @@ public record AutonomousMaintenanceDtoResponse(
         String identifiedNonconformities,
         UUID responsibleTeacherId,
         String responsibleTeacherName,
-        UUID responsibleStudentId,
-        String responsibleStudentName
+        List<AutonomousMaintenanceStudentResponse> students,
+        AutonomousMaintenanceStatus status,
+        UUID coordinatorApproverId,
+        String coordinatorApproverName,
+        LocalDateTime approvedAt,
+        String rejectionReason,
+        UUID calendarEventId,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 }
