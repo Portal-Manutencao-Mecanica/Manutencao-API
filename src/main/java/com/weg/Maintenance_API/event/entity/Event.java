@@ -1,8 +1,5 @@
 package com.weg.Maintenance_API.event.entity;
 
-
-import java.util.UUID;
-
 import com.weg.Maintenance_API.enums.MaintenanceType;
 import com.weg.Maintenance_API.enums.TaskCriticality;
 import com.weg.Maintenance_API.enums.TaskSituation;
@@ -28,6 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "event")
@@ -65,8 +63,8 @@ public class Event {
     @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "equipment_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "equipment_id")
     private Equipment equipment;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -85,7 +83,6 @@ public class Event {
     @Column(name = "status", nullable = false, length = 30)
     private TaskSituation status = TaskSituation.PENDENTE;
 
-    // Define valores padrao antes da persistencia.
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
