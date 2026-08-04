@@ -5,10 +5,12 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.weg.Maintenance_API.machinelog.entity.MachineLog;
 
 @Repository
 public interface MachineLogRepository extends JpaRepository<MachineLog, UUID> {
-    
+    Page<MachineLog> findAllByMachineId(UUID machineId, Pageable pageable);
 }

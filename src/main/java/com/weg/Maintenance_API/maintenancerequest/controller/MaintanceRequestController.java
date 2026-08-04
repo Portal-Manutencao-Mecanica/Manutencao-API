@@ -26,6 +26,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import com.weg.Maintenance_API.enums.MaintenanceRequestStatus;
+import com.weg.Maintenance_API.enums.Priority;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,8 +48,20 @@ public class MaintanceRequestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MaintenanceRequestResponse>> getAll(Authentication authentication) {
-        return ResponseEntity.ok(service.getAll(authentication.getName()));
+    public ResponseEntity<Page<MaintenanceRequestResponse>> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) MaintenanceRequestStatus status,
+            @RequestParam(required = false) Priority priority,
+            Pageable pageable,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.getAll(
+                authentication.getName(),
+                search,
+                status,
+                priority,
+                pageable
+        ));
     }
 
     @GetMapping("/{id}")

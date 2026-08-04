@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,8 +35,11 @@ public class MachineLogController {
     }
 
     @GetMapping
-    public ResponseEntity<org.springframework.data.domain.Page<MachineLogResponse>> getAll(org.springframework.data.domain.Pageable pageable) {
-        return ResponseEntity.ok(service.getAll(pageable));
+    public ResponseEntity<org.springframework.data.domain.Page<MachineLogResponse>> getAll(
+            @RequestParam(required = false) UUID machineId,
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.getAll(machineId, pageable));
     }
 
     @GetMapping("/{id}")

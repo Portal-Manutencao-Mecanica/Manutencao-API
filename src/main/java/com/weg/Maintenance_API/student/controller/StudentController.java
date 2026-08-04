@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -25,14 +26,20 @@ public class StudentController {
 
     // Busca os dados necessarios para esta operacao.
     @GetMapping
-    public ResponseEntity<List<StudentDtoResponse>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<org.springframework.data.domain.Page<StudentDtoResponse>> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean enabled,
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.getAll(search, enabled, pageable));
     }
 
     // Busca os dados necessarios para esta operacao.
     @GetMapping("/ativos")
-    public ResponseEntity<List<StudentDtoResponse>> getAllAtivos() {
-        return ResponseEntity.ok(service.getAllAtivos());
+    public ResponseEntity<org.springframework.data.domain.Page<StudentDtoResponse>> getAllAtivos(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.getAllAtivos(pageable));
     }
 
     // Busca os dados necessarios para esta operacao.

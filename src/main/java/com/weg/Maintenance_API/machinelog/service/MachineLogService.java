@@ -43,8 +43,14 @@ public class MachineLogService {
     }
 
     @Transactional(readOnly = true)
-    public org.springframework.data.domain.Page<MachineLogResponse> getAll(org.springframework.data.domain.Pageable pageable) {
-        return machineLogRepository.findAll(pageable).map(machineLogMapper::toResponse);
+    public org.springframework.data.domain.Page<MachineLogResponse> getAll(
+            UUID machineId,
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return (machineId == null
+                ? machineLogRepository.findAll(pageable)
+                : machineLogRepository.findAllByMachineId(machineId, pageable))
+                .map(machineLogMapper::toResponse);
     }
 
     @Transactional(readOnly = true)

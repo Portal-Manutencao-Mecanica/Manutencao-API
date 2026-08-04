@@ -9,6 +9,7 @@ import com.weg.Maintenance_API.machine.dto.request.MachinePatchRequest;
 import com.weg.Maintenance_API.machine.dto.request.MachineRequest;
 import com.weg.Maintenance_API.machine.dto.response.MachineResponse;
 import com.weg.Maintenance_API.machine.service.MachineService;
+import com.weg.Maintenance_API.enums.EquipmentCondition;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -44,9 +45,11 @@ public class MachineController {
     // Busca os dados necessarios para esta operacao.
     @GetMapping
     public ResponseEntity<Page<MachineResponse>> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) EquipmentCondition condition,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(service.getAll(pageable));
+        return ResponseEntity.ok(service.getAll(search, condition, pageable));
     }
 
     // Busca os dados necessarios para esta operacao.

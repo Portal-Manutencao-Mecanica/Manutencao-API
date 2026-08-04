@@ -147,6 +147,27 @@ class MaintenanceRequestApprovalServiceTest {
     }
 
     @Test
+    void adminCanUpdateRequestImages() {
+        Admin admin = new Admin();
+        admin.setId(UUID.randomUUID());
+        admin.setEmail("admin@example.test");
+        admin.setRole(Role.ADMIN);
+        String image = "data:image/jpeg;base64,aQ==";
+        MaintenanceRequestRequest input = new MaintenanceRequestRequest(
+                "CENTRO_WEG", "MEDIA", UUID.randomUUID(), "Updated description",
+                notifiedTeacher.getId(), UUID.randomUUID(), java.util.List.of(image)
+        );
+        when(userRepository.findByEmailIgnoreCase(admin.getEmail())).thenReturn(Optional.of(admin));
+        when(repository.findById(requestId)).thenReturn(Optional.of(request));
+
+        service.update(requestId, input, admin.getEmail());
+
+        assertEquals(1, request.getMedia().size());
+        assertEquals(image, request.getMedia().getFirst().getImage());
+        assertEquals(admin, request.getMedia().getFirst().getUploadedBy());
+    }
+
+    @Test
     void adminCanDeleteRequest() {
         Admin admin = new Admin();
         admin.setEmail("admin@example.test");

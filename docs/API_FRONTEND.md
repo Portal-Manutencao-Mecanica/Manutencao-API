@@ -72,7 +72,7 @@ type UserResponse = {
 };
 ```
 
-Guarde apenas o necessario para a sessao. O `refreshToken` deve ser enviado no body para renovar ou encerrar a sessao; o access token vai no cabecalho. Se `passwordChangeRequired` for `true`, a aplicacao deve direcionar para troca de senha: o backend permite somente `GET /users/me`, `PATCH /users/me/password` e logout nesse estado.
+Guarde apenas o necessario para a sessao. O `refreshToken` deve ser enviado no body para renovar ou encerrar a sessao; o access token vai no cabecalho. Se `passwordChangeRequired` for `true`, a aplicacao deve direcionar para o primeiro acesso. Nesse estado o backend permite apenas consultar a propria sessao (`GET /auth/me` ou `GET /users/me`), solicitar/validar o codigo de primeiro acesso e fazer logout; os demais dados ficam bloqueados.
 
 ## Senha, perfil e preferencias
 
@@ -85,6 +85,8 @@ Guarde apenas o necessario para a sessao. O `refreshToken` deve ser enviado no b
 | PATCH | `/users/me` | Autenticado | `{ name }` | `UserProfile` |
 | PATCH | `/users/me/password` | Autenticado | `ChangeOwnPasswordRequest` | `204` |
 | PATCH | `/users/me/preferences` | Autenticado | `NotificationPreferencesPatch` | `UserProfile` |
+| POST | `/users/me/first-access/code` | Primeiro acesso autenticado | - | `{ message }` |
+| POST | `/users/me/first-access/complete` | Primeiro acesso autenticado | `CompleteFirstAccessRequest` | `204` |
 
 ```ts
 type ResetPasswordRequest = {
@@ -92,6 +94,9 @@ type ResetPasswordRequest = {
 };
 type ChangeOwnPasswordRequest = {
   currentPassword: string; newPassword: string; passwordConfirmation: string;
+};
+type CompleteFirstAccessRequest = {
+  code: string; newPassword: string; passwordConfirmation: string;
 };
 type NotificationPreferencesPatch = {
   emailEnabled?: boolean; inAppEnabled?: boolean;
@@ -155,7 +160,7 @@ type UserImportResponse = {
 };
 ```
 
-Para a importacao, envie um arquivo CSV UTF-8 (ou XLSX) em `FormData` com a chave exata `file`; nao defina manualmente o header `Content-Type`, pois o navegador inclui o boundary. O cabecalho padrao do CSV e `name,username,email,role,organization,classGroupIds`. O campo `organization` aceita somente `SENAI`, `WEG` ou `OTHER`. Para ADMIN, o tipo e resolvido para uma organizacao existente e ativa; todas as roles sao permitidas. Para COORDENADOR, a organizacao e sempre a propria e a role e limitada a `ALUNO` ou `PROFESSOR`.
+Para a importacao, envie um arquivo CSV UTF-8 (ou XLSX) em `FormData` com a chave exata `file`; nao defina manualmente o header `Content-Type`, pois o navegador inclui o boundary. O contrato interno da API usa `name,username,email,role,organization,classGroupIds`. Na interface, o modelo amigavel usa `classGroupAcronyms`: o frontend resolve as siglas (separadas por `|`) para UUIDs antes do upload. O campo `organization` aceita somente `SENAI`, `WEG` ou `OTHER`. Para ADMIN, o tipo e resolvido para uma organizacao existente e ativa; todas as roles sao permitidas. Para COORDENADOR, a organizacao e sempre a propria e a role e limitada a `ALUNO` ou `PROFESSOR`.
 
 ## Organizacoes
 
@@ -181,18 +186,22 @@ type Organization = OrganizationSummary & {
 
 | Recurso | Rotas | Body de criacao/PUT | Body de PATCH | Resposta |
 |---|---|---|---|---|
-| Equipamentos | `POST/GET /equipamento`; `GET/PUT/PATCH/DELETE /equipamento/{id}` | `{ name, sap?, unitPrice, availableQuantity }` | `{ name?, sap?, unitPrice?, availableQuantity? }` | `Equipment` (lista paginada) |
-| Maquinas | `POST/GET /maquinas`; `GET/PUT/PATCH/DELETE /maquinas/{id}` | `{ name, patrimony, condition, tag?, placeId }` | `{ name?, patrimony?, condition?, tag? }` | `Machine` (lista paginada) |
+| Equipamentos | `POST/GET /equipamento`; `GET/PUT/PATCH/DELETE /equipamento/{id}` | `{ name, unitPrice, availableQuantity }` | `{ name?, unitPrice?, availableQuantity? }` | `Equipment` (lista paginada) |
+| Maquinas | `POST/GET /maquinas`; `GET/PUT/PATCH/DELETE /maquinas/{id}` | `{ name, patrimony, condition, tag?, placeId, image? }` | `{ name?, patrimony?, condition?, tag?, image? }` | `Machine` (lista paginada) |
 | Locais | `POST/GET /lugar`; `GET/PUT/PATCH/DELETE /lugar/{id}` | `{ name }` | `{ name? }` | `Place[]` |
 | Designacoes | `POST/GET /designacao`; `GET/PUT/PATCH/DELETE /designacao/{id}` | `{ sector }` | `{ sector? }` | `Designation` (lista paginada) |
 | Materiais de apoio | `POST/GET /material-apoio`; `GET/PUT/PATCH/DELETE /material-apoio/{id}` | `{ title, description?, url, type }` | `{ title?, description?, url?, type? }` | `HelperMaterial` (lista paginada) |
 | Turmas | `POST/GET /turma`; `GET /turma/ativos`; `GET/PUT/PATCH/DELETE /turma/{id}`; `PATCH /turma/{id}/inativar` | `{ acronym, teacherIds?, studentIds? }` | `{ acronym? }` | `ClassGroup` (lista paginada) |
 
 ```ts
-type Equipment = { id: string; name: string; sap: string | null; unitPrice: number; availableQuantity: number };
+type Equipment = {
+  id: string; name: string; sap: string | null; patrimony: string | null;
+  tag: string | null; unitPrice: number; availableQuantity: number;
+};
 type Machine = {
   id: string; name: string; patrimony: string; condition: EquipmentCondition;
-  tag: string | null; placeId: string; placeName: string; createdAt: string;
+  tag: string | null; placeId: string; placeName: string; image: string | null;
+  createdAt: string;
 };
 type Place = { id: string; name: string };
 type Designation = { id: string; sector: Sector };
@@ -208,8 +217,8 @@ Estas rotas sao de leitura. O ID para detalhes e o UUID `id`, nunca `numberCard`
 
 | Metodo | Rota | Resposta |
 |---|---|---|
-| GET | `/alunos` | `Student[]` |
-| GET | `/alunos/ativos` | `Student[]` |
+| GET | `/alunos` | `Page<Student>`; filtros opcionais `search` e `enabled` |
+| GET | `/alunos/ativos` | `Page<Student>` |
 | GET | `/alunos/{id}` | `Student` |
 | GET | `/professores` | `Teacher[]` |
 | GET | `/professores/ativos` | `Teacher[]` |
@@ -327,7 +336,7 @@ Uma segunda decisao retorna `422 INVALID_STATE` e nao cria outro evento.
 | Metodo | Rota | Request/Resposta |
 |---|---|---|
 | POST | `/compras` | `BuyRequest` -> `201 Buy` |
-| GET | `/compras` | `Page<Buy>` |
+| GET | `/compras` | `Page<Buy>`; filtros opcionais `search` e `status` |
 | GET | `/compras/{id}` | `Buy` |
 | PUT | `/compras/{id}` | `BuyRequest` -> `Buy` |
 | PATCH | `/compras/{id}` | `{ purchaseJustification? }` -> `Buy` |
@@ -337,13 +346,16 @@ Uma segunda decisao retorna `422 INVALID_STATE` e nao cria outro evento.
 ```ts
 type BuyItemRequest = {
   equipmentId: string; quantity: number; technicalSpecification?: string;
-  sap?: string; patrimony?: string; tag?: string; mechanicalSet?: string;
+  mechanicalSet?: string;
 };
 type BuyRequest = {
   purchaseJustification: string; classGroupId: string; notifiedTeacherId?: string;
   items: BuyItemRequest[]; mediaIds?: string[];
 };
-type BuyItem = BuyItemRequest & { id: string; equipmentName: string };
+type BuyItem = BuyItemRequest & {
+  id: string; equipmentName: string; sap: string | null;
+  patrimony: string | null; tag: string | null;
+};
 type Media = {
   id: string; description: string | null; mediaType: MediaType; image: string;
   originalName: string; contentType: string; fileSize: number; createdAt: string;
@@ -355,6 +367,12 @@ type Buy = {
   createdAt: string; items: BuyItem[]; media: Media[];
 };
 ```
+
+No cadastro de equipamento, `sap`, `patrimony` e `tag` sao gerados automaticamente pelo backend. Valores enviados pelo cliente nesses campos sao ignorados, e os identificadores existentes sao preservados nas edicoes.
+
+Ao criar uma compra, `sap`, `patrimony` e `tag` do item sao preenchidos pelo
+backend a partir do `equipmentId`. Valores enviados pelo cliente para esses
+campos nao substituem os identificadores cadastrados no equipamento.
 
 Nao ha controller publico de media neste projeto. Consuma `media` nas respostas, mas nao presuma uma rota de upload para preencher `mediaIds` ate que esse contrato seja criado.
 
@@ -385,7 +403,7 @@ type Inconvenience5S = Inconvenience5SRequest & {
 | Metodo | Rota | Request/Resposta |
 |---|---|---|
 | POST | `/maquina-log` | `MachineLogRequest` -> `201 MachineLog` |
-| GET | `/maquina-log` | `Page<MachineLog>` |
+| GET | `/maquina-log` | `Page<MachineLog>`; filtro opcional `machineId` |
 | GET | `/maquina-log/{id}` | `MachineLog` |
 | PUT | `/maquina-log/{id}` | `MachineLogRequest` -> `MachineLog` |
 | PATCH | `/maquina-log/{id}` | `MachineLogPatch` -> `MachineLog` |
@@ -414,7 +432,7 @@ type MachineLog = MachineLogRequest & {
 | Metodo | Rota | Request/Resposta |
 |---|---|---|
 | POST | `/solicitao-manutencao` | `MaintenanceRequestInput` -> `201 MaintenanceRequest` |
-| GET | `/solicitao-manutencao` | `MaintenanceRequest[]` (nao paginada) |
+| GET | `/solicitao-manutencao` | `Page<MaintenanceRequest>`; filtros opcionais `search`, `status` e `priority` |
 | GET | `/solicitao-manutencao/{id}` | `MaintenanceRequest` |
 | PUT | `/solicitao-manutencao/{id}` | `MaintenanceRequestInput` -> `MaintenanceRequest` |
 | PATCH | `/solicitao-manutencao/{id}` | `{ sector?, priority?, description? }` -> `MaintenanceRequest` |
@@ -445,7 +463,8 @@ type MaintenanceApproval = { approved: boolean; reason?: string };
 Qualquer usuario autenticado pode criar uma solicitacao. `PUT`, `PATCH` e `DELETE` em
 `/solicitao-manutencao/{id}` sao exclusivos de `ADMIN`; a aprovacao continua exclusiva
 do professor notificado. Quando o professor aprova, a API gera uma ordem de manutencao
-e a deixa pendente para decisao de um `COORDENADOR`.
+e a deixa pendente para decisao de um `COORDENADOR`. No `PUT`, `images` substitui toda a
+lista de imagens da ocorrencia; envie tambem as imagens que devem ser mantidas.
 
 ## Calendario de eventos (qualquer usuario autenticado)
 

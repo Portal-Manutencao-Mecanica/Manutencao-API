@@ -10,6 +10,8 @@ public record EquipmentResponse(
         UUID id,
         String name,
         String sap,
+        String patrimony,
+        String tag,
         BigDecimal unitPrice,
         Integer availableQuantity) {
 

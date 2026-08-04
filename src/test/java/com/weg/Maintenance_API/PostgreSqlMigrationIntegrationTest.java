@@ -76,7 +76,54 @@ class PostgreSqlMigrationIntegrationTest {
                 """,
                 Integer.class
         );
-        assertEquals(5, migrationCount);
+        assertEquals(9, migrationCount);
+
+        Integer firstAccessCodeTableCount = jdbcTemplate.queryForObject(
+                """
+                select count(*)
+                  from information_schema.tables
+                 where table_schema = 'public'
+                   and table_name = 'first_access_code'
+                """,
+                Integer.class
+        );
+        assertEquals(1, firstAccessCodeTableCount);
+
+        String machineImageType = jdbcTemplate.queryForObject(
+                """
+                select data_type
+                  from information_schema.columns
+                 where table_schema = 'public'
+                   and table_name = 'machine'
+                   and column_name = 'machine_image'
+                """,
+                String.class
+        );
+        assertEquals("text", machineImageType);
+
+        String mediaStorageType = jdbcTemplate.queryForObject(
+                """
+                select data_type
+                  from information_schema.columns
+                 where table_schema = 'public'
+                   and table_name = 'media'
+                   and column_name = 'storage_key'
+                """,
+                String.class
+        );
+        assertEquals("text", mediaStorageType);
+
+        Integer legacyMediaUniqueConstraintCount = jdbcTemplate.queryForObject(
+                """
+                select count(*)
+                  from information_schema.table_constraints
+                 where table_schema = 'public'
+                   and table_name = 'media'
+                   and constraint_name = 'media_storage_key_key'
+                """,
+                Integer.class
+        );
+        assertEquals(0, legacyMediaUniqueConstraintCount);
 
         Integer currentSchemaMigration = jdbcTemplate.queryForObject(
                 """

@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -43,9 +44,11 @@ public class BuyController {
     // Busca os dados necessarios para esta operacao.
     @GetMapping
     public ResponseEntity<org.springframework.data.domain.Page<BuyDtoResponse>> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) BuyStatus status,
             org.springframework.data.domain.Pageable pageable
     ) {
-        return ResponseEntity.ok(service.getAll(pageable));
+        return ResponseEntity.ok(service.getAll(search, status, pageable));
     }
 
     // Busca os dados necessarios para esta operacao.

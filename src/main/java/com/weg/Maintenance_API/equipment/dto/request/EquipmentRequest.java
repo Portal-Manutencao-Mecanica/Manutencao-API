@@ -12,6 +12,8 @@ public record EquipmentRequest(
     @NotBlank(message = "name can't be blank")
     String name,
     String sap,
+    String patrimony,
+    String tag,
     @NotNull(message = "unit price can't be null")
     @DecimalMin(value = "0.0", inclusive = true, message = "price can't be negative")
     BigDecimal unitPrice,

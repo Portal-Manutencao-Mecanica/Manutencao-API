@@ -2,6 +2,7 @@ package com.weg.Maintenance_API.equipment.service;
 
 
 import java.util.UUID;
+import java.util.Locale;
 
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 
@@ -30,6 +31,7 @@ public class EquipmentService {
     @Transactional
     public EquipmentResponse save(EquipmentRequest equipmentRequest) {
         Equipment equipment = equipmentMapper.toEntity(equipmentRequest);
+        assignAutomaticIdentifiers(equipment);
         equipment = equipmentRepository.save(equipment);
         return equipmentMapper.toResponse(equipment);
     }
@@ -37,9 +39,14 @@ public class EquipmentService {
     // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
     public org.springframework.data.domain.Page<EquipmentResponse> getAll(
+            String search,
             org.springframework.data.domain.Pageable pageable
     ) {
-        return equipmentRepository.findAll(pageable).map(equipmentMapper::toResponse);
+        String normalizedSearch = search == null || search.isBlank()
+                ? null
+                : search.trim();
+        return equipmentRepository.findAllFiltered(normalizedSearch, pageable)
+                .map(equipmentMapper::toResponse);
     }
 
     // Busca os dados necessarios para esta operacao.
@@ -54,9 +61,9 @@ public class EquipmentService {
     public EquipmentResponse update(UUID id, EquipmentRequest equipmentRequest) {
         Equipment equipment = equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id));
         equipment.setName(equipmentRequest.name());
-        equipment.setSap(equipmentRequest.sap());
         equipment.setUnitPrice(equipmentRequest.unitPrice());
         equipment.setAvailableQuantity(equipmentRequest.availableQuantity());
+        ensureAutomaticIdentifiers(equipment);
         equipmentRepository.save(equipment);
         return equipmentMapper.toResponse(equipment);
     }
@@ -69,15 +76,13 @@ public class EquipmentService {
         if (request.name() != null) {
             equipment.setName(request.name());
         }
-        if (request.sap() != null) {
-            equipment.setSap(request.sap());
-        }
         if (request.unitPrice() != null) {
             equipment.setUnitPrice(request.unitPrice());
         }
         if (request.availableQuantity() != null) {
             equipment.setAvailableQuantity(request.availableQuantity());
         }
+        ensureAutomaticIdentifiers(equipment);
 
         equipmentRepository.save(equipment);
         return equipmentMapper.toResponse(equipment);
@@ -87,5 +92,37 @@ public class EquipmentService {
     @Transactional
     public void delete(UUID id) {
         equipmentRepository.delete(equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id)));
+    }
+
+    private void assignAutomaticIdentifiers(Equipment equipment) {
+        String suffix = identifierSuffix();
+        equipment.setSap("SAP-" + suffix);
+        equipment.setPatrimony("PAT-" + suffix);
+        equipment.setTag("TAG-" + suffix);
+    }
+
+    private void ensureAutomaticIdentifiers(Equipment equipment) {
+        if (hasText(equipment.getSap())
+                && hasText(equipment.getPatrimony())
+                && hasText(equipment.getTag())) {
+            return;
+        }
+
+        String suffix = identifierSuffix();
+        if (!hasText(equipment.getSap())) equipment.setSap("SAP-" + suffix);
+        if (!hasText(equipment.getPatrimony())) equipment.setPatrimony("PAT-" + suffix);
+        if (!hasText(equipment.getTag())) equipment.setTag("TAG-" + suffix);
+    }
+
+    private String identifierSuffix() {
+        return UUID.randomUUID()
+                .toString()
+                .replace("-", "")
+                .substring(0, 12)
+                .toUpperCase(Locale.ROOT);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

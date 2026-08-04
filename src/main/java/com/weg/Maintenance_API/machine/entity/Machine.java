@@ -44,6 +44,9 @@ public class Machine {
     @JoinColumn(name = "place_id", nullable = false)
     private Place place;
 
+    @Column(name = "machine_image", columnDefinition = "TEXT")
+    private String image;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

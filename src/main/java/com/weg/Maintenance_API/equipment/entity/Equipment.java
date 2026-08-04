@@ -41,6 +41,12 @@ public class Equipment {
     @Column(name = "equipment_sap", unique = true, length = 100)
     private String sap;
 
+    @Column(name = "equipment_patrimony", length = 100)
+    private String patrimony;
+
+    @Column(name = "equipment_tag", length = 100)
+    private String tag;
+
     @Column(name = "unit_price", precision = 15, scale = 2)
     private BigDecimal unitPrice;
 
@@ -55,9 +61,18 @@ public class Equipment {
     )
     private List<Media> media = new ArrayList<>();
 
-    public Equipment(String name, String sap, BigDecimal unitPrice, Integer availableQuantity) {
+    public Equipment(
+            String name,
+            String sap,
+            String patrimony,
+            String tag,
+            BigDecimal unitPrice,
+            Integer availableQuantity
+    ) {
         this.name = name;
         this.sap = sap;
+        this.patrimony = patrimony;
+        this.tag = tag;
         this.unitPrice = unitPrice;
         this.availableQuantity = availableQuantity;
     }

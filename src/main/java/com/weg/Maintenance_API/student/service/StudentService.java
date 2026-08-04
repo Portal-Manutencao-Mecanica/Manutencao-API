@@ -42,13 +42,26 @@ public class StudentService {
 
     // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
-    public List<StudentDtoResponse> getAll() {
-        return studentRepository.findAll().stream().map(studentMapper::toResponse).toList();
+    public org.springframework.data.domain.Page<StudentDtoResponse> getAll(
+            String search,
+            Boolean enabled,
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        String normalizedSearch = search == null || search.isBlank()
+                ? null
+                : search.trim();
+        return studentRepository.findAllFiltered(
+                normalizedSearch,
+                enabled,
+                pageable
+        ).map(studentMapper::toResponse);
     }
     // Busca os dados necessarios para esta operacao.
     @Transactional(readOnly = true)
-    public List<StudentDtoResponse> getAllAtivos() {
-        return studentRepository.findAllByEnabledTrue().stream().map(studentMapper::toResponse).toList();
+    public org.springframework.data.domain.Page<StudentDtoResponse> getAllAtivos(
+            org.springframework.data.domain.Pageable pageable
+    ) {
+        return studentRepository.findAllByEnabledTrue(pageable).map(studentMapper::toResponse);
     }
 
     // Executa a operacao deste metodo.

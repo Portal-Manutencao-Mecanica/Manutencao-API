@@ -1,5 +1,6 @@
 package com.weg.Maintenance_API.config.security;
 
+import com.weg.Maintenance_API.config.idempotency.IdempotencyFilter;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -84,6 +85,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .addFilterAfter(userAccessStateFilter, BearerTokenAuthenticationFilter.class);
+
+        http.addFilterAfter(new IdempotencyFilter(), UserAccessStateFilter.class);
 
         return http.build();
     }

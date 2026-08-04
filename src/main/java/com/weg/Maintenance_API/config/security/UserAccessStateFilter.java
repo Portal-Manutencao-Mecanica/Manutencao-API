@@ -54,7 +54,7 @@ public class UserAccessStateFilter extends OncePerRequestFilter {
                     request,
                     response,
                     new InsufficientAuthenticationException(
-                            "A conta nÃ£o estÃ¡ disponÃ­vel."
+                            "A conta não está disponível."
                     )
             );
             return;
@@ -65,7 +65,7 @@ public class UserAccessStateFilter extends OncePerRequestFilter {
                     request,
                     response,
                     new AccessDeniedException(
-                            "Altere a senha temporÃ¡ria antes de acessar outras funcionalidades."
+                            "Altere a senha temporária antes de acessar outras funcionalidades."
                     )
             );
             return;
@@ -98,9 +98,11 @@ public class UserAccessStateFilter extends OncePerRequestFilter {
         if (!contextPath.isBlank() && path.startsWith(contextPath)) {
             path = path.substring(contextPath.length());
         }
-        return (HttpMethod.GET.matches(request.getMethod()) && path.equals("/users/me"))
-                || (HttpMethod.PATCH.matches(request.getMethod())
-                    && path.equals("/users/me/password"))
+        return (HttpMethod.GET.matches(request.getMethod())
+                    && (path.equals("/users/me") || path.equals("/auth/me")))
+                || (HttpMethod.POST.matches(request.getMethod())
+                    && (path.equals("/users/me/first-access/code")
+                        || path.equals("/users/me/first-access/complete")))
                 || (HttpMethod.POST.matches(request.getMethod())
                     && path.equals("/auth/logout"));
     }
