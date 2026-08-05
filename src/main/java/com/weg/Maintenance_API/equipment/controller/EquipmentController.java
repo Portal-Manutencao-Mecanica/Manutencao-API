@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -42,9 +43,10 @@ public class EquipmentController {
     // Busca os dados necessarios para esta operacao.
     @GetMapping
     public ResponseEntity<Page<EquipmentResponse>> getAll(
+            @RequestParam(required = false) String search,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(service.getAll(pageable));
+        return ResponseEntity.ok(service.getAll(search, pageable));
     }
 
     // Busca os dados necessarios para esta operacao.

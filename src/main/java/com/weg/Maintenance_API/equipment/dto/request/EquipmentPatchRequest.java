@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 public record EquipmentPatchRequest(
         String name,
         String sap,
+        String patrimony,
+        String tag,
         BigDecimal unitPrice,
         Integer availableQuantity
 ) {

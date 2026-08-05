@@ -35,6 +35,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 @Service
 @RequiredArgsConstructor
@@ -81,15 +84,42 @@ public class MaintenanceRequestService {
     }
 
     @Transactional(readOnly = true)
-    public List<MaintenanceRequestResponse> getAll(String authenticatedEmail) {
+    public Page<MaintenanceRequestResponse> getAll(
+            String authenticatedEmail,
+            String search,
+            MaintenanceRequestStatus status,
+            Priority priority,
+            Pageable pageable
+    ) {
         User user = authenticatedUser(authenticatedEmail);
-        List<MaintenanceRequest> requests = switch (user.getRole()) {
-            case ADMIN -> maintenanceRepository.findAll();
-            case ALUNO -> maintenanceRepository.findAllByCreatedById(user.getId());
-            case PROFESSOR -> maintenanceRepository.findAllByNotifiedTeacherId(user.getId());
-            case COORDENADOR -> maintenanceRepository.findAllByWorkOrderNumberIsNotNull();
+        Specification<MaintenanceRequest> accessScope = (root, query, builder) -> switch (user.getRole()) {
+            case ADMIN -> builder.conjunction();
+            case ALUNO -> builder.equal(root.get("createdBy").get("id"), user.getId());
+            case PROFESSOR -> builder.equal(root.get("notifiedTeacher").get("id"), user.getId());
+            case COORDENADOR -> builder.isNotNull(root.get("workOrderNumber"));
         };
-        return requests.stream().map(maintenanceRequestMapper::toResponse).toList();
+        Specification<MaintenanceRequest> filters = accessScope;
+
+        if (search != null && !search.isBlank()) {
+            String pattern = "%" + search.trim().toLowerCase(java.util.Locale.ROOT) + "%";
+            filters = filters.and((root, query, builder) -> builder.or(
+                    builder.like(builder.lower(root.get("description")), pattern),
+                    builder.like(builder.lower(root.get("machine").get("name")), pattern),
+                    builder.like(builder.lower(root.get("place").get("name")), pattern),
+                    builder.like(builder.lower(root.get("notifiedTeacher").get("name")), pattern)
+            ));
+        }
+        if (status != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.equal(root.get("status"), status));
+        }
+        if (priority != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.equal(root.get("priority"), priority));
+        }
+
+        return maintenanceRepository.findAll(filters, pageable)
+                .map(maintenanceRequestMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -225,7 +255,7 @@ public class MaintenanceRequestService {
             MaintenanceRequestRequest request,
             String authenticatedEmail
     ) {
-        requireAdmin(authenticatedEmail);
+        User editor = requireAdmin(authenticatedEmail);
         MaintenanceRequest maintenanceRequest = findById(id);
         maintenanceRequest.setSector(Sector.valueOf(request.sector().trim().toUpperCase(java.util.Locale.ROOT)));
         maintenanceRequest.setPriority(Priority.valueOf(request.priority().trim().toUpperCase(java.util.Locale.ROOT)));
@@ -233,6 +263,8 @@ public class MaintenanceRequestService {
         maintenanceRequest.setPlace(references.place(request.placeId()));
         maintenanceRequest.setNotifiedTeacher(references.teacher(request.notifiedTeacherId()));
         maintenanceRequest.setMachine(references.machine(request.machineId()));
+        maintenanceRequest.getMedia().clear();
+        maintenanceRequest.getMedia().addAll(imagesFrom(request.images(), editor));
         return maintenanceRequestMapper.toResponse(maintenanceRepository.save(maintenanceRequest));
     }
 
@@ -272,10 +304,12 @@ public class MaintenanceRequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado"));
     }
 
-    private void requireAdmin(String authenticatedEmail) {
-        if (authenticatedUser(authenticatedEmail).getRole() != Role.ADMIN) {
+    private User requireAdmin(String authenticatedEmail) {
+        User user = authenticatedUser(authenticatedEmail);
+        if (user.getRole() != Role.ADMIN) {
             throw new AccessDeniedException("Apenas administradores podem alterar solicitações de manutenção.");
         }
+        return user;
     }
 
     private boolean canAccess(User user, MaintenanceRequest maintenanceRequest) {

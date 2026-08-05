@@ -1,6 +1,7 @@
 package com.weg.Maintenance_API.user.event;
 
 import com.weg.Maintenance_API.auth.password.event.PasswordResetRequestedEvent;
+import com.weg.Maintenance_API.auth.firstaccess.event.FirstAccessCodeRequestedEvent;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +34,12 @@ public class UserCredentialEmailListener {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
         message.setTo(event.email());
-        message.setSubject("Credenciais de acesso ao Portal de ManutenÃ§Ã£o");
+        message.setSubject("Credenciais de acesso ao Portal de Manutenção");
         message.setText("""
-                OlÃ¡, %s.
+                Olá, %s.
 
                 Sua conta foi criada.
-                Senha temporÃ¡ria: %s
+                Senha temporária: %s
 
                 A senha deve ser alterada no primeiro acesso e expira em 3 dias.
                 Acesse: %s
@@ -52,14 +53,14 @@ public class UserCredentialEmailListener {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
         message.setTo(event.email());
-        message.setSubject("Novas credenciais do Portal de ManutenÃ§Ã£o");
+        message.setSubject("Novas credenciais do Portal de Manutenção");
         message.setText("""
-                OlÃ¡, %s.
+                Olá, %s.
 
-                Uma nova senha temporÃ¡ria foi emitida para sua conta:
+                Uma nova senha temporária foi emitida para sua conta:
                 %s
 
-                A senha anterior nÃ£o Ã© mais vÃ¡lida. Altere a nova senha no primeiro acesso.
+                A senha anterior não é mais válida. Altere a nova senha no primeiro acesso.
                 Acesse: %s
                 """.formatted(event.name(), event.temporaryPassword(), frontendUrl));
         send(message, event.userId(), "USER_CREDENTIALS_REISSUED");
@@ -71,16 +72,16 @@ public class UserCredentialEmailListener {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
         message.setTo(event.email());
-        message.setSubject("RecuperaÃ§Ã£o de senha do Portal de ManutenÃ§Ã£o");
+        message.setSubject("Recuperação de senha do Portal de Manutenção");
         message.setText("""
-                OlÃ¡, %s.
+                Olá, %s.
 
-                Foi solicitada a recuperaÃ§Ã£o da sua senha.
-                Use o link abaixo. Ele Ã© temporÃ¡rio e funciona uma Ãºnica vez:
+                Foi solicitada a recuperação da sua senha.
+                Use o link abaixo. Ele é temporário e funciona uma única vez:
 
                 %s/password-reset?token=%s
 
-                Se vocÃª nÃ£o solicitou a alteraÃ§Ã£o, ignore esta mensagem.
+                Se você não solicitou a alteração, ignore esta mensagem.
                 """.formatted(event.name(), frontendUrl, event.rawToken()));
         send(message, event.userId(), "PASSWORD_RESET");
     }
@@ -91,14 +92,31 @@ public class UserCredentialEmailListener {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
         message.setTo(event.email());
-        message.setSubject("Senha alterada no Portal de ManutenÃ§Ã£o");
+        message.setSubject("Senha alterada no Portal de Manutenção");
         message.setText("""
-                OlÃ¡, %s.
+                Olá, %s.
 
                 A senha da sua conta foi alterada com sucesso.
-                Se vocÃª nÃ£o reconhece esta aÃ§Ã£o, procure o administrador do sistema.
+                Se você não reconhece esta ação, procure o administrador do sistema.
                 """.formatted(event.name()));
         send(message, event.userId(), "PASSWORD_CHANGED");
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void sendFirstAccessCode(FirstAccessCodeRequestedEvent event) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(from);
+        message.setTo(event.email());
+        message.setSubject("Código de verificação do primeiro acesso");
+        message.setText("""
+                Olá, %s.
+
+                Seu código para cadastrar a senha definitiva é: %s
+
+                O código expira em 10 minutos e só pode ser usado uma vez.
+                Se você não solicitou este código, procure o administrador do sistema.
+                """.formatted(event.name(), event.code()));
+        send(message, event.userId(), "FIRST_ACCESS_CODE");
     }
 
     // Executa o fluxo de comunicacao ou registro.

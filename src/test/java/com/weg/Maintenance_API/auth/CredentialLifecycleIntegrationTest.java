@@ -5,6 +5,7 @@ import com.weg.Maintenance_API.admin.entity.Admin;
 import com.weg.Maintenance_API.audit.repository.AuditLogRepository;
 import com.weg.Maintenance_API.auth.password.entity.PasswordResetToken;
 import com.weg.Maintenance_API.auth.password.repository.PasswordResetTokenRepository;
+import com.weg.Maintenance_API.auth.firstaccess.repository.FirstAccessCodeRepository;
 import com.weg.Maintenance_API.auth.repository.RefreshTokenRepository;
 import com.weg.Maintenance_API.auth.service.SecureTokenService;
 import com.weg.Maintenance_API.organization.entity.Organization;
@@ -27,8 +28,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
@@ -54,6 +58,8 @@ class CredentialLifecycleIntegrationTest {
     private OrganizationRepository organizationRepository;
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
+    @Autowired
+    private FirstAccessCodeRepository firstAccessCodeRepository;
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
     @Autowired
@@ -84,6 +90,7 @@ class CredentialLifecycleIntegrationTest {
 
     @AfterEach
     void cleanUp() {
+        firstAccessCodeRepository.deleteAll();
         passwordResetTokenRepository.deleteAll();
         refreshTokenRepository.deleteAll();
         auditLogRepository.deleteAll();
@@ -93,7 +100,7 @@ class CredentialLifecycleIntegrationTest {
     }
 
     @Test
-    void firstAccessCanOnlyReadProfileChangePasswordAndLogout() throws Exception {
+    void firstAccessRequiresEmailCodeBeforeChangingPassword() throws Exception {
         Admin user = createUser("first.access@credential.test", true);
         String loginBody = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -107,6 +114,10 @@ class CredentialLifecycleIntegrationTest {
         String refreshToken = JsonPath.read(loginBody, "$.refreshToken");
 
         mockMvc.perform(get("/users/me")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/auth/me")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk());
 
@@ -126,6 +137,52 @@ class CredentialLifecycleIntegrationTest {
                                 }
                                 """.formatted(
                                 CURRENT_PASSWORD,
+                                NEW_PASSWORD,
+                                NEW_PASSWORD
+                        )))
+                .andExpect(status().isForbidden());
+
+        clearInvocations(mailSender);
+        mockMvc.perform(post("/users/me/first-access/code")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(
+                        "Código enviado para o e-mail da conta."
+                ));
+
+        var captor = org.mockito.ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender).send(captor.capture());
+        String verificationCode = extractVerificationCode(captor.getValue().getText());
+        String invalidCode = verificationCode.equals("000000") ? "000001" : "000000";
+
+        mockMvc.perform(post("/users/me/first-access/complete")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "code":"%s",
+                                  "newPassword":"%s",
+                                  "passwordConfirmation":"%s"
+                                }
+                                """.formatted(
+                                invalidCode,
+                                NEW_PASSWORD,
+                                NEW_PASSWORD
+                        )))
+                .andExpect(status().isUnauthorized());
+        assertEquals(1, firstAccessCodeRepository.findAll().getFirst().getAttempts());
+
+        mockMvc.perform(post("/users/me/first-access/complete")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "code":"%s",
+                                  "newPassword":"%s",
+                                  "passwordConfirmation":"%s"
+                                }
+                                """.formatted(
+                                verificationCode,
                                 NEW_PASSWORD,
                                 NEW_PASSWORD
                         )))
@@ -284,5 +341,13 @@ class CredentialLifecycleIntegrationTest {
         int start = text.indexOf("token=") + "token=".length();
         int end = text.indexOf('\n', start);
         return (end < 0 ? text.substring(start) : text.substring(start, end)).trim();
+    }
+
+    private String extractVerificationCode(String text) {
+        Matcher matcher = Pattern.compile("\\b(\\d{6})\\b").matcher(text);
+        if (!matcher.find()) {
+            throw new AssertionError("Código de primeiro acesso não encontrado no e-mail.");
+        }
+        return matcher.group(1);
     }
 }

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping("/turma")
 @RestController
@@ -36,9 +37,11 @@ public class ClassGroupController {
     // Busca os dados necessarios para esta operacao.
     @GetMapping
     public ResponseEntity<org.springframework.data.domain.Page<ClassResponseDto>> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean enabled,
             org.springframework.data.domain.Pageable pageable
     ) {
-        return ResponseEntity.ok(service.getAll(pageable));
+        return ResponseEntity.ok(service.getAll(search, enabled, pageable));
     }
 
     // Busca os dados necessarios para esta operacao.

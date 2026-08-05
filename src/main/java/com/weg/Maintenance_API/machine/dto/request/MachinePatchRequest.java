@@ -9,6 +9,7 @@ public record MachinePatchRequest(
         String patrimony,
         @ValidEnum(message = "A condicao informada e invalida.", enumClass = EquipmentCondition.class)
         String condition,
-        String tag
+        String tag,
+        String image
 ) {
 }

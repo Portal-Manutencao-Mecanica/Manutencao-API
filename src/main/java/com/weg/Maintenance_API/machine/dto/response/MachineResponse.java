@@ -16,5 +16,6 @@ public record MachineResponse(
         String tag,
         UUID placeId,
         String placeName,
+        String image,
         LocalDateTime createdAt) {
 }

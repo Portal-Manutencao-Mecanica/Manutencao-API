@@ -21,6 +21,7 @@ public record MachineRequest(
     String condition,
     String tag,
     @NotNull(message = "place can't be null")
-UUID placeId
+    UUID placeId,
+    String image
 ) {
 }

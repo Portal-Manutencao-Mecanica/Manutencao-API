@@ -47,9 +47,18 @@ public class ClassGroupService {
     // Busca os dados necessarios para esta operacao.
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
     public org.springframework.data.domain.Page<ClassResponseDto> getAll(
+            String search,
+            Boolean enabled,
             org.springframework.data.domain.Pageable pageable
     ) {
-        return repository.findAll(pageable).map(mapper::toResponse);
+        String normalizedSearch = search == null || search.isBlank()
+                ? null
+                : search.trim();
+        return repository.findAllFiltered(
+                normalizedSearch,
+                enabled,
+                pageable
+        ).map(mapper::toResponse);
     }
 
     // Busca os dados necessarios para esta operacao.
