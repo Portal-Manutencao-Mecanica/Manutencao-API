@@ -8,6 +8,7 @@ import com.weg.Maintenance_API.enums.MaintenanceType;
 import com.weg.Maintenance_API.enums.TaskCriticality;
 import com.weg.Maintenance_API.enums.TaskSituation;
 import com.weg.Maintenance_API.machine.entity.Machine;
+import com.weg.Maintenance_API.maintenancerequest.entity.MaintenanceRequest;
 import com.weg.Maintenance_API.media.entity.Media;
 import com.weg.Maintenance_API.place.entity.Place;
 import com.weg.Maintenance_API.student.entity.Student;
@@ -66,6 +67,10 @@ public class MachineLog {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "machine_id", nullable = false)
     private Machine machine;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "maintenance_request_id")
+    private MaintenanceRequest maintenanceRequest;
 
     @Column(name = "service_performed", columnDefinition = "TEXT")
     private String servicePerformed;

@@ -3,19 +3,18 @@ package com.weg.Maintenance_API.maintenancerequest.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.weg.Maintenance_API.audit.service.AuditService;
 import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
 import com.weg.Maintenance_API.enums.MaintenanceRequestStatus;
+import com.weg.Maintenance_API.enums.MediaType;
+import com.weg.Maintenance_API.enums.MaintenanceType;
+import com.weg.Maintenance_API.enums.TaskCriticality;
+import com.weg.Maintenance_API.enums.TaskSituation;
 import com.weg.Maintenance_API.enums.Priority;
 import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.enums.Sector;
 import com.weg.Maintenance_API.exception.type.InvalidStateException;
-import com.weg.Maintenance_API.exception.type.InvalidFileException;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceApprovalRequest;
 import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceRequestPatchRequest;
@@ -24,7 +23,9 @@ import com.weg.Maintenance_API.maintenancerequest.dto.response.MaintenanceReques
 import com.weg.Maintenance_API.maintenancerequest.entity.MaintenanceRequest;
 import com.weg.Maintenance_API.maintenancerequest.mapper.MaintenanceRequestMapper;
 import com.weg.Maintenance_API.maintenancerequest.repository.MaintenanceRepository;
-import com.weg.Maintenance_API.media.entity.Media;
+import com.weg.Maintenance_API.machinelog.entity.MachineLog;
+import com.weg.Maintenance_API.machinelog.repository.MachineLogRepository;
+import com.weg.Maintenance_API.media.service.ImageMediaFactory;
 import com.weg.Maintenance_API.notification.service.NotificationService;
 import com.weg.Maintenance_API.service.EntityReferenceService;
 import com.weg.Maintenance_API.student.entity.Student;
@@ -38,23 +39,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 @RequiredArgsConstructor
 public class MaintenanceRequestService {
 
-    private static final int MAX_IMAGES = 5;
-    private static final int MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-    private static final Pattern IMAGE_DATA_URL = Pattern.compile(
-            "^data:(image/(?:png|jpeg|webp|svg\\+xml));base64,([A-Za-z0-9+/=]+)$"
-    );
-
     private final MaintenanceRepository maintenanceRepository;
+    private final MachineLogRepository machineLogRepository;
     private final MaintenanceRequestMapper maintenanceRequestMapper;
     private final EntityReferenceService references;
     private final UserRepository userRepository;
     private final AuditService auditService;
     private final NotificationService notificationService;
+    private final ImageMediaFactory imageMediaFactory;
 
     @Transactional
     public MaintenanceRequestResponse save(
@@ -70,10 +68,14 @@ public class MaintenanceRequestService {
         maintenanceRequest.setPlace(references.place(request.placeId()));
         maintenanceRequest.setNotifiedTeacher(references.teacher(request.notifiedTeacherId()));
         maintenanceRequest.setMachine(references.machine(request.machineId()));
-        maintenanceRequest.setMedia(imagesFrom(request.images(), creator));
+        maintenanceRequest.setMedia(imageMediaFactory.fromDataUrls(
+                request.images(), creator, MediaType.MAINTENANCE_REQUEST,
+                "ocorrencia", "Evidência da ocorrência", true
+        ));
         maintenanceRequest.setStatus(MaintenanceRequestStatus.PENDENTE_APROVACAO_PROFESSOR);
 
         maintenanceRequest = maintenanceRepository.save(maintenanceRequest);
+        registerMachineLog(maintenanceRequest, creator);
         notificationService.notifyUser(
                 maintenanceRequest.getNotifiedTeacher(),
                 "Nova solicitação de manutenção",
@@ -83,6 +85,29 @@ public class MaintenanceRequestService {
         return maintenanceRequestMapper.toResponse(maintenanceRequest);
     }
 
+    private void registerMachineLog(MaintenanceRequest maintenanceRequest, User creator) {
+        MachineLog machineLog = new MachineLog();
+        machineLog.setTitle("Ocorrência registrada");
+        machineLog.setDescription(maintenanceRequest.getDescription());
+        machineLog.setTaskSituation(TaskSituation.PENDENTE);
+        machineLog.setMachine(maintenanceRequest.getMachine());
+        machineLog.setMaintenanceRequest(maintenanceRequest);
+        machineLog.setServicePerformed("Ocorrência de manutenção registrada.");
+        machineLog.setResponsibleTeacher(maintenanceRequest.getNotifiedTeacher());
+        machineLog.setTaskCriticality(taskCriticalityFor(maintenanceRequest.getPriority()));
+        machineLog.setPlace(maintenanceRequest.getPlace());
+        machineLog.setMaintenanceType(MaintenanceType.CORRETIVA);
+        machineLog.setCreatedBy(creator);
+        machineLogRepository.save(machineLog);
+    }
+
+    private TaskCriticality taskCriticalityFor(Priority priority) {
+        return switch (priority) {
+            case BAIXA -> TaskCriticality.BAIXA;
+            case MEDIA -> TaskCriticality.MEDIA;
+            case ALTA -> TaskCriticality.ALTA;
+        };
+    }
     @Transactional(readOnly = true)
     public Page<MaintenanceRequestResponse> getAll(
             String authenticatedEmail,
@@ -92,11 +117,33 @@ public class MaintenanceRequestService {
             Pageable pageable
     ) {
         User user = authenticatedUser(authenticatedEmail);
-        Specification<MaintenanceRequest> accessScope = (root, query, builder) -> switch (user.getRole()) {
-            case ADMIN -> builder.conjunction();
-            case ALUNO -> builder.equal(root.get("createdBy").get("id"), user.getId());
-            case PROFESSOR -> builder.equal(root.get("notifiedTeacher").get("id"), user.getId());
-            case COORDENADOR -> builder.isNotNull(root.get("workOrderNumber"));
+        Specification<MaintenanceRequest> accessScope = (root, query, builder) -> {
+            if (user.getRole() == Role.ADMIN || user.getRole() == Role.COORDENADOR) {
+                return builder.conjunction();
+            }
+            if (user.getRole() == Role.ALUNO) {
+                query.distinct(true);
+                return builder.or(
+                        builder.equal(root.get("createdBy").get("id"), user.getId()),
+                        builder.equal(root.join("assignedStudents").get("id"), user.getId())
+                );
+            }
+
+            Teacher teacher = (Teacher) user;
+            List<UUID> classGroupIds = teacher.getClassGroups().stream()
+                    .map(classGroup -> classGroup.getId())
+                    .toList();
+            List<Predicate> related = new java.util.ArrayList<>();
+            related.add(builder.equal(root.get("createdBy").get("id"), user.getId()));
+            related.add(builder.equal(root.get("notifiedTeacher").get("id"), user.getId()));
+            if (!classGroupIds.isEmpty()) {
+                query.distinct(true);
+                related.add(root.join("assignedStudents")
+                        .join("classGroups")
+                        .get("id")
+                        .in(classGroupIds));
+            }
+            return builder.or(related.toArray(Predicate[]::new));
         };
         Specification<MaintenanceRequest> filters = accessScope;
 
@@ -142,9 +189,14 @@ public class MaintenanceRequestService {
         MaintenanceRequest maintenanceRequest = maintenanceRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitação de manutenção", id));
         User authenticatedUser = authenticatedUser(authenticatedEmail);
-        if (!(authenticatedUser instanceof Teacher)
-                || !maintenanceRequest.getNotifiedTeacher().getId().equals(authenticatedUser.getId())) {
-            throw new AccessDeniedException("Somente o professor notificado pode decidir esta solicitação.");
+        boolean canDecide = authenticatedUser.getRole() == Role.ADMIN
+                || authenticatedUser.getRole() == Role.COORDENADOR
+                || (authenticatedUser instanceof Teacher teacher
+                && isRelatedTeacher(teacher, maintenanceRequest));
+        if (!canDecide) {
+            throw new AccessDeniedException(
+                    "Somente um professor relacionado, coordenador ou administrador pode decidir esta solicitação."
+            );
         }
         if (maintenanceRequest.getStatus() != MaintenanceRequestStatus.PENDENTE_APROVACAO_PROFESSOR) {
             throw new InvalidStateException("A solicitação já recebeu uma decisão do professor.");
@@ -201,8 +253,10 @@ public class MaintenanceRequestService {
         MaintenanceRequest maintenanceRequest = maintenanceRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitação de manutenção", id));
         User coordinator = authenticatedUser(authenticatedEmail);
-        if (coordinator.getRole() != Role.COORDENADOR) {
-            throw new AccessDeniedException("Somente coordenadores podem decidir uma ordem de manutenção.");
+        if (coordinator.getRole() != Role.COORDENADOR && coordinator.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException(
+                    "Somente coordenadores ou administradores podem decidir uma ordem de manutenção."
+            );
         }
         if (maintenanceRequest.getStatus() != MaintenanceRequestStatus.PENDENTE_APROVACAO_COORDENADOR) {
             throw new InvalidStateException("A ordem de manutenção não está pendente de aprovação do coordenador.");
@@ -255,7 +309,7 @@ public class MaintenanceRequestService {
             MaintenanceRequestRequest request,
             String authenticatedEmail
     ) {
-        User editor = requireAdmin(authenticatedEmail);
+        User editor = requireManager(authenticatedEmail);
         MaintenanceRequest maintenanceRequest = findById(id);
         maintenanceRequest.setSector(Sector.valueOf(request.sector().trim().toUpperCase(java.util.Locale.ROOT)));
         maintenanceRequest.setPriority(Priority.valueOf(request.priority().trim().toUpperCase(java.util.Locale.ROOT)));
@@ -264,7 +318,10 @@ public class MaintenanceRequestService {
         maintenanceRequest.setNotifiedTeacher(references.teacher(request.notifiedTeacherId()));
         maintenanceRequest.setMachine(references.machine(request.machineId()));
         maintenanceRequest.getMedia().clear();
-        maintenanceRequest.getMedia().addAll(imagesFrom(request.images(), editor));
+        maintenanceRequest.getMedia().addAll(imageMediaFactory.fromDataUrls(
+                request.images(), editor, MediaType.MAINTENANCE_REQUEST,
+                "ocorrencia", "Evidência da ocorrência", true
+        ));
         return maintenanceRequestMapper.toResponse(maintenanceRepository.save(maintenanceRequest));
     }
 
@@ -274,7 +331,7 @@ public class MaintenanceRequestService {
             MaintenanceRequestPatchRequest request,
             String authenticatedEmail
     ) {
-        requireAdmin(authenticatedEmail);
+        requireManager(authenticatedEmail);
         MaintenanceRequest maintenanceRequest = findById(id);
         if (request.sector() != null) {
             maintenanceRequest.setSector(Sector.valueOf(request.sector().trim().toUpperCase(java.util.Locale.ROOT)));
@@ -290,7 +347,7 @@ public class MaintenanceRequestService {
 
     @Transactional
     public void delete(UUID id, String authenticatedEmail) {
-        requireAdmin(authenticatedEmail);
+        requireManager(authenticatedEmail);
         maintenanceRepository.delete(findById(id));
     }
 
@@ -304,10 +361,12 @@ public class MaintenanceRequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado"));
     }
 
-    private User requireAdmin(String authenticatedEmail) {
+    private User requireManager(String authenticatedEmail) {
         User user = authenticatedUser(authenticatedEmail);
-        if (user.getRole() != Role.ADMIN) {
-            throw new AccessDeniedException("Apenas administradores podem alterar solicitações de manutenção.");
+        if (user.getRole() != Role.ADMIN && user.getRole() != Role.COORDENADOR) {
+            throw new AccessDeniedException(
+                    "Apenas coordenadores ou administradores podem alterar solicitações de manutenção."
+            );
         }
         return user;
     }
@@ -315,10 +374,25 @@ public class MaintenanceRequestService {
     private boolean canAccess(User user, MaintenanceRequest maintenanceRequest) {
         return switch (user.getRole()) {
             case ADMIN -> true;
-            case ALUNO -> maintenanceRequest.getCreatedBy().getId().equals(user.getId());
-            case PROFESSOR -> maintenanceRequest.getNotifiedTeacher().getId().equals(user.getId());
-            case COORDENADOR -> maintenanceRequest.getWorkOrderNumber() != null;
+            case ALUNO -> maintenanceRequest.getCreatedBy().getId().equals(user.getId())
+                    || maintenanceRequest.getAssignedStudents().stream()
+                    .anyMatch(student -> student.getId().equals(user.getId()));
+            case PROFESSOR -> isRelatedTeacher((Teacher) user, maintenanceRequest);
+            case COORDENADOR -> true;
         };
+    }
+
+    private boolean isRelatedTeacher(Teacher teacher, MaintenanceRequest maintenanceRequest) {
+        if (maintenanceRequest.getCreatedBy().getId().equals(teacher.getId())
+                || maintenanceRequest.getNotifiedTeacher().getId().equals(teacher.getId())) {
+            return true;
+        }
+        java.util.Set<UUID> teacherClassGroupIds = teacher.getClassGroups().stream()
+                .map(classGroup -> classGroup.getId())
+                .collect(java.util.stream.Collectors.toSet());
+        return maintenanceRequest.getAssignedStudents().stream()
+                .flatMap(student -> student.getClassGroups().stream())
+                .anyMatch(classGroup -> teacherClassGroupIds.contains(classGroup.getId()));
     }
 
     private String workOrderNumber(MaintenanceRequest maintenanceRequest) {
@@ -350,55 +424,4 @@ public class MaintenanceRequestService {
         return reason == null ? message : message + " Motivo: " + reason;
     }
 
-    private List<Media> imagesFrom(List<String> images, User uploadedBy) {
-        if (images == null || images.isEmpty()) {
-            throw new InvalidFileException("Anexe pelo menos uma imagem da ocorrência.");
-        }
-        if (images.size() > MAX_IMAGES) {
-            throw new InvalidFileException("Envie no máximo " + MAX_IMAGES + " imagens por ocorrência.");
-        }
-
-        List<Media> media = new ArrayList<>();
-        for (int index = 0; index < images.size(); index++) {
-            String image = images.get(index);
-            if (image == null) {
-                throw new InvalidFileException("A imagem enviada possui formato inválido.");
-            }
-            Matcher matcher = IMAGE_DATA_URL.matcher(image);
-            if (!matcher.matches()) {
-                throw new InvalidFileException("A imagem enviada possui formato inválido.");
-            }
-
-            byte[] bytes;
-            try {
-                bytes = Base64.getDecoder().decode(matcher.group(2));
-            } catch (IllegalArgumentException exception) {
-                throw new InvalidFileException("A imagem enviada possui Base64 inválido.", exception);
-            }
-            if (bytes.length == 0 || bytes.length > MAX_IMAGE_BYTES) {
-                throw new InvalidFileException("Cada imagem deve ter no máximo 5 MB.");
-            }
-
-            Media item = new Media();
-            item.setMediaType(com.weg.Maintenance_API.enums.MediaType.MAINTENANCE_REQUEST);
-            item.setImage(image);
-            item.setContentType(matcher.group(1));
-            item.setOriginalName("ocorrencia-" + (index + 1) + extensionFor(matcher.group(1)));
-            item.setFileSize((long) bytes.length);
-            item.setDescription("Evidência da ocorrência");
-            item.setUploadedBy(uploadedBy);
-            item.setOrganization(uploadedBy.getOrganization());
-            media.add(item);
-        }
-        return media;
-    }
-
-    private String extensionFor(String contentType) {
-        return switch (contentType) {
-            case "image/png" -> ".png";
-            case "image/jpeg" -> ".jpg";
-            case "image/webp" -> ".webp";
-            default -> ".svg";
-        };
-    }
 }

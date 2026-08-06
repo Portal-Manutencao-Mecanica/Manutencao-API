@@ -25,6 +25,7 @@ import com.weg.Maintenance_API.notification.service.NotificationService;
 import com.weg.Maintenance_API.student.entity.Student;
 import com.weg.Maintenance_API.student.repository.StudentRepository;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
+import com.weg.Maintenance_API.teacher.repository.TeacherRepository;
 import com.weg.Maintenance_API.user.entity.User;
 import com.weg.Maintenance_API.user.service.AuthenticatedUserService;
 import jakarta.persistence.criteria.Predicate;
@@ -56,6 +57,7 @@ public class AutonomousMaintenanceService {
     private final AutonomousMaintenanceMapper mapper;
     private final MachineRepository machineRepository;
     private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
     private final CoordinatorRepository coordinatorRepository;
     private final EventRepository eventRepository;
     private final NotificationService notificationService;
@@ -64,9 +66,7 @@ public class AutonomousMaintenanceService {
     @Transactional
     public AutonomousMaintenanceDtoResponse create(AutonomousMaintenanceDtoRequest request) {
         User currentUser = authenticatedUserService.requireCurrentUser();
-        if (!(currentUser instanceof Teacher teacher) || currentUser.getRole() != Role.PROFESSOR) {
-            throw new AccessDeniedException("Somente professores podem criar manutencoes autonomas.");
-        }
+        Teacher teacher = responsibleTeacher(currentUser, request.responsibleTeacherId());
 
         AutonomousMaintenance maintenance = mapper.toEntity(request);
         maintenance.setInspectedMachine(findMachine(request.inspectedMachineId()));
@@ -152,15 +152,16 @@ public class AutonomousMaintenanceService {
             AutonomousMaintenanceApprovalRequest request
     ) {
         User coordinator = authenticatedUserService.requireCurrentUser();
-        if (coordinator.getRole() != Role.COORDENADOR) {
-            throw new AccessDeniedException("Somente coordenadores podem decidir manutencoes autonomas.");
+        if (coordinator.getRole() != Role.COORDENADOR && coordinator.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException(
+                    "Somente coordenadores ou administradores podem decidir manutencoes autonomas."
+            );
         }
         if (!request.approved() && normalizeOptional(request.reason()) == null) {
             throw new InvalidRequestException("O motivo da reprovacao e obrigatorio.");
         }
 
         AutonomousMaintenance maintenance = findByIdForUpdate(id);
-        ensureSameOrganization(maintenance.getCreatedBy(), coordinator);
         ensurePending(maintenance);
 
         LocalDateTime decidedAt = LocalDateTime.now();
@@ -198,21 +199,23 @@ public class AutonomousMaintenanceService {
             }
 
             switch (user.getRole()) {
-                case PROFESSOR -> predicates.add(
-                        criteriaBuilder.equal(root.get("createdBy").get("id"), user.getId()));
-                case COORDENADOR -> predicates.add(criteriaBuilder.equal(
-                        root.get("createdBy").get("organization").get("id"),
-                        user.getOrganization().getId()));
-                case ALUNO -> {
-                    query.distinct(true);
-                    predicates.add(criteriaBuilder.equal(
-                            root.join("assignedStudents").get("id"), user.getId()));
-                    predicates.add(criteriaBuilder.equal(
-                            root.get("status"),
-                            AutonomousMaintenanceStatus.APROVADA_PELO_COORDENADOR));
+                case PROFESSOR, COORDENADOR, ADMIN -> {
+                    // Estes papeis visualizam todas as manutencoes autonomas.
                 }
-                case ADMIN -> {
-                    // Acesso administrativo global conforme o padrao atual do projeto.
+                case ALUNO -> {
+                    Student student = (Student) user;
+                    List<UUID> classGroupIds = student.getClassGroups().stream()
+                            .map(ClassGroup::getId)
+                            .toList();
+                    if (classGroupIds.isEmpty()) {
+                        predicates.add(criteriaBuilder.disjunction());
+                        break;
+                    }
+                    query.distinct(true);
+                    predicates.add(root.join("assignedStudents")
+                            .join("classGroups")
+                            .get("id")
+                            .in(classGroupIds));
                 }
                 default -> predicates.add(criteriaBuilder.disjunction());
             }
@@ -222,13 +225,8 @@ public class AutonomousMaintenanceService {
 
     private void ensureCanView(AutonomousMaintenance maintenance, User user) {
         boolean allowed = switch (user.getRole()) {
-            case ADMIN -> true;
-            case PROFESSOR -> maintenance.getCreatedBy().getId().equals(user.getId());
-            case COORDENADOR -> sameOrganization(maintenance.getCreatedBy(), user);
-            case ALUNO -> maintenance.getStatus()
-                    == AutonomousMaintenanceStatus.APROVADA_PELO_COORDENADOR
-                    && maintenance.getAssignedStudents().stream()
-                    .anyMatch(student -> student.getId().equals(user.getId()));
+            case ADMIN, PROFESSOR, COORDENADOR -> true;
+            case ALUNO -> isRelatedByClass((Student) user, maintenance);
         };
         if (!allowed) {
             throw new AccessDeniedException("A manutencao autonoma nao esta disponivel para este usuario.");
@@ -236,11 +234,11 @@ public class AutonomousMaintenanceService {
     }
 
     private void ensureCanChange(AutonomousMaintenance maintenance, User user) {
-        boolean allowed = user.getRole() == Role.ADMIN
-                || (user.getRole() == Role.PROFESSOR
-                && maintenance.getCreatedBy().getId().equals(user.getId()));
+        boolean allowed = user.getRole() == Role.ADMIN || user.getRole() == Role.COORDENADOR;
         if (!allowed) {
-            throw new AccessDeniedException("Somente o professor criador pode alterar esta manutencao.");
+            throw new AccessDeniedException(
+                    "Somente coordenadores ou administradores podem alterar esta manutencao."
+            );
         }
     }
 
@@ -251,17 +249,33 @@ public class AutonomousMaintenanceService {
         }
     }
 
-    private void ensureSameOrganization(User maintenanceOwner, User coordinator) {
-        if (!sameOrganization(maintenanceOwner, coordinator)) {
-            throw new AccessDeniedException(
-                    "O coordenador nao pertence a organizacao da manutencao autonoma.");
-        }
-    }
-
     private boolean sameOrganization(User first, User second) {
         return first.getOrganization() != null
                 && second.getOrganization() != null
                 && first.getOrganization().getId().equals(second.getOrganization().getId());
+    }
+
+    private Teacher responsibleTeacher(User currentUser, UUID requestedTeacherId) {
+        if (currentUser instanceof Teacher teacher && currentUser.getRole() == Role.PROFESSOR) {
+            return teacher;
+        }
+        if (currentUser.getRole() != Role.COORDENADOR && currentUser.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("Este usuario nao pode criar manutencoes autonomas.");
+        }
+        if (requestedTeacherId == null) {
+            throw new InvalidRequestException("Informe o professor responsavel.");
+        }
+        return teacherRepository.findById(requestedTeacherId)
+                .orElseThrow(() -> new ResourceNotFoundException("Professor", requestedTeacherId));
+    }
+
+    private boolean isRelatedByClass(Student student, AutonomousMaintenance maintenance) {
+        Set<UUID> studentClassGroupIds = student.getClassGroups().stream()
+                .map(ClassGroup::getId)
+                .collect(Collectors.toSet());
+        return maintenance.getAssignedStudents().stream()
+                .flatMap(assigned -> assigned.getClassGroups().stream())
+                .anyMatch(classGroup -> studentClassGroupIds.contains(classGroup.getId()));
     }
 
     private List<Student> validateStudents(List<UUID> requestedIds, Teacher teacher) {

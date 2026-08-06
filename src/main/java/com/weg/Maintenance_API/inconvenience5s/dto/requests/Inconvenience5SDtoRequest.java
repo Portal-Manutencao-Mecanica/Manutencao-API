@@ -11,6 +11,7 @@ import com.weg.Maintenance_API.teacher.entity.Teacher;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -28,6 +29,8 @@ UUID classGroupId,
 List<UUID> involvedStudentIds,
         String description,
         @NotNull(message = "registration period can't be null")
-        RegistrationPeriod registrationPeriod
+        RegistrationPeriod registrationPeriod,
+        @Size(max = 5, message = "at most 5 images can be attached")
+        List<@Size(max = 7_000_000, message = "image is too large") String> images
 ) {
 }

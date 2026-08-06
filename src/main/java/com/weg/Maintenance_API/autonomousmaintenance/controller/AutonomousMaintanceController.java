@@ -41,7 +41,7 @@ public class AutonomousMaintanceController {
     @Operation(summary = "Cria uma manutencao autonoma pendente de aprovacao")
     @ApiResponse(responseCode = "201", description = "Manutencao criada")
     @ApiResponse(responseCode = "403", description = "Usuario nao e professor")
-    @PreAuthorize("hasRole('PROFESSOR')")
+    @PreAuthorize("hasAnyRole('PROFESSOR', 'COORDENADOR', 'ADMIN')")
     @PostMapping
     public ResponseEntity<AutonomousMaintenanceDtoResponse> create(
             @Valid @RequestBody AutonomousMaintenanceDtoRequest request
@@ -68,7 +68,7 @@ public class AutonomousMaintanceController {
     }
 
     @Operation(summary = "Altera uma manutencao ainda pendente")
-    @PreAuthorize("hasAnyRole('PROFESSOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<AutonomousMaintenanceDtoResponse> update(
             @PathVariable UUID id,
@@ -82,7 +82,7 @@ public class AutonomousMaintanceController {
     @ApiResponse(responseCode = "400", description = "Reprovacao sem motivo")
     @ApiResponse(responseCode = "403", description = "Coordenador de outra organizacao")
     @ApiResponse(responseCode = "422", description = "Manutencao ja decidida")
-    @PreAuthorize("hasRole('COORDENADOR')")
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PatchMapping("/{id}/aprovacao")
     public ResponseEntity<AutonomousMaintenanceDtoResponse> decide(
             @PathVariable UUID id,
@@ -92,7 +92,7 @@ public class AutonomousMaintanceController {
     }
 
     @Operation(summary = "Cancela uma manutencao ainda pendente")
-    @PreAuthorize("hasAnyRole('PROFESSOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);

@@ -1,6 +1,7 @@
 package com.weg.Maintenance_API.maintenancerequest.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -15,6 +16,7 @@ import com.weg.Maintenance_API.admin.entity.Admin;
 import com.weg.Maintenance_API.coordinator.entity.Coordinator;
 import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
 import com.weg.Maintenance_API.enums.MaintenanceRequestStatus;
+import com.weg.Maintenance_API.enums.Priority;
 import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
 import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceApprovalRequest;
@@ -22,6 +24,9 @@ import com.weg.Maintenance_API.maintenancerequest.dto.request.MaintenanceRequest
 import com.weg.Maintenance_API.maintenancerequest.entity.MaintenanceRequest;
 import com.weg.Maintenance_API.maintenancerequest.mapper.MaintenanceRequestMapper;
 import com.weg.Maintenance_API.maintenancerequest.repository.MaintenanceRepository;
+import com.weg.Maintenance_API.media.service.ImageMediaFactory;
+import com.weg.Maintenance_API.machinelog.entity.MachineLog;
+import com.weg.Maintenance_API.machinelog.repository.MachineLogRepository;
 import com.weg.Maintenance_API.notification.service.NotificationService;
 import com.weg.Maintenance_API.service.EntityReferenceService;
 import com.weg.Maintenance_API.student.entity.Student;
@@ -31,7 +36,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -39,11 +46,13 @@ import org.springframework.security.access.AccessDeniedException;
 class MaintenanceRequestApprovalServiceTest {
 
     @Mock private MaintenanceRepository repository;
+    @Mock private MachineLogRepository machineLogRepository;
     @Mock private MaintenanceRequestMapper mapper;
     @Mock private EntityReferenceService references;
     @Mock private UserRepository userRepository;
     @Mock private AuditService auditService;
     @Mock private NotificationService notificationService;
+    @Spy private ImageMediaFactory imageMediaFactory = new ImageMediaFactory();
     @InjectMocks private MaintenanceRequestService service;
 
     private final UUID requestId = UUID.randomUUID();
@@ -121,6 +130,7 @@ class MaintenanceRequestApprovalServiceTest {
                 notifiedTeacher.getId(), UUID.randomUUID(), java.util.List.of("data:image/png;base64,aQ==")
         );
         MaintenanceRequest created = new MaintenanceRequest();
+        created.setPriority(Priority.MEDIA);
         when(userRepository.findByEmailIgnoreCase(notifiedTeacher.getEmail())).thenReturn(Optional.of(notifiedTeacher));
         when(mapper.toEntity(input)).thenReturn(created);
         when(repository.save(created)).thenReturn(created);
@@ -132,6 +142,9 @@ class MaintenanceRequestApprovalServiceTest {
         assertEquals(1, created.getMedia().size());
         assertEquals("data:image/png;base64,aQ==", created.getMedia().getFirst().getImage());
         assertEquals(MaintenanceRequestStatus.PENDENTE_APROVACAO_PROFESSOR, created.getStatus());
+        ArgumentCaptor<MachineLog> machineLogCaptor = ArgumentCaptor.forClass(MachineLog.class);
+        verify(machineLogRepository).save(machineLogCaptor.capture());
+        assertEquals(created, machineLogCaptor.getValue().getMaintenanceRequest());
     }
 
     @Test
@@ -178,6 +191,34 @@ class MaintenanceRequestApprovalServiceTest {
         service.delete(requestId, admin.getEmail());
 
         verify(repository).delete(request);
+    }
+
+    @Test
+    void assignedStudentCanViewRelatedRequest() {
+        Student assignedStudent = new Student();
+        assignedStudent.setId(UUID.randomUUID());
+        assignedStudent.setEmail("assigned.student@example.test");
+        assignedStudent.setRole(Role.ALUNO);
+        request.setAssignedStudents(java.util.List.of(assignedStudent));
+        when(repository.findById(requestId)).thenReturn(Optional.of(request));
+        when(userRepository.findByEmailIgnoreCase(assignedStudent.getEmail()))
+                .thenReturn(Optional.of(assignedStudent));
+
+        assertDoesNotThrow(() -> service.getById(requestId, assignedStudent.getEmail()));
+    }
+
+    @Test
+    void unrelatedStudentCannotViewRequest() {
+        Student unrelatedStudent = new Student();
+        unrelatedStudent.setId(UUID.randomUUID());
+        unrelatedStudent.setEmail("unrelated.student@example.test");
+        unrelatedStudent.setRole(Role.ALUNO);
+        when(repository.findById(requestId)).thenReturn(Optional.of(request));
+        when(userRepository.findByEmailIgnoreCase(unrelatedStudent.getEmail()))
+                .thenReturn(Optional.of(unrelatedStudent));
+
+        assertThrows(AccessDeniedException.class,
+                () -> service.getById(requestId, unrelatedStudent.getEmail()));
     }
 
     @Test

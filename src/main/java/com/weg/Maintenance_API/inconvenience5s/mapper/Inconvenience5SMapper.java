@@ -9,11 +9,12 @@ import com.weg.Maintenance_API.student.entity.Student;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import com.weg.Maintenance_API.media.mapper.MediaMapper;
 
 import java.util.Collections;
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = MediaMapper.class)
 public interface Inconvenience5SMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -33,6 +34,8 @@ public interface Inconvenience5SMapper {
     @Mapping(target = "notifiedTeacherName", source = "notifiedTeacher.name")
     @Mapping(target = "classGroupId", source = "classGroup.id")
     @Mapping(target = "classGroupAcronym", source = "classGroup.acronym")
+    @Mapping(target = "createdById", source = "createdBy.id")
+    @Mapping(target = "createdByName", source = "createdBy.name")
     @Mapping(target = "involvedStudentIds", source = "involvedStudents", qualifiedByName = "studentIdsFromStudents")
     Inconvenience5SDtoResponse toResponse(Inconvenience5S inconvenience5S);
 

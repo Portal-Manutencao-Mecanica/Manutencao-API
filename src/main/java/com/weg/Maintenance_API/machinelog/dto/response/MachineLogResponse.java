@@ -19,6 +19,7 @@ public record MachineLogResponse(
         TaskSituation taskSituation,
         UUID machineId,
         String machineName,
+        UUID maintenanceRequestId,
         String servicePerformed,
         LocalDateTime teacherConcludedAt,
         UUID responsibleTeacherId,
