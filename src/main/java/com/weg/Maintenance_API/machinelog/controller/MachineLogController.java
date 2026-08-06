@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -29,11 +30,13 @@ public class MachineLogController {
 
     private final MachineLogService service;
 
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PostMapping
     public ResponseEntity<MachineLogResponse> create(@Valid @RequestBody MachineLogRequest request, Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request, authentication.getName()));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<org.springframework.data.domain.Page<MachineLogResponse>> getAll(
             @RequestParam(required = false) UUID machineId,
@@ -42,21 +45,25 @@ public class MachineLogController {
         return ResponseEntity.ok(service.getAll(machineId, pageable));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<MachineLogResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<MachineLogResponse> update(@PathVariable UUID id, @Valid @RequestBody MachineLogRequest request) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<MachineLogResponse> patch(@PathVariable UUID id, @RequestBody MachineLogPatchRequest request) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);

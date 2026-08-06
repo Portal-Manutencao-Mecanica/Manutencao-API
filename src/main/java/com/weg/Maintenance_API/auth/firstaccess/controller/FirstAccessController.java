@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +23,7 @@ public class FirstAccessController {
 
     private final FirstAccessService firstAccessService;
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/code")
     public MessageResponse requestCode(
             Authentication authentication,
@@ -34,6 +36,7 @@ public class FirstAccessController {
         return new MessageResponse("Código enviado para o e-mail da conta.");
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/complete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void complete(

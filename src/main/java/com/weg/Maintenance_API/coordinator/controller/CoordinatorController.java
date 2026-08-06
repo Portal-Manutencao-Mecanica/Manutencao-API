@@ -8,6 +8,7 @@ import com.weg.Maintenance_API.coordinator.dto.response.CoordinatorResponseDto;
 import com.weg.Maintenance_API.coordinator.service.CoordinatorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ public class CoordinatorController {
     private final CoordinatorService service;
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @GetMapping
     public ResponseEntity<org.springframework.data.domain.Page<CoordinatorResponseDto>> getAll(
             org.springframework.data.domain.Pageable pageable
@@ -31,6 +33,7 @@ public class CoordinatorController {
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @GetMapping("/ativos")
     public ResponseEntity<org.springframework.data.domain.Page<CoordinatorResponseDto>> getAllAtivos(
             org.springframework.data.domain.Pageable pageable
@@ -39,6 +42,7 @@ public class CoordinatorController {
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<CoordinatorResponseDto> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));

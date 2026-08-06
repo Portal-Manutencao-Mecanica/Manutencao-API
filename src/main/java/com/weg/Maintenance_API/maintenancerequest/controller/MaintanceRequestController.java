@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -39,6 +40,7 @@ public class MaintanceRequestController {
 
     private final MaintenanceRequestService service;
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<MaintenanceRequestResponse> create(
             @Valid @RequestBody MaintenanceRequestRequest request,
@@ -47,6 +49,7 @@ public class MaintanceRequestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request, authentication.getName()));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<Page<MaintenanceRequestResponse>> getAll(
             @RequestParam(required = false) String search,
@@ -64,6 +67,7 @@ public class MaintanceRequestController {
         ));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<MaintenanceRequestResponse> getById(
             @PathVariable UUID id,
@@ -76,6 +80,7 @@ public class MaintanceRequestController {
     @ApiResponse(responseCode = "200", description = "Decisão registrada")
     @ApiResponse(responseCode = "403", description = "Professor não autorizado")
     @ApiResponse(responseCode = "404", description = "Solicitação inexistente")
+    @PreAuthorize("hasAnyRole('PROFESSOR', 'COORDENADOR', 'ADMIN')")
     @PatchMapping("/{id}/aprovacao")
     public ResponseEntity<MaintenanceRequestResponse> approve(
             @PathVariable UUID id,
@@ -92,6 +97,7 @@ public class MaintanceRequestController {
     }
 
     @Operation(summary = "Aprova ou reprova uma ordem de manutenção", description = "Somente coordenadores podem decidir uma ordem pendente.")
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PatchMapping("/{id}/ordem/aprovacao")
     public ResponseEntity<MaintenanceRequestResponse> approveWorkOrder(
             @PathVariable UUID id,
@@ -107,6 +113,7 @@ public class MaintanceRequestController {
         ));
     }
 
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<MaintenanceRequestResponse> update(
             @PathVariable UUID id,
@@ -116,6 +123,7 @@ public class MaintanceRequestController {
         return ResponseEntity.ok(service.update(id, request, authentication.getName()));
     }
 
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<MaintenanceRequestResponse> patch(
             @PathVariable UUID id,
@@ -125,6 +133,7 @@ public class MaintanceRequestController {
         return ResponseEntity.ok(service.patch(id, request, authentication.getName()));
     }
 
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
             @PathVariable UUID id,
