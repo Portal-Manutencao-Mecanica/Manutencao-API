@@ -148,10 +148,10 @@ Cria um usuario e, na mesma transacao, o perfil correspondente a sua role. Nao e
 | Campo | Tipo | Obrigatorio | Descricao |
 |---|---|---|---|
 | `name` | string | Sim | Nome do usuario. |
-| `username` | string | Sim | Entre 3 e 50 caracteres; e normalizado e unico. |
+| `username` | string | Nao | Gerado automaticamente pelo nome completo e uma sequencia numerica. |
 | `email` | string | Sim | E-mail unico, com dominio aceito pela organizacao. |
 | `role` | `Role` | Sim | `ADMIN`, `COORDENADOR`, `PROFESSOR` ou `ALUNO`. |
-| `organizationId` | UUID | Admin: sim | Organizacao do novo usuario. Para coordenador autenticado, a propria organizacao e usada. |
+| `organizationId` | UUID | Sim | Organizacao selecionada para o novo usuario. |
 | `studentData` | objeto | Role `ALUNO` | Dados especificos do aluno. |
 | `teacherData` | objeto | Role `PROFESSOR` | Dados especificos do professor. |
 
@@ -164,7 +164,6 @@ Aluno (`ALUNO`):
 ```json
 {
   "name": "Joao da Silva",
-  "username": "joao.silva",
   "email": "joao.silva@sesisenai.org.br",
   "role": "ALUNO",
   "organizationId": "00000000-0000-4000-8000-000000000001",
@@ -181,7 +180,6 @@ Professor (`PROFESSOR`):
 ```json
 {
   "name": "Maria Souza",
-  "username": "maria.souza",
   "email": "maria.souza@sesisenai.org.br",
   "role": "PROFESSOR",
   "organizationId": "00000000-0000-4000-8000-000000000001",
@@ -198,7 +196,6 @@ Coordenador (`COORDENADOR`):
 ```json
 {
   "name": "Ana Lima",
-  "username": "ana.lima",
   "email": "ana.lima@sesisenai.org.br",
   "role": "COORDENADOR",
   "organizationId": "00000000-0000-4000-8000-000000000001"
@@ -210,7 +207,6 @@ Administrador (`ADMIN`):
 ```json
 {
   "name": "Administrador Local",
-  "username": "admin.local",
   "email": "admin@sesisenai.org.br",
   "role": "ADMIN",
   "organizationId": "00000000-0000-4000-8000-000000000001"
@@ -225,7 +221,7 @@ Administrador (`ADMIN`):
 - `ADMIN` nao aceita dados especificos de perfil;
 - dados de um perfil nunca podem acompanhar outra role;
 - `ADMIN` pode criar qualquer role;
-- `COORDENADOR` pode criar apenas `ALUNO` e `PROFESSOR` da propria organizacao;
+- `COORDENADOR` pode criar apenas `ALUNO` e `PROFESSOR`, em qualquer organizacao ativa;
 - cada UUID em `classGroupIds` e resolvido antes da associacao; turma inexistente retorna erro e desfaz toda a criacao;
 - `studentData.classGroupIds` e `teacherData.classGroupIds` exigem ao menos uma turma; cada item deve ser um UUID nao nulo;
 - nome de usuario e e-mail sao normalizados e devem ser unicos;
@@ -239,7 +235,7 @@ Retorna `201 Created`. A senha temporaria nunca aparece no response.
 {
   "id": "00000000-0000-4000-8000-000000000100",
   "name": "Joao da Silva",
-  "username": "joao.silva",
+  "username": "joao.da.silva1",
   "email": "joao.silva@sesisenai.org.br",
   "role": "ALUNO",
   "status": "PENDING_FIRST_ACCESS",
@@ -254,7 +250,7 @@ Retorna `201 Created`. A senha temporaria nunca aparece no response.
 }
 ```
 
-Erros esperados: `400` para payload invalido, `401` sem autenticacao, `403` para falta de permissao, `404` para organizacao ou turma inexistente e `409` para e-mail ou username ja utilizado.
+Erros esperados: `400` para payload invalido, `401` sem autenticacao, `403` para falta de permissao, `404` para organizacao ou turma inexistente e `409` para e-mail ja utilizado.
 
 Os mesmos exemplos estao disponiveis no Swagger em `/api/swagger-ui.html`.
 
@@ -269,10 +265,10 @@ Acesso: `ADMIN` ou `COORDENADOR`. Envie `multipart/form-data` com a parte `file`
 Cabeçalho padrão:
 
 ```text
-name,username,email,role,organization,classGroupIds
+name,email,role,organization,classGroupIds
 ```
 
-As colunas `name`, `username`, `email`, `role`, `organization` e `classGroupIds` são obrigatórias no cabeçalho. O valor de `organization` aceita somente `SENAI`, `WEG` ou `OTHER`. Para ADMIN, a organização informada é resolvida pelo tipo e precisa existir e estar ativa; todas as roles são permitidas. Para COORDENADOR, a organização usada é sempre a própria e, quando preenchido, o tipo da planilha precisa ser o mesmo; as roles permitidas são somente `ALUNO` e `PROFESSOR`. Cada linha valida cabeçalho, conteúdo, e-mail, username, domínio, organização, role e duplicidades no arquivo e no banco.
+As colunas `name`, `email`, `role`, `organization` e `classGroupIds` são obrigatórias no cabeçalho. O username é gerado pelo nome completo e uma sequência numérica: `junior1`, `junior2`, `junior.silva1`. O valor de `organization` aceita somente `SENAI`, `WEG` ou `OTHER`. Para ADMIN, a organização informada é resolvida pelo tipo e precisa existir e estar ativa; todas as roles são permitidas. Para COORDENADOR, a organização usada é sempre a própria e, quando preenchido, o tipo da planilha precisa ser o mesmo; as roles permitidas são somente `ALUNO` e `PROFESSOR`. Cada linha valida cabeçalho, conteúdo, e-mail, organização, role e duplicidades no arquivo e no banco.
 
 A resposta contém o UUID da importação, totais e erros por linha. Senhas temporárias nunca são gravadas em `user_import_item`, logs ou auditoria; somente o hash BCrypt permanece no usuário e o valor temporário é entregue ao listener de e-mail após o commit.
 
@@ -320,7 +316,7 @@ As mudanças de status exigem:
 }
 ```
 
-A troca de role recebe `{"role":"PROFESSOR"}`. Não é permitido alterar a própria role nem remover o último administrador ativo. O coordenador gerencia apenas `PROFESSOR` e `ALUNO` da própria organização e nunca administra `ADMIN` ou `COORDENADOR`.
+A troca de role recebe `{"role":"PROFESSOR"}`. Não é permitido alterar a própria role nem remover o último administrador ativo. O coordenador pode inativar somente `PROFESSOR` e `ALUNO`, independentemente da organização, e nunca administra `ADMIN` ou `COORDENADOR`.
 
 As operações administrativas revogam refresh tokens e invalidam imediatamente access tokens anteriores por meio da versão de segurança incluída no JWT. O reenvio substitui o hash da senha anterior, renova a expiração, mantém a troca obrigatória, aplica rate limit e envia a nova credencial somente após o commit.
 
@@ -328,10 +324,10 @@ As operações administrativas revogam refresh tokens e invalidam imediatamente 
 
 | Método | Endpoint | Acesso |
 |---|---|---|
-| `POST` | `/api/organizations` | `ADMIN` |
+| `POST` | `/api/organizations` | `ADMIN`, `COORDENADOR` |
 | `GET` | `/api/organizations` | `ADMIN`, `COORDENADOR` |
 | `GET` | `/api/organizations/{id}` | `ADMIN`, `COORDENADOR` |
-| `PATCH` | `/api/organizations/{id}` | `ADMIN` |
+| `PATCH` | `/api/organizations/{id}` | `ADMIN`, `COORDENADOR` |
 | `PATCH` | `/api/organizations/{id}/activate` | `ADMIN` |
 | `PATCH` | `/api/organizations/{id}/deactivate` | `ADMIN` |
 
