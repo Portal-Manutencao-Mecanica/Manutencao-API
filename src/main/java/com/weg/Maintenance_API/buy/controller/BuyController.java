@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -36,12 +37,14 @@ public class BuyController {
     private final BuyService service;
 
     // Cria e persiste os dados da operacao.
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<BuyDtoResponse> create(@Valid @RequestBody BuyDtoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<org.springframework.data.domain.Page<BuyDtoResponse>> getAll(
             @RequestParam(required = false) String search,
@@ -52,6 +55,7 @@ public class BuyController {
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<BuyDtoResponse> getById(
             @PathVariable
@@ -61,6 +65,7 @@ UUID id
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}")
     public ResponseEntity<BuyDtoResponse> update(
             @PathVariable UUID id,
@@ -70,15 +75,17 @@ UUID id
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{id}")
     public ResponseEntity<BuyDtoResponse> patch(
             @PathVariable UUID id,
-            @RequestBody BuyPatchRequest request
+            @Valid @RequestBody BuyPatchRequest request
     ) {
         return ResponseEntity.ok(service.patch(id, request));
     }
 
     // Remove ou invalida os dados solicitados.
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.deleteById(id);
@@ -86,6 +93,7 @@ UUID id
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/status/{status}")
     public ResponseEntity<org.springframework.data.domain.Page<BuyDtoResponse>> getByStatus(
             @PathVariable

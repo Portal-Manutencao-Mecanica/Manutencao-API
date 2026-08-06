@@ -43,7 +43,7 @@ public class EquipmentService {
             org.springframework.data.domain.Pageable pageable
     ) {
         String normalizedSearch = search == null || search.isBlank()
-                ? null
+                ? ""
                 : search.trim();
         return equipmentRepository.findAllFiltered(normalizedSearch, pageable)
                 .map(equipmentMapper::toResponse);

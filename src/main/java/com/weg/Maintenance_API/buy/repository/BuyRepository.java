@@ -7,7 +7,9 @@ import com.weg.Maintenance_API.buy.entity.Buy;
 import com.weg.Maintenance_API.enums.BuyStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
 import org.springframework.stereotype.Repository;
 
 import org.springframework.data.domain.Page;
@@ -15,6 +17,10 @@ import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface BuyRepository extends JpaRepository<Buy, UUID> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select buy from Buy buy where buy.id = :id")
+    java.util.Optional<Buy> findByIdForUpdate(@Param("id") UUID id);
 
     Page<Buy> findAllByStatus(BuyStatus status, Pageable pageable);
 
@@ -24,7 +30,7 @@ public interface BuyRepository extends JpaRepository<Buy, UUID> {
               join buy.createdBy creator
               join buy.classGroup classGroup
               left join buy.notifiedTeacher teacher
-             where (:search is null
+             where (:search = ''
                     or lower(buy.purchaseJustification) like lower(concat('%', :search, '%'))
                     or lower(creator.name) like lower(concat('%', :search, '%'))
                     or lower(classGroup.acronym) like lower(concat('%', :search, '%'))

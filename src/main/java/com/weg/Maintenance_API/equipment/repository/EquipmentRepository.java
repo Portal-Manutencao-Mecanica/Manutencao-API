@@ -18,7 +18,7 @@ public interface EquipmentRepository extends JpaRepository<Equipment, UUID> {
     @Query("""
             select equipment
               from Equipment equipment
-             where (:search is null
+             where (:search = ''
                     or lower(equipment.name) like lower(concat('%', :search, '%'))
                     or lower(coalesce(equipment.sap, '')) like lower(concat('%', :search, '%'))
                     or lower(coalesce(equipment.patrimony, '')) like lower(concat('%', :search, '%'))
