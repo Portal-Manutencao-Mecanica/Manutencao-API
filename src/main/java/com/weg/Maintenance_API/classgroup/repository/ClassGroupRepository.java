@@ -21,7 +21,7 @@ public interface ClassGroupRepository extends JpaRepository<ClassGroup, UUID>{
     @Query("""
             select classGroup
               from ClassGroup classGroup
-             where (:search is null
+             where (:search = ''
                     or lower(classGroup.acronym) like lower(concat('%', :search, '%')))
                and (:enabled is null or classGroup.enabled = :enabled)
             """)

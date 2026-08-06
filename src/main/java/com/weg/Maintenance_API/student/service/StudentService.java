@@ -48,7 +48,7 @@ public class StudentService {
             org.springframework.data.domain.Pageable pageable
     ) {
         String normalizedSearch = search == null || search.isBlank()
-                ? null
+                ? ""
                 : search.trim();
         return studentRepository.findAllFiltered(
                 normalizedSearch,

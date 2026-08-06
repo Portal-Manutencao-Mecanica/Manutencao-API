@@ -60,7 +60,7 @@ public class MachineService {
             org.springframework.data.domain.Pageable pageable
     ) {
         String normalizedSearch = search == null || search.isBlank()
-                ? null
+                ? ""
                 : search.trim();
         return machineRepository.findAllFiltered(
                 normalizedSearch,

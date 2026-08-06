@@ -19,7 +19,7 @@ public interface MachineRepository extends JpaRepository<Machine, UUID>{
             select machine
               from Machine machine
               join machine.place place
-             where (:search is null
+             where (:search = ''
                     or lower(machine.name) like lower(concat('%', :search, '%'))
                     or lower(machine.patrimony) like lower(concat('%', :search, '%'))
                     or lower(coalesce(machine.tag, '')) like lower(concat('%', :search, '%'))

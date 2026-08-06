@@ -22,7 +22,7 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
     @Query("""
             select student
               from Student student
-             where (:search is null
+             where (:search = ''
                     or lower(student.name) like lower(concat('%', :search, '%'))
                     or lower(student.email) like lower(concat('%', :search, '%'))
                     or lower(student.numberCard) like lower(concat('%', :search, '%')))
