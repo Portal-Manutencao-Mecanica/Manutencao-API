@@ -58,10 +58,9 @@ public class UserCreationService {
             ClientRequestMetadata metadata
     ) {
         User actor = authenticatedUserService.requireCurrentUser();
-        Organization organization = resolveOrganization(actor, request.organizationId());
 
         try {
-            permissionService.validateCanCreate(actor, request.role(), organization);
+            permissionService.validateCanCreate(actor, request.role(), null);
         } catch (AccessDeniedException exception) {
             auditService.record(
                     actor,
@@ -78,27 +77,32 @@ public class UserCreationService {
             throw exception;
         }
 
+        Organization organization = resolveOrganization(request.organizationId());
+
         if (!organization.isActive()) {
             throw new InvalidRequestException("A organizacao selecionada esta inativa.");
         }
 
-        String username = userIdentityPolicy.normalizeUsername(request.username());
         String email = userIdentityPolicy.normalizeEmail(request.email());
         userIdentityPolicy.validateName(request.name());
-        userIdentityPolicy.validateUsername(username);
         userIdentityPolicy.validateEmail(email);
-        userIdentityPolicy.validateAvailable(username, email);
+        userIdentityPolicy.validateEmailAvailable(email);
+        String numberCard = request.numberCard().trim();
+        if (userRepository.existsByNumberCardIgnoreCase(numberCard)) {
+            throw new ConflictException("O numero do cracha informado ja esta cadastrado.");
+        }
         if (!organization.acceptsEmail(email)) {
             throw new InvalidRequestException(
                     "O dominio do e-mail nao corresponde a organizacao selecionada."
             );
         }
+        String username = userIdentityPolicy.generateUsername(request.name());
 
         User user = userAccountFactory.create(
                 request.name().trim(),
                 username,
                 email,
-                "",
+                numberCard,
                 request.role(),
                 organization
         );
@@ -213,13 +217,10 @@ public class UserCreationService {
     }
 
     // Resolve a organizacao pelo repository conforme a permissao do ator.
-    private Organization resolveOrganization(User actor, UUID requestedOrganizationId) {
-        if (actor.getRole() == Role.COORDENADOR) {
-            return actor.getOrganization();
-        }
+    private Organization resolveOrganization(UUID requestedOrganizationId) {
         if (requestedOrganizationId == null) {
             throw new InvalidRequestException(
-                    "A organizacao e obrigatoria para a criacao feita por administrador."
+                    "A organizacao e obrigatoria para a criacao de usuario."
             );
         }
         return organizationRepository.findById(requestedOrganizationId)

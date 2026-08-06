@@ -18,8 +18,7 @@ public record CreateUserRequest(
         @Size(max = 150, message = "O nome deve possuir no maximo 150 caracteres.")
         String name,
 
-        @NotBlank(message = "O username e obrigatorio.")
-        @Size(min = 3, max = 50, message = "O username deve possuir entre 3 e 50 caracteres.")
+        @Schema(hidden = true, description = "Ignorado. O username e gerado automaticamente a partir do nome.")
         String username,
 
         @NotBlank(message = "O e-mail e obrigatorio.")
@@ -27,10 +26,14 @@ public record CreateUserRequest(
         @Size(max = 150, message = "O e-mail deve possuir no maximo 150 caracteres.")
         String email,
 
+        @NotBlank(message = "O numero do cracha e obrigatorio.")
+        @Size(max = 100, message = "O numero do cracha deve possuir no maximo 100 caracteres.")
+        String numberCard,
+
         @NotNull(message = "A role e obrigatoria.")
         Role role,
 
-        @Schema(description = "UUID da organizacao. Para coordenador autenticado, a propria organizacao e usada.")
+        @Schema(description = "UUID da organizacao do usuario.")
         UUID organizationId,
 
         @Valid

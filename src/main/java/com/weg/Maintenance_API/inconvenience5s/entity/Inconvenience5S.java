@@ -52,7 +52,7 @@ public class Inconvenience5S {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    private Inconvenience5SStatus status = Inconvenience5SStatus.NAO_VISUALIZADA;
+    private Inconvenience5SStatus status = Inconvenience5SStatus.EM_ANALISE;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "place_id", nullable = false)
@@ -103,7 +103,7 @@ public class Inconvenience5S {
             createdAt = LocalDateTime.now();
         }
         if (status == null) {
-            status = Inconvenience5SStatus.NAO_VISUALIZADA;
+            status = Inconvenience5SStatus.EM_ANALISE;
         }
     }
 }

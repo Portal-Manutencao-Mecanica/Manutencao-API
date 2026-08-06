@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,24 +33,28 @@ public class PlaceController {
     private final PlaceService service;
 
     // Cria e persiste os dados da operacao.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PostMapping
     public ResponseEntity<PlaceResponse> create(@Valid @RequestBody PlaceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request));
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<PlaceResponse>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<PlaceResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<PlaceResponse> update(
             @PathVariable UUID id,
@@ -59,6 +64,7 @@ public class PlaceController {
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<PlaceResponse> patch(
             @PathVariable UUID id,
@@ -68,6 +74,7 @@ public class PlaceController {
     }
 
     // Remove ou invalida os dados solicitados.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);

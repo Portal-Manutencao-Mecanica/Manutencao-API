@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,7 @@ public class OrganizationController {
     private final OrganizationService organizationService;
 
     // Cria e persiste os dados da operacao.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public OrganizationResponse create(@Valid @RequestBody CreateOrganizationRequest request) {
@@ -35,18 +37,21 @@ public class OrganizationController {
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public Page<OrganizationResponse> findAll(Pageable pageable) {
         return organizationService.findAll(pageable);
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public OrganizationResponse findById(@PathVariable UUID id) {
         return organizationService.findById(id);
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PatchMapping("/{id}")
     public OrganizationResponse update(
             @PathVariable UUID id,
@@ -56,12 +61,14 @@ public class OrganizationController {
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PatchMapping("/{id}/activate")
     public OrganizationResponse activate(@PathVariable UUID id) {
         return organizationService.setActive(id, true);
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PatchMapping("/{id}/deactivate")
     public OrganizationResponse deactivate(@PathVariable UUID id) {
         return organizationService.setActive(id, false);

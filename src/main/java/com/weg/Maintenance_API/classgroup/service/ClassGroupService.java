@@ -4,6 +4,7 @@ package com.weg.Maintenance_API.classgroup.service;
 import java.util.UUID;
 
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+import com.weg.Maintenance_API.exception.type.InvalidRequestException;
 
 import com.weg.Maintenance_API.classgroup.dto.request.ClassPatchRequest;
 import com.weg.Maintenance_API.classgroup.dto.request.ClassRequestDto;
@@ -39,7 +40,7 @@ public class ClassGroupService {
     public ClassResponseDto create(ClassRequestDto request){
         ClassGroup entity = mapper.toEntity(request);
         entity.setTeachers(resolveTeachers(request.teacherIds()));
-        entity.setStudents(resolveStudents(request.studentIds()));
+        entity.setStudents(resolveStudents(request.studentIds(), null));
         repository.save(entity);
         return mapper.toResponse(entity);
     }
@@ -52,7 +53,7 @@ public class ClassGroupService {
             org.springframework.data.domain.Pageable pageable
     ) {
         String normalizedSearch = search == null || search.isBlank()
-                ? null
+                ? ""
                 : search.trim();
         return repository.findAllFiltered(
                 normalizedSearch,
@@ -97,7 +98,7 @@ public class ClassGroupService {
         ClassGroup entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Turma", id));
         entity.setAcronym(request.acronym());
         entity.setTeachers(resolveTeachers(request.teacherIds()));
-        entity.setStudents(resolveStudents(request.studentIds()));
+        entity.setStudents(resolveStudents(request.studentIds(), entity.getId()));
         return mapper.toResponse(entity);
     }
 
@@ -127,10 +128,21 @@ public class ClassGroupService {
         return new ArrayList<>(teachers);
     }
 
-    private List<Student> resolveStudents(List<UUID> studentIds) {
+    private List<Student> resolveStudents(List<UUID> studentIds, UUID currentClassGroupId) {
         List<UUID> ids = distinctIds(studentIds);
         List<Student> students = studentRepository.findAllById(ids);
         validateResolvedIds(ids, students.stream().map(Student::getId).toList(), "Aluno");
+        students.stream()
+                .filter(student -> student.getClassGroups() != null)
+                .filter(student -> student.getClassGroups().stream().anyMatch(classGroup ->
+                        currentClassGroupId == null
+                                || !classGroup.getId().equals(currentClassGroupId)))
+                .findFirst()
+                .ifPresent(student -> {
+                    throw new InvalidRequestException(
+                            "O aluno " + student.getName() + " já pertence a outra turma."
+                    );
+                });
         return new ArrayList<>(students);
     }
 

@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +31,7 @@ public class PasswordRecoveryController {
     private final PasswordResetTokenService passwordResetTokenService;
 
     // Executa a operacao deste metodo.
+    @PreAuthorize("permitAll()")
     @PostMapping("/forgot")
     public MessageResponse forgot(
             @Valid @RequestBody ForgotPasswordRequest request,
@@ -43,6 +45,7 @@ public class PasswordRecoveryController {
     }
 
     // Valida a regra aplicada por este metodo.
+    @PreAuthorize("permitAll()")
     @GetMapping("/validate")
     public ValidatePasswordResetTokenResponse validate(
             @RequestParam @NotBlank String token
@@ -53,6 +56,7 @@ public class PasswordRecoveryController {
     }
 
     // Executa a operacao deste metodo.
+    @PreAuthorize("permitAll()")
     @PostMapping("/reset")
     public MessageResponse reset(
             @Valid @RequestBody ResetPasswordRequest request,

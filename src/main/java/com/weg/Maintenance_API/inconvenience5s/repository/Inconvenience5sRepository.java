@@ -5,9 +5,11 @@ import java.util.UUID;
 
 import com.weg.Maintenance_API.inconvenience5s.entity.Inconvenience5S;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface Inconvenience5sRepository extends JpaRepository<Inconvenience5S, UUID> {
+public interface Inconvenience5sRepository extends JpaRepository<Inconvenience5S, UUID>,
+        JpaSpecificationExecutor<Inconvenience5S> {
     
 }

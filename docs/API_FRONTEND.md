@@ -123,14 +123,15 @@ Nao existe rota publica de foto de perfil na API atual. Nao implemente upload de
 | PATCH | `/users/{id}/block` | ADMIN, COORDENADOR | `{ reason }` | `ManagedUser` |
 | PATCH | `/users/{id}/unblock` | ADMIN, COORDENADOR | `{ reason }` | `ManagedUser` |
 | PATCH | `/users/{id}/deactivate` | ADMIN, COORDENADOR | `{ reason }` | `ManagedUser` |
-| PATCH | `/users/{id}/reactivate` | ADMIN, COORDENADOR | `{ reason }` | `ManagedUser` |
+| PATCH | `/users/{id}/reactivate` | ADMIN | `{ reason }` | `ManagedUser` |
 | PATCH | `/users/{id}/role` | ADMIN | `{ role: Role }` | `ManagedUser` |
-| POST | `/users/{id}/resend-credentials` | ADMIN, COORDENADOR | sem body | `202 CredentialResend` |
+| PUT | `/users/{id}` | ADMIN | `{ name, email, numberCard, organizationId? }` | `ManagedUser` |
+| POST | `/users/{id}/resend-credentials` | ADMIN | sem body | `202 CredentialResend` |
 
 ```ts
 type CreateUserRequest = {
-  name: string; username: string; email: string; role: Role;
-  organizationId?: string; // COORDENADOR opera na propria organizacao
+  name: string; email: string; role: Role;
+  organizationId: string;
 };
 type ManagedUser = {
   id: string; name: string; username: string; email: string; role: Role;
@@ -160,7 +161,7 @@ type UserImportResponse = {
 };
 ```
 
-Para a importacao, envie um arquivo CSV UTF-8 (ou XLSX) em `FormData` com a chave exata `file`; nao defina manualmente o header `Content-Type`, pois o navegador inclui o boundary. O contrato interno da API usa `name,username,email,role,organization,classGroupIds`. Na interface, o modelo amigavel usa `classGroupAcronyms`: o frontend resolve as siglas (separadas por `|`) para UUIDs antes do upload. O campo `organization` aceita somente `SENAI`, `WEG` ou `OTHER`. Para ADMIN, o tipo e resolvido para uma organizacao existente e ativa; todas as roles sao permitidas. Para COORDENADOR, a organizacao e sempre a propria e a role e limitada a `ALUNO` ou `PROFESSOR`.
+Para a importacao, envie um arquivo CSV UTF-8 (ou XLSX) em `FormData` com a chave exata `file`; nao defina manualmente o header `Content-Type`, pois o navegador inclui o boundary. O contrato interno da API usa `name,email,role,organization,classGroupIds`, e o username e gerado pelo nome completo com uma sequencia numerica. Na interface, o modelo amigavel usa `classGroupAcronyms`: o frontend resolve as siglas (separadas por `|`) para UUIDs antes do upload. O campo `organization` aceita somente `SENAI`, `WEG` ou `OTHER`. Para ADMIN, o tipo e resolvido para uma organizacao existente e ativa; todas as roles sao permitidas. Para COORDENADOR, a organizacao e sempre a propria e a role e limitada a `ALUNO` ou `PROFESSOR`.
 
 ## Organizacoes
 
@@ -315,9 +316,9 @@ type AutonomousMaintenance = {
 
 Visibilidade aplicada pelo backend:
 
-- `PROFESSOR`: somente registros criados por ele.
-- `COORDENADOR`: registros da propria organizacao.
-- `ALUNO`: somente aprovados em que esteja na lista `students`.
+- `PROFESSOR`: todos os registros.
+- `COORDENADOR`: todos os registros e aprovacao de solicitacoes pendentes.
+- `ALUNO`: registros relacionados a uma de suas turmas.
 - `ADMIN`: acesso administrativo global conforme o padrao da API.
 
 Os alunos precisam estar ativos, desbloqueados e na organizacao do professor.

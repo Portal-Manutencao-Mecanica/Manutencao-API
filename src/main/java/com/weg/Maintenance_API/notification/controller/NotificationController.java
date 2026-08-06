@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -28,6 +29,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<Page<NotificationResponse>> getAll(
             Authentication authentication,
@@ -39,6 +41,7 @@ public class NotificationController {
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<NotificationResponse> getById(
             @PathVariable UUID id,
@@ -50,6 +53,7 @@ public class NotificationController {
     }
 
     // Remove ou invalida os dados solicitados.
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
             @PathVariable UUID id,
@@ -60,6 +64,7 @@ public class NotificationController {
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}")
     public ResponseEntity<NotificationResponse> readNotification(
             @PathVariable UUID id,
@@ -71,6 +76,7 @@ public class NotificationController {
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{id}/read")
     public ResponseEntity<NotificationResponse> patchReadNotification(
             @PathVariable UUID id,
@@ -80,6 +86,7 @@ public class NotificationController {
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{id}/toggle-read")
     public ResponseEntity<NotificationResponse> toggleReadStatus(
             @PathVariable UUID id,
@@ -91,6 +98,7 @@ public class NotificationController {
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/read-all")
     public ResponseEntity<Void> markAllAsRead(Authentication authentication) {
         notificationService.markAllAsRead(authentication.getName());
@@ -98,6 +106,7 @@ public class NotificationController {
     }
 
     // Executa a operacao deste metodo.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/unread-count")
     public ResponseEntity<Long> unreadCount(Authentication authentication) {
         return ResponseEntity.ok(

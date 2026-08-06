@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,12 +29,14 @@ public class UserProfileController {
     private final UserPasswordService userPasswordService;
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public UserProfileResponse getProfile(Authentication authentication) {
         return userProfileService.get(authentication.getName());
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping
     public UserProfileResponse updateProfile(
             @Valid @RequestBody UpdateOwnProfileRequest request,
@@ -48,6 +51,7 @@ public class UserProfileController {
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changePassword(
@@ -63,6 +67,7 @@ public class UserProfileController {
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/preferences")
     public UserProfileResponse updatePreferences(
             @Valid @RequestBody UpdateNotificationPreferencesRequest request,

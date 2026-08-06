@@ -76,7 +76,30 @@ class PostgreSqlMigrationIntegrationTest {
                 """,
                 Integer.class
         );
-        assertEquals(9, migrationCount);
+        assertEquals(2, migrationCount);
+
+        Integer machineLogLinkMigration = jdbcTemplate.queryForObject(
+                """
+                select count(*)
+                  from flyway_schema_history
+                 where version = '10'
+                   and success = true
+                """,
+                Integer.class
+        );
+        assertEquals(1, machineLogLinkMigration);
+
+        Integer machineLogLinkConstraint = jdbcTemplate.queryForObject(
+                """
+                select count(*)
+                  from information_schema.table_constraints
+                 where table_schema = 'public'
+                   and table_name = 'machine_log'
+                   and constraint_name = 'fk_machine_log_maintenance_request'
+                """,
+                Integer.class
+        );
+        assertEquals(1, machineLogLinkConstraint);
 
         Integer firstAccessCodeTableCount = jdbcTemplate.queryForObject(
                 """

@@ -18,6 +18,7 @@ public interface MachineLogMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "machine", ignore = true)
+    @Mapping(target = "maintenanceRequest", ignore = true)
     @Mapping(target = "responsibleTeacher", ignore = true)
     @Mapping(target = "teacherConcludedAt", source = "teacherConcludedAt")
     @Mapping(target = "place", ignore = true)
@@ -30,6 +31,7 @@ public interface MachineLogMapper {
 
     @Mapping(target = "machineId", source = "machine.id")
     @Mapping(target = "machineName", source = "machine.name")
+    @Mapping(target = "maintenanceRequestId", source = "maintenanceRequest.id")
     @Mapping(target = "responsibleTeacherId", source = "responsibleTeacher.id")
     @Mapping(target = "responsibleTeacherName", source = "responsibleTeacher.name")
     @Mapping(target = "placeId", source = "place.id")

@@ -25,6 +25,7 @@ public class StudentController {
     private final StudentService service;
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<org.springframework.data.domain.Page<StudentDtoResponse>> getAll(
             @RequestParam(required = false) String search,
@@ -35,6 +36,7 @@ public class StudentController {
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/ativos")
     public ResponseEntity<org.springframework.data.domain.Page<StudentDtoResponse>> getAllAtivos(
             org.springframework.data.domain.Pageable pageable
@@ -43,6 +45,7 @@ public class StudentController {
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<StudentDtoResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getById(id));

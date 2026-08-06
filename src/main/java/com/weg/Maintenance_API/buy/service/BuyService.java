@@ -13,11 +13,14 @@ import com.weg.Maintenance_API.buy.entity.Buy;
 import com.weg.Maintenance_API.buy.entity.BuyItem;
 import com.weg.Maintenance_API.equipment.entity.Equipment;
 import com.weg.Maintenance_API.enums.BuyStatus;
+import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.buy.mapper.BuyMapper;
 import com.weg.Maintenance_API.buy.mapper.BuyItemMapper;
 import com.weg.Maintenance_API.buy.repository.BuyRepository;
 import com.weg.Maintenance_API.user.service.AuthenticatedUserService;
+import com.weg.Maintenance_API.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +57,7 @@ public class BuyService {
             org.springframework.data.domain.Pageable pageable
     ) {
         String normalizedSearch = search == null || search.isBlank()
-                ? null
+                ? ""
                 : search.trim();
         return repository.findAllFiltered(
                 normalizedSearch,
@@ -64,9 +67,15 @@ public class BuyService {
     }
 
     // Busca os dados necessarios para esta operacao.
-    @Transactional(isolation = Isolation.READ_COMMITTED,  readOnly = true)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public BuyDtoResponse getById(UUID id){
-        Buy entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id));
+        Buy entity = repository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Compra", id));
+        User viewer = authenticatedUserService.requireCurrentUser();
+        if (entity.getStatus() == BuyStatus.NAO_VISUALIZADO && isDirectSuperior(viewer, entity)) {
+            entity.setStatus(BuyStatus.EM_ANALISE);
+            repository.save(entity);
+        }
         return mapper.toResponse(entity);
     }
 
@@ -74,6 +83,7 @@ public class BuyService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public BuyDtoResponse update(UUID id, BuyDtoRequest request){
         Buy entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id));
+        ensureCanEditContent(entity, authenticatedUserService.requireCurrentUser());
 
         entity.setPurchaseJustification(request.purchaseJustification());
         entity.setClassGroup(references.classGroup(request.classGroupId()));
@@ -90,9 +100,17 @@ public class BuyService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public BuyDtoResponse patch(UUID id, BuyPatchRequest request){
         Buy entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id));
+        User currentUser = authenticatedUserService.requireCurrentUser();
 
         if (request.purchaseJustification() != null) {
+            ensureCanEditContent(entity, currentUser);
             entity.setPurchaseJustification(request.purchaseJustification());
+        }
+        if (request.status() != null) {
+            if (currentUser.getRole() != Role.ADMIN && currentUser.getRole() != Role.COORDENADOR) {
+                throw new AccessDeniedException("Somente coordenadores ou administradores podem alterar a situação da compra.");
+            }
+            entity.setStatus(BuyStatus.valueOf(request.status().trim().toUpperCase(Locale.ROOT)));
         }
 
         repository.save(entity);
@@ -102,7 +120,10 @@ public class BuyService {
     // Remove ou invalida os dados solicitados.
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void deleteById(UUID id){
-        repository.delete(repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Compra", id)));
+        Buy entity = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Compra", id));
+        ensureCanEditContent(entity, authenticatedUserService.requireCurrentUser());
+        repository.delete(entity);
     }
 
     // Busca os dados necessarios para esta operacao.
@@ -127,5 +148,31 @@ public class BuyService {
             item.setBuy(entity);
             entity.getItems().add(item);
         });
+    }
+
+    private void ensureCanEditContent(Buy buy, User currentUser) {
+        boolean ownsUnseenRequest = buy.getCreatedBy().getId().equals(currentUser.getId())
+                && buy.getStatus() == BuyStatus.NAO_VISUALIZADO;
+        if (!ownsUnseenRequest) {
+            throw new AccessDeniedException(
+                    "A compra só pode ser alterada pelo autor antes da primeira visualização."
+            );
+        }
+    }
+
+    private boolean isDirectSuperior(User viewer, Buy buy) {
+        Role creatorRole = buy.getCreatedBy().getRole();
+        if (creatorRole == Role.ALUNO) {
+            return viewer.getRole() == Role.PROFESSOR
+                    && buy.getNotifiedTeacher() != null
+                    && buy.getNotifiedTeacher().getId().equals(viewer.getId());
+        }
+        if (creatorRole == Role.PROFESSOR) {
+            return viewer.getRole() == Role.COORDENADOR;
+        }
+        if (creatorRole == Role.COORDENADOR) {
+            return viewer.getRole() == Role.ADMIN;
+        }
+        return false;
     }
 }

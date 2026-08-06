@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -28,6 +29,7 @@ public class EventController {
     private final EventService eventService;
 
     // Cria e persiste os dados da operacao.
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<CalendarResponseDto> create(
             @Valid @RequestBody CalendarCreateRequestDto request
@@ -36,17 +38,20 @@ public class EventController {
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<Page<CalendarResponseDto>> getAll(Pageable pageable) {
         return ResponseEntity.ok(eventService.getAll(pageable));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/calendario")
     public ResponseEntity<List<EventResponseDto>> getAllEvents() {
         return ResponseEntity.ok(eventService.getAllEvents());
     }
 
     // Busca os dados necessarios para esta operacao.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<CalendarResponseDto> getById(
             @PathVariable
@@ -56,6 +61,7 @@ UUID id
     }
 
     // Atualiza o estado conforme os dados informados.
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<CalendarResponseDto> patch(
             @PathVariable UUID id,
@@ -65,6 +71,7 @@ UUID id
     }
 
     // Atualiza parcialmente um evento para manter compatibilidade com clientes que usam PUT.
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<CalendarResponseDto> update(
             @PathVariable UUID id,
@@ -74,6 +81,7 @@ UUID id
     }
 
     // Remove ou invalida os dados solicitados.
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         eventService.delete(id);

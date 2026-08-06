@@ -27,6 +27,7 @@ public record AutonomousMaintenanceDtoRequest(
         @Size(max = 5000, message = "As nao conformidades devem possuir no maximo 5000 caracteres.")
         String identifiedNonconformities,
         @NotEmpty(message = "Informe pelo menos um aluno.")
-        List<@NotNull(message = "O identificador do aluno nao pode ser nulo.") UUID> studentIds
+        List<@NotNull(message = "O identificador do aluno nao pode ser nulo.") UUID> studentIds,
+        UUID responsibleTeacherId
 ) {
 }

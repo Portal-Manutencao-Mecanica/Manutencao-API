@@ -77,11 +77,11 @@ class UserImportIntegrationTest {
 
         MockMultipartFile file = csv(List.<String[]>of(
                 new String[]{
-                        "Professor Teste", "prof.teste", "prof@local.test",
+                        "Professor Teste", "prof@local.test",
                         "PROFESSOR", "OTHER"
                 },
                 new String[]{
-                        "Admin Indevido", "admin.indevido", "admin2@local.test",
+                        "Admin Indevido", "admin2@local.test",
                         "ADMIN", "OTHER"
                 }
         ));
@@ -98,13 +98,14 @@ class UserImportIntegrationTest {
         assertEquals(UserImportItemStatus.CREATED, response.items().get(0).status());
         assertEquals(UserImportItemStatus.CREATED, response.items().get(1).status());
         var imported = userRepository.findByEmailIgnoreCase("prof@local.test").orElseThrow();
+        assertEquals("professor.teste1", imported.getUsername());
         assertTrue(imported.isPasswordChangeRequired());
         assertFalse(imported.getPassword().isBlank());
         assertTrue(imported.getPassword().startsWith("$2"));
     }
 
     @Test
-    void coordinatorCannotImportIntoAnotherOrganization() throws Exception {
+    void coordinatorCanImportTeacherOrStudentIntoAnotherOrganization() throws Exception {
         Organization own = organization("Own", OrganizationType.SENAI, "own.test");
         Organization other = organization("Other", OrganizationType.WEG, "other.test");
         Coordinator coordinator = new Coordinator(
@@ -118,7 +119,7 @@ class UserImportIntegrationTest {
 
         MockMultipartFile file = workbook(List.<String[]>of(
                 new String[]{
-                        "Aluno", "aluno.outro", "aluno@other.test",
+                        "Aluno", "aluno@other.test",
                         "ALUNO", "WEG"
                 }
         ));
@@ -129,9 +130,9 @@ class UserImportIntegrationTest {
                 metadata()
         );
 
-        assertEquals(0, response.created());
-        assertEquals(1, response.failed());
-        assertEquals("CROSS_ORGANIZATION_IMPORT", response.items().getFirst().errorCode());
+        assertEquals(1, response.created());
+        assertEquals(0, response.failed());
+        assertTrue(userRepository.existsByEmailIgnoreCase("aluno@other.test"));
     }
 
     @Test
@@ -139,7 +140,7 @@ class UserImportIntegrationTest {
         Organization organization = organization("Local", "local.test");
         Admin admin = admin(organization);
         MockMultipartFile file = csv(List.<String[]>of(new String[]{
-                "Aluno", "aluno.invalido", "aluno@local.test", "ALUNO", "ACME"
+                "Aluno", "aluno@local.test", "ALUNO", "ACME"
         }));
 
         UserImportResponse response = userImportService.importUsers(
@@ -171,7 +172,7 @@ class UserImportIntegrationTest {
 
         MockMultipartFile file = csv(List.<String[]>of(
                 new String[]{
-                        "Admin Indevido", "admin.indevido", "admin@own.test",
+                        "Admin Indevido", "admin@own.test",
                         "ADMIN", "SENAI"
                 }
         ));
@@ -194,11 +195,11 @@ class UserImportIntegrationTest {
         Admin admin = admin(organization);
         MockMultipartFile file = workbook(List.<String[]>of(
                 new String[]{
-                        "Aluno Um", "aluno.um", "duplicado@dup.test",
+                        "Aluno Um", "duplicado@dup.test",
                         "ALUNO", "OTHER"
                 },
                 new String[]{
-                        "Aluno Dois", "aluno.dois", "duplicado@dup.test",
+                        "Aluno Dois", "duplicado@dup.test",
                         "ALUNO", "OTHER"
                 }
         ));
@@ -213,6 +214,37 @@ class UserImportIntegrationTest {
         assertEquals(2, response.failed());
         assertTrue(response.items().stream()
                 .allMatch(item -> "DUPLICATE_EMAIL_IN_FILE".equals(item.errorCode())));
+    }
+
+    @Test
+    void importsSameFullNameWithSequentialGeneratedUsernames() {
+        Organization organization = organization("Sequential", "sequential.test");
+        Admin admin = admin(organization);
+        MockMultipartFile file = csv(List.of(
+                new String[]{"Junior da Silva", "junior1@sequential.test", "ALUNO", "OTHER"},
+                new String[]{"Junior da Silva", "junior2@sequential.test", "ALUNO", "OTHER"},
+                new String[]{"Junior Souza", "junior.souza@sequential.test", "ALUNO", "OTHER"}
+        ));
+
+        UserImportResponse response = userImportService.importUsers(
+                file,
+                admin.getEmail(),
+                metadata()
+        );
+
+        assertEquals(3, response.created());
+        assertEquals("junior.da.silva1", userRepository
+                .findByEmailIgnoreCase("junior1@sequential.test")
+                .orElseThrow()
+                .getUsername());
+        assertEquals("junior.da.silva2", userRepository
+                .findByEmailIgnoreCase("junior2@sequential.test")
+                .orElseThrow()
+                .getUsername());
+        assertEquals("junior.souza1", userRepository
+                .findByEmailIgnoreCase("junior.souza@sequential.test")
+                .orElseThrow()
+                .getUsername());
     }
 
     private Organization organization(String name, String domain) {
@@ -241,7 +273,7 @@ class UserImportIntegrationTest {
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             var sheet = workbook.createSheet("users");
             var header = sheet.createRow(0);
-            String[] headers = {"name", "username", "email", "role", "organization", "classGroupIds"};
+            String[] headers = {"name", "email", "role", "organization", "classGroupIds"};
             for (int index = 0; index < headers.length; index++) {
                 header.createCell(index).setCellValue(headers[index]);
             }
@@ -263,7 +295,7 @@ class UserImportIntegrationTest {
     }
 
     private MockMultipartFile csv(List<String[]> rows) {
-        StringBuilder content = new StringBuilder("name,username,email,role,organization,classGroupIds\n");
+        StringBuilder content = new StringBuilder("name,email,role,organization,classGroupIds\n");
         for (String[] row : rows) {
             content.append(String.join(",", row)).append('\n');
         }

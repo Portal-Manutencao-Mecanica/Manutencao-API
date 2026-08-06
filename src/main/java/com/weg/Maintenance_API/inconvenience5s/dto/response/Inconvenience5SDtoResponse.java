@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.weg.Maintenance_API.enums.Inconvenience5SStatus;
 import com.weg.Maintenance_API.enums.RegistrationPeriod;
+import com.weg.Maintenance_API.media.dto.response.MediaResponseDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,8 +22,11 @@ public record Inconvenience5SDtoResponse(
         LocalDateTime createdAt,
         UUID classGroupId,
         String classGroupAcronym,
+        UUID createdById,
+        String createdByName,
         List<UUID> involvedStudentIds,
         String description,
-        RegistrationPeriod registrationPeriod
+        RegistrationPeriod registrationPeriod,
+        List<MediaResponseDto> media
 ) {
 }

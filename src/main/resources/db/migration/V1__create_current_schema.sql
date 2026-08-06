@@ -1,3 +1,6 @@
+-- Schema consolidado e vazio. Dados de desenvolvimento pertencem somente ao seed manual externo.
+-- Seed: C:\Users\vinicius_lopes150\Downloads\seed_massivo_weg_senai.sql
+
 create extension if not exists pgcrypto;
 
 CREATE TABLE public.admin (
@@ -1295,3 +1298,166 @@ begin
     end loop;
 end
 $$;
+
+-- Conteudo consolidado de V2__maintenance_request_teacher_approval.sql (sem DML)
+ALTER TABLE public.maintenance_request
+    DROP CONSTRAINT IF EXISTS maintenance_request_status_check;
+
+ALTER TABLE public.maintenance_request
+    ADD COLUMN IF NOT EXISTS approved_by_user_id uuid,
+    ADD COLUMN IF NOT EXISTS approved_at timestamp without time zone,
+    ADD COLUMN IF NOT EXISTS rejection_reason text;
+
+ALTER TABLE public.maintenance_request
+    ADD CONSTRAINT maintenance_request_status_check CHECK (
+        status IN (
+            'PENDENTE_APROVACAO_PROFESSOR',
+            'APROVADA_PELO_PROFESSOR',
+            'REPROVADA_PELO_PROFESSOR',
+            'NAO_VISUALIZADA',
+            'FINALIZADA',
+            'EM_ANALISE'
+        )
+    );
+
+ALTER TABLE public.maintenance_request
+    ADD CONSTRAINT fk_maintenance_request_approved_by
+    FOREIGN KEY (approved_by_user_id) REFERENCES public.users(user_id);
+
+-- Conteudo consolidado de V4__maintenance_request_work_order_workflow.sql (sem DML)
+ALTER TABLE public.maintenance_request
+    DROP CONSTRAINT IF EXISTS maintenance_request_status_check;
+
+ALTER TABLE public.maintenance_request
+    ADD COLUMN IF NOT EXISTS work_order_number varchar(40),
+    ADD COLUMN IF NOT EXISTS work_order_created_at timestamp without time zone,
+    ADD COLUMN IF NOT EXISTS work_order_created_by_user_id uuid,
+    ADD COLUMN IF NOT EXISTS coordinator_approved_by_user_id uuid,
+    ADD COLUMN IF NOT EXISTS coordinator_approved_at timestamp without time zone,
+    ADD COLUMN IF NOT EXISTS coordinator_rejection_reason text;
+
+ALTER TABLE public.maintenance_request
+    ADD CONSTRAINT maintenance_request_status_check CHECK (
+        status IN (
+            'PENDENTE_APROVACAO_PROFESSOR',
+            'APROVADA_PELO_PROFESSOR',
+            'REPROVADA_PELO_PROFESSOR',
+            'PENDENTE_APROVACAO_COORDENADOR',
+            'APROVADA_PELO_COORDENADOR',
+            'REPROVADA_PELO_COORDENADOR',
+            'NAO_VISUALIZADA',
+            'FINALIZADA',
+            'EM_ANALISE'
+        )
+    );
+
+ALTER TABLE public.maintenance_request
+    ADD CONSTRAINT uq_maintenance_request_work_order_number UNIQUE (work_order_number),
+    ADD CONSTRAINT fk_maintenance_request_work_order_created_by
+        FOREIGN KEY (work_order_created_by_user_id) REFERENCES public.users(user_id),
+    ADD CONSTRAINT fk_maintenance_request_coordinator_approved_by
+        FOREIGN KEY (coordinator_approved_by_user_id) REFERENCES public.users(user_id);
+
+-- Conteudo consolidado de V5__autonomous_maintenance_workflow.sql (sem DML)
+ALTER TABLE public.autonomous_maintenance
+    ADD COLUMN scheduled_for timestamp(6) without time zone,
+    ADD COLUMN status character varying(50),
+    ADD COLUMN coordinator_approver_user_id uuid,
+    ADD COLUMN approved_at timestamp(6) without time zone,
+    ADD COLUMN rejection_reason text,
+    ADD COLUMN calendar_event_id uuid,
+    ADD COLUMN created_at timestamp(6) without time zone,
+    ADD COLUMN updated_at timestamp(6) without time zone;
+
+CREATE TABLE public.autonomous_maintenance_students (
+    autonomous_maintenance_id uuid NOT NULL,
+    student_id uuid NOT NULL,
+    CONSTRAINT pk_autonomous_maintenance_students
+        PRIMARY KEY (autonomous_maintenance_id, student_id),
+    CONSTRAINT fk_autonomous_maintenance_students_maintenance
+        FOREIGN KEY (autonomous_maintenance_id)
+        REFERENCES public.autonomous_maintenance(autonomous_maintenance_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_autonomous_maintenance_students_student
+        FOREIGN KEY (student_id) REFERENCES public.student(user_id)
+);
+
+ALTER TABLE public.autonomous_maintenance
+    ALTER COLUMN inspected_at DROP NOT NULL,
+    ALTER COLUMN created_by_user_id SET NOT NULL,
+    ALTER COLUMN scheduled_for SET NOT NULL,
+    ALTER COLUMN status SET NOT NULL,
+    ALTER COLUMN created_at SET NOT NULL,
+    ALTER COLUMN updated_at SET NOT NULL;
+
+ALTER TABLE public.autonomous_maintenance
+    DROP CONSTRAINT IF EXISTS fk_autonomous_maintenance_student_user,
+    DROP COLUMN responsible_student_id;
+
+ALTER TABLE public.autonomous_maintenance
+    ADD CONSTRAINT autonomous_maintenance_status_check CHECK (
+        status IN (
+            'PENDENTE_APROVACAO_COORDENADOR',
+            'APROVADA_PELO_COORDENADOR',
+            'REPROVADA_PELO_COORDENADOR'
+        )
+    ),
+    ADD CONSTRAINT fk_autonomous_maintenance_coordinator_approver
+        FOREIGN KEY (coordinator_approver_user_id) REFERENCES public.users(user_id),
+    ADD CONSTRAINT fk_autonomous_maintenance_calendar_event
+        FOREIGN KEY (calendar_event_id) REFERENCES public.event(event_id),
+    ADD CONSTRAINT uq_autonomous_maintenance_calendar_event UNIQUE (calendar_event_id);
+
+ALTER TABLE public.event
+    ALTER COLUMN equipment_id DROP NOT NULL;
+
+ALTER TABLE public.event
+    ADD CONSTRAINT event_equipment_required_check CHECK (
+        maintenance_type = 'AUTONOMA' OR equipment_id IS NOT NULL
+    );
+
+CREATE INDEX idx_autonomous_maintenance_status
+    ON public.autonomous_maintenance(status);
+
+CREATE INDEX idx_autonomous_maintenance_created_by
+    ON public.autonomous_maintenance(created_by_user_id);
+
+CREATE INDEX idx_autonomous_maintenance_students_student
+    ON public.autonomous_maintenance_students(student_id);
+
+-- Conteudo consolidado de V6__allow_maintenance_request_images.sql (sem DML)
+ALTER TABLE public.media
+    DROP CONSTRAINT IF EXISTS media_storage_key_key;
+
+ALTER TABLE public.media
+    ALTER COLUMN storage_key TYPE TEXT;
+
+-- Conteudo consolidado de V7__add_equipment_identifiers.sql (sem DML)
+ALTER TABLE public.equipment
+    ADD COLUMN equipment_patrimony character varying(100),
+    ADD COLUMN equipment_tag character varying(100);
+
+-- Conteudo consolidado de V8__add_first_access_verification_codes.sql (sem DML)
+CREATE TABLE first_access_code (
+    first_access_code_id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    code_hash character varying(100) NOT NULL,
+    attempts integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    expires_at timestamp(6) without time zone NOT NULL,
+    used_at timestamp(6) without time zone,
+    CONSTRAINT first_access_code_pkey PRIMARY KEY (first_access_code_id),
+    CONSTRAINT fk_first_access_code_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE INDEX idx_first_access_code_active_user
+    ON first_access_code (user_id, created_at DESC)
+    WHERE used_at IS NULL;
+
+CREATE INDEX idx_first_access_code_expires_at
+    ON first_access_code (expires_at);
+
+-- Conteudo consolidado de V9__add_machine_image.sql (sem DML)
+ALTER TABLE machine
+    ADD COLUMN machine_image text;

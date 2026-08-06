@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,6 +28,7 @@ public class UserController {
     private final AuthService authService;
 
     // Executa a operacao deste metodo.
+    @PreAuthorize("permitAll()")
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(
             @Valid @RequestBody LoginRequestDto request,
@@ -38,6 +40,7 @@ public class UserController {
     }
 
     // Executa a operacao deste metodo.
+    @PreAuthorize("permitAll()")
     @PostMapping("/refresh")
     public ResponseEntity<LoginResponseDto> refresh(
             @Valid @RequestBody RefreshTokenRequest request,
@@ -52,6 +55,7 @@ public class UserController {
     }
 
     // Executa a operacao deste metodo.
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             @Valid @RequestBody LogoutRequest request,
@@ -65,6 +69,7 @@ public class UserController {
     }
 
     // Executa a operacao deste metodo.
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout-all")
     public ResponseEntity<Void> logoutAll(
             Authentication authentication,
@@ -78,6 +83,7 @@ public class UserController {
     }
 
     // Executa a operacao deste metodo.
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/me")
     public ResponseEntity<UserResponseDto> currentUser(Authentication authentication) {
         return ResponseEntity.ok(authService.getCurrentUser(authentication.getName()));

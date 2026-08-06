@@ -4,6 +4,8 @@ import tools.jackson.databind.ObjectMapper;
 import com.weg.Maintenance_API.auth.service.JwtTokenService;
 import com.weg.Maintenance_API.autonomousmaintenance.entity.AutonomousMaintenance;
 import com.weg.Maintenance_API.autonomousmaintenance.repository.AutonomousMaintenanceRepository;
+import com.weg.Maintenance_API.classgroup.entity.ClassGroup;
+import com.weg.Maintenance_API.classgroup.repository.ClassGroupRepository;
 import com.weg.Maintenance_API.coordinator.entity.Coordinator;
 import com.weg.Maintenance_API.enums.EquipmentCondition;
 import com.weg.Maintenance_API.enums.OrganizationType;
@@ -63,6 +65,8 @@ class AutonomousMaintenanceWorkflowIntegrationTest {
     @Autowired
     private AutonomousMaintenanceRepository maintenanceRepository;
     @Autowired
+    private ClassGroupRepository classGroupRepository;
+    @Autowired
     private EventRepository eventRepository;
     @Autowired
     private NotificationRepository notificationRepository;
@@ -98,6 +102,16 @@ class AutonomousMaintenanceWorkflowIntegrationTest {
         otherOrganizationStudent = saveUser(
                 new Student(), "Aluno externo", "external-student", otherOrganization);
 
+        ClassGroup classGroup = new ClassGroup();
+        classGroup.setAcronym("TURMA-" + suffix);
+        classGroup.getTeachers().add(teacher);
+        classGroup.getStudents().add(firstStudent);
+        classGroup.getStudents().add(secondStudent);
+        classGroupRepository.save(classGroup);
+        teacher.getClassGroups().add(classGroup);
+        firstStudent.getClassGroups().add(classGroup);
+        secondStudent.getClassGroups().add(classGroup);
+
         Place place = new Place();
         place.setName("Laboratorio " + suffix);
         place = placeRepository.save(place);
@@ -116,7 +130,7 @@ class AutonomousMaintenanceWorkflowIntegrationTest {
     }
 
     @Test
-    void onlyTeacherCreatesAndResponsibleTeacherCannotBeForged() throws Exception {
+    void studentCannotCreateAndCoordinatorChoosesResponsibleTeacher() throws Exception {
         String validBody = createBody(firstStudent.getId(), secondStudent.getId());
 
         mockMvc.perform(post("/manutencao-autonoma")
@@ -129,7 +143,9 @@ class AutonomousMaintenanceWorkflowIntegrationTest {
                         .header("Authorization", bearer(coordinator))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validBody))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.responsibleTeacherId")
+                        .value(teacher.getId().toString()));
 
         Map<String, Object> forgedBody = objectMapper.readValue(validBody, Map.class);
         forgedBody.put("responsibleTeacherId", otherCoordinator.getId().toString());
@@ -137,7 +153,9 @@ class AutonomousMaintenanceWorkflowIntegrationTest {
                         .header("Authorization", bearer(teacher))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(forgedBody)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.responsibleTeacherId")
+                        .value(teacher.getId().toString()));
     }
 
     @Test
@@ -184,21 +202,19 @@ class AutonomousMaintenanceWorkflowIntegrationTest {
     }
 
     @Test
-    void coordinatorApprovesOnceCreatesEventAndControlsStudentVisibility() throws Exception {
+    void coordinatorApprovesOnceCreatesEventAndControlsClassVisibility() throws Exception {
         UUID maintenanceId = createMaintenance(firstStudent.getId(), secondStudent.getId());
 
         mockMvc.perform(get("/manutencao-autonoma/{id}", maintenanceId)
                         .header("Authorization", bearer(firstStudent)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/manutencao-autonoma/{id}", maintenanceId)
+                        .header("Authorization", bearer(unassignedStudent)))
                 .andExpect(status().isForbidden());
 
         mockMvc.perform(patch("/manutencao-autonoma/{id}/aprovacao", maintenanceId)
                         .header("Authorization", bearer(otherCoordinator))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"approved\":true,\"reason\":null}"))
-                .andExpect(status().isForbidden());
-
-        mockMvc.perform(patch("/manutencao-autonoma/{id}/aprovacao", maintenanceId)
-                        .header("Authorization", bearer(coordinator))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"approved\":true,\"reason\":null}"))
                 .andExpect(status().isOk())
@@ -276,6 +292,7 @@ class AutonomousMaintenanceWorkflowIntegrationTest {
                 "inspectedMachineId", machine.getId().toString(),
                 "equipmentCondition", "CONFORME",
                 "identifiedNonconformities", "Nenhuma nao conformidade.",
+                "responsibleTeacherId", teacher.getId().toString(),
                 "studentIds", studentIds
         ));
     }
