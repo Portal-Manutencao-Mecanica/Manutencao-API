@@ -39,17 +39,17 @@ public class AuthService {
             LoginRequestDto request,
             ClientRequestMetadata metadata
     ) {
-        String email = request.email().trim().toLowerCase(Locale.ROOT);
+        String identifier = request.identifier().trim().toLowerCase(Locale.ROOT);
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, request.password())
+                    new UsernamePasswordAuthenticationToken(identifier, request.password())
             );
         } catch (AuthenticationException exception) {
             if (exception instanceof BadCredentialsException) {
-                loginAttemptService.recordFailure(email, metadata);
+                loginAttemptService.recordFailure(identifier, metadata);
             } else {
-                recordDeniedLogin(email, metadata, exception);
+                recordDeniedLogin(identifier, metadata, exception);
             }
             throw new BadCredentialsException("Credenciais invÃ¡lidas.");
         }
@@ -149,14 +149,16 @@ public class AuthService {
 
     // Executa o fluxo de comunicacao ou registro.
     private void recordDeniedLogin(
-            String email,
+            String identifier,
             ClientRequestMetadata metadata,
             AuthenticationException exception
     ) {
-        User user = userRepository.findByEmailIgnoreCase(email).orElse(null);
+        User user = userRepository
+                .findByEmailIgnoreCaseOrUsernameIgnoreCase(identifier, identifier)
+                .orElse(null);
         if (user == null) {
             auditService.recordAnonymous(
-                    email,
+                    identifier,
                     "LOGIN_DENIED",
                     metadata.endpoint(),
                     metadata.httpMethod(),

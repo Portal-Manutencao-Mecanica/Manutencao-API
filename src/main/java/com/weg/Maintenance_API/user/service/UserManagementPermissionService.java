@@ -6,8 +6,6 @@ import com.weg.Maintenance_API.user.entity.User;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
-
 @Service
 public class UserManagementPermissionService {
 
@@ -22,22 +20,13 @@ public class UserManagementPermissionService {
         }
 
         boolean allowedRole = targetRole == Role.PROFESSOR || targetRole == Role.ALUNO;
-        boolean sameOrganization = Objects.equals(
-                actor.getOrganization().getId(),
-                targetOrganization.getId()
-        );
-        if (actor.getRole() == Role.COORDENADOR && allowedRole && sameOrganization) {
+        if (actor.getRole() == Role.COORDENADOR && allowedRole) {
             return;
         }
 
         if (actor.getRole() == Role.COORDENADOR && !allowedRole) {
             throw new AccessDeniedException(
                     "Coordenadores sÃ³ podem criar usuÃ¡rios com as roles PROFESSOR ou ALUNO."
-            );
-        }
-        if (actor.getRole() == Role.COORDENADOR) {
-            throw new AccessDeniedException(
-                    "Coordenadores sÃ³ podem criar usuÃ¡rios em sua prÃ³pria organizaÃ§Ã£o."
             );
         }
         throw new AccessDeniedException("VocÃª nÃ£o possui permissÃ£o para criar usuÃ¡rios.");
@@ -59,19 +48,19 @@ public class UserManagementPermissionService {
         }
         boolean allowedTargetRole =
                 target.getRole() == Role.PROFESSOR || target.getRole() == Role.ALUNO;
-        if (actor.getRole() == Role.COORDENADOR
-                && allowedTargetRole
-                && sameOrganization(actor.getOrganization(), target.getOrganization())) {
+        if (actor.getRole() == Role.COORDENADOR && allowedTargetRole) {
             return;
         }
         throw new AccessDeniedException(
-                "Coordenadores sÃ³ podem administrar professores e alunos da prÃ³pria organizaÃ§Ã£o."
+                "Coordenadores só podem inativar professores e alunos."
         );
     }
 
     // Valida a regra aplicada por este metodo.
     public void validateCanResendCredentials(User actor, User target) {
-        validateCanManage(actor, target);
+        if (actor.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("Somente administradores podem reenviar credenciais.");
+        }
     }
 
     // Valida a regra aplicada por este metodo.
@@ -81,13 +70,4 @@ public class UserManagementPermissionService {
         }
     }
 
-    // Executa a operacao deste metodo.
-    private boolean sameOrganization(
-            Organization first,
-            Organization second
-    ) {
-        return first != null
-                && second != null
-                && Objects.equals(first.getId(), second.getId());
-    }
 }

@@ -49,6 +49,7 @@ class AuthFlowIntegrationTest {
 
     private UUID userId;
     private UUID organizationId;
+    private String username;
 
     @BeforeEach
     void createUser() {
@@ -65,7 +66,8 @@ class AuthFlowIntegrationTest {
                 EMAIL,
                 passwordEncoder.encode(PASSWORD)
         );
-        admin.setUsername("auth.flow." + UUID.randomUUID().toString().substring(0, 8));
+        username = "auth.flow." + UUID.randomUUID().toString().substring(0, 8);
+        admin.setUsername(username);
         admin.setOrganization(organization);
         admin.setPasswordChangeRequired(false);
         admin = userRepository.saveAndFlush(admin);
@@ -125,5 +127,18 @@ class AuthFlowIntegrationTest {
                                 {"refreshToken":"%s"}
                                 """.formatted(secondRefreshToken)))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void loginAcceptsUsernameAsIdentifier() throws Exception {
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "identifier": "%s",
+                                  "password": "%s"
+                                }
+                                """.formatted(username, PASSWORD)))
+                .andExpect(status().isOk());
     }
 }

@@ -19,23 +19,23 @@ class SpreadsheetUserReaderTest {
             new SpreadsheetUserReader(1024 * 1024, 10);
 
     @Test
-    void readsRequiredColumnsIncludingOrganizationTypeAndClassGroups() throws Exception {
+    void readsRequiredColumnsWithoutUsername() throws Exception {
         MockMultipartFile file = workbook(
-                new String[]{"name", "username", "email", "role", "organization", "classGroupIds"},
-                new String[]{"Aluno", "aluno.teste", "aluno@local.com", "ALUNO", "OTHER", ""}
+                new String[]{"name", "email", "role", "organization", "classGroupIds"},
+                new String[]{"Aluno", "aluno@local.com", "ALUNO", "OTHER", ""}
         );
 
         SpreadsheetUserReader.SpreadsheetData data = reader.read(file);
 
         assertEquals(1, data.rows().size());
-        assertEquals("aluno.teste", data.rows().getFirst().username());
+        assertEquals("aluno@local.com", data.rows().getFirst().email());
         assertEquals("OTHER", data.rows().getFirst().organization());
     }
 
     @Test
     void rejectsMissingHeader() throws Exception {
         MockMultipartFile file = workbook(
-                new String[]{"name", "email", "role", "organization", "classGroupIds"},
+                new String[]{"name", "username", "role", "organization", "classGroupIds"},
                 new String[]{"Aluno", "aluno@local.com", "ALUNO", "OTHER", ""}
         );
 
@@ -60,8 +60,8 @@ class SpreadsheetUserReaderTest {
                 "file",
                 "users.csv",
                 "text/csv",
-                ("\uFEFFname,username,email,role,organization,classGroupIds\n"
-                        + "\"Aluno, Teste\",aluno.teste,aluno@local.com,ALUNO,OTHER,\n")
+                ("\uFEFFname,email,role,organization,classGroupIds\n"
+                        + "\"Aluno, Teste\",aluno@local.com,ALUNO,OTHER,\n")
                         .getBytes(java.nio.charset.StandardCharsets.UTF_8)
         );
 
@@ -70,6 +70,23 @@ class SpreadsheetUserReaderTest {
         assertEquals(1, data.rows().size());
         assertEquals("Aluno, Teste", data.rows().getFirst().name());
         assertEquals("ALUNO", data.rows().getFirst().role());
+    }
+
+    @Test
+    void readsTabSeparatedCsvExportedByExcel() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "users.csv",
+                "text/csv",
+                ("name\temail\trole\torganization\tclassGroupIds\n"
+                        + "Aluno\taluno@local.com\tALUNO\tOTHER\t\n")
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+
+        SpreadsheetUserReader.SpreadsheetData data = reader.read(file);
+
+        assertEquals(1, data.rows().size());
+        assertEquals("aluno@local.com", data.rows().getFirst().email());
     }
 
     private MockMultipartFile workbook(

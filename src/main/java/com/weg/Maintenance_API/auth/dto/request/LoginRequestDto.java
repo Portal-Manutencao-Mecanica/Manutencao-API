@@ -1,13 +1,15 @@
 package com.weg.Maintenance_API.auth.dto.request;
 
-import jakarta.validation.constraints.Email;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 // Executa a operacao deste metodo.
 public record LoginRequestDto(
         @NotBlank
-        @Email
-        String email,
+        @Size(max = 150)
+        @JsonAlias("email")
+        String identifier,
 
         @NotBlank
         String password

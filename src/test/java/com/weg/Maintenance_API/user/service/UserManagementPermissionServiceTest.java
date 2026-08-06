@@ -31,7 +31,7 @@ class UserManagementPermissionServiceTest {
     }
 
     @Test
-    void coordinatorCanOnlyCreateTeacherOrStudentInOwnOrganization() {
+    void coordinatorCanCreateTeacherOrStudentInAnyOrganization() {
         Organization ownOrganization = organization();
         Organization otherOrganization = organization();
         otherOrganization.setId(UUID.randomUUID());
@@ -55,7 +55,7 @@ class UserManagementPermissionServiceTest {
                         Role.ADMIN,
                         ownOrganization
                 ));
-        assertThrows(AccessDeniedException.class, () ->
+        assertDoesNotThrow(() ->
                 permissionService.validateCanCreate(
                         coordinator,
                         Role.PROFESSOR,

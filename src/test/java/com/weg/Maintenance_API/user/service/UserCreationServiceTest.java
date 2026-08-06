@@ -103,15 +103,16 @@ class UserCreationServiceTest {
                 .thenReturn(Optional.of(classGroup));
         when(temporaryPasswordGenerator.generate()).thenReturn("Temp@1234Ab");
         when(passwordEncoder.encode("Temp@1234Ab")).thenReturn("bcrypt-hash");
-        when(userRepository.existsByUsernameIgnoreCase("aluno.teste")).thenReturn(false);
+        when(userRepository.existsByUsernameIgnoreCase("aluno.teste1")).thenReturn(false);
         when(userRepository.existsByEmailIgnoreCase("aluno@local.com")).thenReturn(false);
         saveUserWithGeneratedValues();
 
         userCreationService.create(
                 new CreateUserRequest(
                         "Aluno Teste",
-                        "Aluno Teste",
+                        null,
                         "aluno@local.com",
+                        "CARD-ALUNO",
                         Role.ALUNO,
                         organization.getId(),
                         new StudentDataRequest(List.of(classGroup.getId())),
@@ -124,7 +125,7 @@ class UserCreationServiceTest {
         verify(userRepository).saveAndFlush(userCaptor.capture());
         User savedUser = userCaptor.getValue();
         assertTrue(savedUser instanceof Student);
-        assertEquals("aluno.teste", savedUser.getUsername());
+        assertEquals("aluno.teste1", savedUser.getUsername());
         assertEquals("bcrypt-hash", savedUser.getPassword());
         assertNotEquals("Temp@1234Ab", savedUser.getPassword());
         assertTrue(savedUser.isPasswordChangeRequired());
@@ -149,6 +150,7 @@ class UserCreationServiceTest {
                         "Professor Teste",
                         "professor.teste",
                         "professor@local.com",
+                        "CARD-PROFESSOR",
                         Role.PROFESSOR,
                         organization.getId(),
                         null,
@@ -161,6 +163,7 @@ class UserCreationServiceTest {
                         "Coordenador Teste",
                         "coordenador.teste",
                         "coordenador@local.com",
+                        "CARD-COORDENADOR",
                         Role.COORDENADOR,
                         organization.getId(),
                         null,
@@ -222,6 +225,7 @@ class UserCreationServiceTest {
                                 "Admin Indevido",
                                 "admin.indevido",
                                 "admin.indevido@local.com",
+                                "CARD-ADMIN",
                                 Role.ADMIN,
                                 organization.getId(),
                                 null,
@@ -229,6 +233,18 @@ class UserCreationServiceTest {
                         ),
                         metadata()
                 ));
+    }
+
+    @Test
+    void generatesSequentialUsernamesUsingTheCompleteName() {
+        when(userRepository.existsByUsernameIgnoreCase("junior.da.silva1")).thenReturn(true);
+        when(userRepository.existsByUsernameIgnoreCase("junior.da.silva2")).thenReturn(false);
+        when(userRepository.existsByUsernameIgnoreCase("junior.souza1")).thenReturn(false);
+
+        UserIdentityPolicy identityPolicy = new UserIdentityPolicy(userRepository);
+
+        assertEquals("junior.da.silva2", identityPolicy.generateUsername("Junior da Silva"));
+        assertEquals("junior.souza1", identityPolicy.generateUsername("Junior Souza"));
     }
 
     private Admin adminActor() {
@@ -267,6 +283,7 @@ class UserCreationServiceTest {
                 "Usuario Teste",
                 "usuario.teste",
                 "usuario@local.com",
+                "CARD-USUARIO",
                 role,
                 organization.getId(),
                 studentData,

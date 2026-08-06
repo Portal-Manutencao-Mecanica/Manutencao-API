@@ -4,12 +4,17 @@ import com.weg.Maintenance_API.audit.service.AuditService;
 import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
 import com.weg.Maintenance_API.auth.service.RefreshTokenService;
 import com.weg.Maintenance_API.enums.Role;
+import com.weg.Maintenance_API.exception.type.ConflictException;
+import com.weg.Maintenance_API.exception.type.InvalidRequestException;
 import com.weg.Maintenance_API.exception.type.InvalidStateException;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+import com.weg.Maintenance_API.organization.entity.Organization;
+import com.weg.Maintenance_API.organization.repository.OrganizationRepository;
 import com.weg.Maintenance_API.organization.dto.OrganizationSummaryResponse;
 import com.weg.Maintenance_API.user.UserRepository;
 import com.weg.Maintenance_API.user.dto.response.CredentialResendResponse;
 import com.weg.Maintenance_API.user.dto.response.ManagedUserResponse;
+import com.weg.Maintenance_API.user.dto.request.UpdateUserRequest;
 import com.weg.Maintenance_API.user.entity.User;
 import com.weg.Maintenance_API.user.event.TemporaryCredentialsReissuedEvent;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +35,119 @@ public class UserAdministrationService {
     private final TemporaryCredentialService temporaryCredentialService;
     private final CredentialResendRateLimiter credentialResendRateLimiter;
     private final UserRolePersistenceService rolePersistenceService;
+    private final UserIdentityPolicy userIdentityPolicy;
+    private final OrganizationRepository organizationRepository;
     private final AuditService auditService;
     private final ApplicationEventPublisher eventPublisher;
+
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<ManagedUserResponse> getAll(
+            String search,
+            Role role,
+            Boolean enabled,
+            org.springframework.data.domain.Pageable pageable,
+            String actorEmail
+    ) {
+        User actor = actor(actorEmail);
+        org.springframework.data.jpa.domain.Specification<User> filters =
+                (root, query, builder) -> actor.getRole() == Role.COORDENADOR
+                        ? root.get("role").in(Role.ALUNO, Role.PROFESSOR)
+                        : builder.conjunction();
+
+        if (search != null && !search.isBlank()) {
+            String pattern = "%" + search.trim().toLowerCase(java.util.Locale.ROOT) + "%";
+            filters = filters.and((root, query, builder) -> builder.or(
+                    builder.like(builder.lower(root.get("name")), pattern),
+                    builder.like(builder.lower(root.get("email")), pattern),
+                    builder.like(builder.lower(root.get("username")), pattern),
+                    builder.like(builder.lower(root.get("numberCard")), pattern)
+            ));
+        }
+        if (role != null) {
+            filters = filters.and((root, query, builder) -> builder.equal(root.get("role"), role));
+        }
+        if (enabled != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.equal(root.get("enabled"), enabled));
+        }
+
+        return userRepository.findAll(filters, pageable).map(this::response);
+    }
+
+    @Transactional(readOnly = true)
+    public ManagedUserResponse getById(UUID userId, String actorEmail) {
+        User actor = actor(actorEmail);
+        User target = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", userId));
+        permissionService.validateCanManage(actor, target);
+        return response(target);
+    }
+
+    @Transactional
+    public ManagedUserResponse update(
+            UUID userId,
+            UpdateUserRequest request,
+            String actorEmail,
+            ClientRequestMetadata metadata
+    ) {
+        User actor = actor(actorEmail);
+        User target = target(userId);
+        permissionService.validateCanManage(actor, target);
+
+        String name = request.name().trim();
+        String email = userIdentityPolicy.normalizeEmail(request.email());
+        String numberCard = request.numberCard().trim();
+        userIdentityPolicy.validateName(name);
+        userIdentityPolicy.validateEmail(email);
+
+        if (userRepository.existsByEmailIgnoreCaseAndIdNot(email, target.getId())) {
+            throw new ConflictException("O e-mail informado ja esta cadastrado.");
+        }
+        if (userRepository.existsByNumberCardIgnoreCaseAndIdNot(numberCard, target.getId())) {
+            throw new ConflictException("O numero do cracha informado ja esta cadastrado.");
+        }
+
+        Organization organization = request.organizationId() == null
+                ? target.getOrganization()
+                : organizationRepository.findById(request.organizationId())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Organizacao",
+                                request.organizationId()
+                        ));
+        if (!organization.isActive()) {
+            throw new InvalidRequestException("A organizacao selecionada esta inativa.");
+        }
+        if (!organization.acceptsEmail(email)) {
+            throw new InvalidRequestException(
+                    "O dominio do e-mail nao corresponde a organizacao selecionada."
+            );
+        }
+
+        boolean authenticationDataChanged = !target.getEmail().equalsIgnoreCase(email)
+                || !target.getOrganization().getId().equals(organization.getId());
+        target.setName(name);
+        target.setEmail(email);
+        target.setNumberCard(numberCard);
+        target.setOrganization(organization);
+        if (authenticationDataChanged) {
+            incrementSecurityVersion(target);
+            refreshTokenService.revokeAll(target.getId());
+        }
+        userRepository.saveAndFlush(target);
+        auditService.recordInCurrentTransaction(
+                actor,
+                "USER_UPDATED",
+                "USER",
+                target.getId(),
+                metadata.endpoint(),
+                metadata.httpMethod(),
+                metadata.ipAddress(),
+                metadata.userAgent(),
+                true,
+                "Dados cadastrais atualizados pelo administrador."
+        );
+        return response(target);
+    }
 
     // Executa a operacao deste metodo.
     @Transactional
@@ -299,6 +415,7 @@ public class UserAdministrationService {
                 user.getName(),
                 user.getUsername(),
                 user.getEmail(),
+                user.getNumberCard(),
                 user.getRole(),
                 user.getStatus(),
                 user.isPasswordChangeRequired(),
@@ -306,6 +423,8 @@ public class UserAdministrationService {
                         user.getOrganization().getId(),
                         user.getOrganization().getName()
                 ),
+                user.isEnabled(),
+                user.isAccountNonLocked(),
                 user.getStatusChangeReason(),
                 user.getStatusChangedAt(),
                 user.getStatusChangedBy(),

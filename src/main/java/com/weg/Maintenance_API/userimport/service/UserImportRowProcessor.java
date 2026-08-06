@@ -51,7 +51,6 @@ public class UserImportRowProcessor {
             UUID actorId,
             SpreadsheetUserRow row,
             boolean duplicateEmailInFile,
-            boolean duplicateUsernameInFile,
             ClientRequestMetadata metadata
     ) {
         UserImport userImport = userImportRepository.findById(importId)
@@ -70,21 +69,12 @@ public class UserImportRowProcessor {
                     role
             );
         }
-        if (duplicateUsernameInFile) {
-            throw rowError(
-                    "DUPLICATE_USERNAME_IN_FILE",
-                    "username",
-                    "O username estÃ¡ duplicado dentro da planilha.",
-                    role
-            );
-        }
-
-        String username = identityPolicy.normalizeUsername(row.username());
         String email = identityPolicy.normalizeEmail(row.email());
-        validateIdentity(row, username, email, role);
+        validateIdentity(row, email, role);
         Organization organization = resolveOrganization(actor, row.organization(), role);
         validateOrganizationAndPermission(actor, organization, role, email);
-        validateDatabaseDuplicates(username, email, role);
+        validateEmailDuplicate(email, role);
+        String username = identityPolicy.generateUsername(row.name());
 
         User user = userAccountFactory.create(
                 row.name().trim(),
@@ -141,7 +131,7 @@ public class UserImportRowProcessor {
                 userImport,
                 row.rowNumber(),
                 row.name(),
-                identityPolicy.normalizeUsername(row.username()),
+                "",
                 identityPolicy.normalizeEmail(row.email()),
                 error.role(),
                 row.organization(),
@@ -154,7 +144,6 @@ public class UserImportRowProcessor {
     // Valida a regra aplicada por este metodo.
     private void validateIdentity(
             SpreadsheetUserRow row,
-            String username,
             String email,
             Role role
     ) {
@@ -162,11 +151,6 @@ public class UserImportRowProcessor {
             identityPolicy.validateName(row.name());
         } catch (InvalidRequestException exception) {
             throw rowError("INVALID_NAME", "name", exception.getMessage(), role);
-        }
-        try {
-            identityPolicy.validateUsername(username);
-        } catch (InvalidRequestException exception) {
-            throw rowError("INVALID_USERNAME", "username", exception.getMessage(), role);
         }
         try {
             identityPolicy.validateEmail(email);
@@ -209,42 +193,22 @@ public class UserImportRowProcessor {
     }
 
     // Valida a regra aplicada por este metodo.
-    private void validateDatabaseDuplicates(String username, String email, Role role) {
+    private void validateEmailDuplicate(String email, Role role) {
         userRepository.findByEmailIgnoreCase(email).ifPresent(existing -> {
             String message = existing.isEnabled()
                     ? "O e-mail jÃ¡ estÃ¡ cadastrado."
                     : "Existe um usuÃ¡rio inativo cadastrado com este e-mail.";
             throw rowError("DUPLICATE_EMAIL", "email", message, role);
         });
-        if (userRepository.existsByUsernameIgnoreCase(username)) {
-            throw rowError(
-                    "DUPLICATE_USERNAME",
-                    "username",
-                    "O username jÃ¡ estÃ¡ cadastrado.",
-                    role
-            );
-        }
     }
 
     // Executa a operacao deste metodo.
     private Organization resolveOrganization(User actor, String value, Role role) {
-        if (actor.getRole() == Role.COORDENADOR) {
-            Organization ownOrganization = actor.getOrganization();
-            if (!value.isBlank() && ownOrganization.getType() != parseOrganizationType(value, role)) {
-                throw rowError(
-                        "CROSS_ORGANIZATION_IMPORT",
-                        "organization",
-                        "Coordenadores sÃ³ podem importar para sua prÃ³pria organizaÃ§Ã£o.",
-                        role
-                );
-            }
-            return ownOrganization;
-        }
         if (value.isBlank()) {
             throw rowError(
                     "REQUIRED_ORGANIZATION",
                     "organization",
-                    "A organizaÃ§Ã£o Ã© obrigatÃ³ria para importaÃ§Ãµes realizadas por administrador.",
+                    "A organização é obrigatória para a importação de usuários.",
                     role
             );
         }

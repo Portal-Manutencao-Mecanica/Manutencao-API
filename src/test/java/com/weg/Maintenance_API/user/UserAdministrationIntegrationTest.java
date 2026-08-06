@@ -5,10 +5,10 @@ import com.weg.Maintenance_API.audit.repository.AuditLogRepository;
 import com.weg.Maintenance_API.auth.password.repository.PasswordResetTokenRepository;
 import com.weg.Maintenance_API.auth.repository.RefreshTokenRepository;
 import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
+import com.weg.Maintenance_API.enums.OrganizationType;
 import com.weg.Maintenance_API.enums.Role;
 import com.weg.Maintenance_API.exception.type.InvalidStateException;
 import com.weg.Maintenance_API.organization.entity.Organization;
-import com.weg.Maintenance_API.enums.OrganizationType;
 import com.weg.Maintenance_API.organization.repository.OrganizationRepository;
 import com.weg.Maintenance_API.teacher.entity.Teacher;
 import com.weg.Maintenance_API.user.entity.User;
@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -85,87 +87,125 @@ class UserAdministrationIntegrationTest {
     }
 
     @Test
-    void coordinatorManagesOnlyOwnStudentsAndTeachersAndSessionsAreInvalidated()
+    void coordinatorOnlyDeactivatesStudentsAndTeachersAcrossOrganizations()
             throws Exception {
         Organization own = organization("Own", "own-admin.test");
         Organization other = organization("Other", "other-admin.test");
-        User coordinator = user(
-                Role.COORDENADOR,
-                "coordinator@own-admin.test",
-                own
-        );
+        User coordinator = user(Role.COORDENADOR, "coordinator@own-admin.test", own);
         User ownStudent = user(Role.ALUNO, "student@own-admin.test", own);
         User otherStudent = user(Role.ALUNO, "student@other-admin.test", other);
         User privileged = user(Role.ADMIN, "admin@own-admin.test", own);
-
         String coordinatorToken = login(coordinator.getEmail()).accessToken();
-        Tokens studentTokens = login(ownStudent.getEmail());
+        Tokens ownStudentTokens = login(ownStudent.getEmail());
 
         mockMvc.perform(patch("/users/{id}/block", ownStudent.getId())
                         .header("Authorization", bearer(coordinatorToken))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(reason("Bloqueio de segurança")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("BLOCKED"));
-
-        assertTrue(refreshTokenRepository.findAll().stream()
-                .filter(token -> token.getUser().getId().equals(ownStudent.getId()))
-                .allMatch(token -> token.getRevokedAt() != null));
-        mockMvc.perform(get("/users/me")
-                        .header("Authorization", bearer(studentTokens.accessToken())))
-                .andExpect(status().isUnauthorized());
-        loginDenied(ownStudent.getEmail());
-
-        mockMvc.perform(patch("/users/{id}/block", otherStudent.getId())
-                        .header("Authorization", bearer(coordinatorToken))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(reason("Tentativa fora da organização")))
+                        .content(reason("Bloqueio indevido")))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(patch("/users/{id}/block", privileged.getId())
+        mockMvc.perform(patch("/users/{id}/unblock", ownStudent.getId())
                         .header("Authorization", bearer(coordinatorToken))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(reason("Tentativa privilegiada")))
+                        .content(reason("Desbloqueio indevido")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(patch("/users/{id}/reactivate", ownStudent.getId())
+                        .header("Authorization", bearer(coordinatorToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(reason("Reativação indevida")))
                 .andExpect(status().isForbidden());
         mockMvc.perform(patch("/users/{id}/role", ownStudent.getId())
                         .header("Authorization", bearer(coordinatorToken))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"role\":\"PROFESSOR\"}"))
                 .andExpect(status().isForbidden());
-
-        mockMvc.perform(patch("/users/{id}/unblock", ownStudent.getId())
+        mockMvc.perform(patch("/users/{id}/deactivate", privileged.getId())
                         .header("Authorization", bearer(coordinatorToken))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(reason("Acesso autorizado novamente")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
-        Tokens unblockedTokens = login(ownStudent.getEmail());
+                        .content(reason("Tentativa privilegiada")))
+                .andExpect(status().isForbidden());
 
         mockMvc.perform(patch("/users/{id}/deactivate", ownStudent.getId())
                         .header("Authorization", bearer(coordinatorToken))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(reason("Usuário desligado")))
+                        .content(reason("Aluno desligado")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("DISABLED"));
         mockMvc.perform(get("/users/me")
-                        .header("Authorization", bearer(unblockedTokens.accessToken())))
+                        .header("Authorization", bearer(ownStudentTokens.accessToken())))
                 .andExpect(status().isUnauthorized());
-        loginDenied(ownStudent.getEmail());
 
-        mockMvc.perform(patch("/users/{id}/reactivate", ownStudent.getId())
+        mockMvc.perform(patch("/users/{id}/deactivate", otherStudent.getId())
                         .header("Authorization", bearer(coordinatorToken))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(reason("Retorno autorizado")))
+                        .content(reason("Aluno de outra organização desligado")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
-        login(ownStudent.getEmail());
+                .andExpect(jsonPath("$.status").value("DISABLED"));
 
-        var actions = auditLogRepository.findAll().stream()
-                .map(log -> log.getAction())
-                .toList();
-        assertTrue(actions.contains("USER_BLOCKED"));
-        assertTrue(actions.contains("USER_UNBLOCKED"));
-        assertTrue(actions.contains("USER_DEACTIVATED"));
-        assertTrue(actions.contains("USER_REACTIVATED"));
+        assertTrue(auditLogRepository.findAll().stream()
+                .filter(log -> "USER_DEACTIVATED".equals(log.getAction()))
+                .count() == 2);
+    }
+
+    @Test
+    void adminUpdatesUserRegistrationDataAndStudentCannot() throws Exception {
+        Organization organization = organization("Update", "update-admin.test");
+        User admin = user(Role.ADMIN, "admin@update-admin.test", organization);
+        User student = user(Role.ALUNO, "student@update-admin.test", organization);
+        String adminToken = login(admin.getEmail()).accessToken();
+        String studentToken = login(student.getEmail()).accessToken();
+        String payload = """
+                {
+                  "name": "Aluno atualizado",
+                  "email": "aluno.atualizado@update-admin.test",
+                  "numberCard": "CARD-ATUALIZADO"
+                }
+                """;
+
+        mockMvc.perform(put("/users/{id}", student.getId())
+                        .header("Authorization", bearer(studentToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/users/{id}", student.getId())
+                        .header("Authorization", bearer(adminToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Aluno atualizado"))
+                .andExpect(jsonPath("$.email").value("aluno.atualizado@update-admin.test"));
+
+        User updated = userRepository.findById(student.getId()).orElseThrow();
+        assertEquals("Aluno atualizado", updated.getName());
+        assertEquals("CARD-ATUALIZADO", updated.getNumberCard());
+    }
+
+    @Test
+    void managersListUsersAndAdminLoadsUserForEditing() throws Exception {
+        Organization organization = organization("Listing", "listing-admin.test");
+        User admin = user(Role.ADMIN, "admin@listing-admin.test", organization);
+        User coordinator = user(Role.COORDENADOR, "coordinator@listing-admin.test", organization);
+        User student = user(Role.ALUNO, "student@listing-admin.test", organization);
+        String adminToken = login(admin.getEmail()).accessToken();
+        String coordinatorToken = login(coordinator.getEmail()).accessToken();
+
+        mockMvc.perform(get("/users")
+                        .header("Authorization", bearer(coordinatorToken))
+                        .queryParam("search", student.getEmail()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(student.getId().toString()))
+                .andExpect(jsonPath("$.content[0].numberCard").value(student.getNumberCard()))
+                .andExpect(jsonPath("$.content[0].role").value("ALUNO"));
+
+        mockMvc.perform(get("/users/{id}", student.getId())
+                        .header("Authorization", bearer(adminToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(student.getId().toString()))
+                .andExpect(jsonPath("$.email").value(student.getEmail()));
+
+        mockMvc.perform(get("/users/{id}", admin.getId())
+                        .header("Authorization", bearer(coordinatorToken)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -217,7 +257,7 @@ class UserAdministrationIntegrationTest {
                 .anyMatch(log -> "USER_CREDENTIALS_REISSUED".equals(log.getAction())));
         assertTrue(auditLogRepository.findAll().stream()
                 .noneMatch(log -> log.getDetails() != null
-                        && log.getDetails().contains("Administration@123")));
+                        && log.getDetails().contains(PASSWORD)));
     }
 
     @Test
@@ -233,11 +273,7 @@ class UserAdministrationIntegrationTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.error").value("INVALID_STATE"));
 
-        User disabledActor = user(
-                Role.ADMIN,
-                "disabled.admin@safety-admin.test",
-                organization
-        );
+        User disabledActor = user(Role.ADMIN, "disabled.admin@safety-admin.test", organization);
         disabledActor.setEnabled(false);
         userRepository.saveAndFlush(disabledActor);
 
@@ -258,13 +294,11 @@ class UserAdministrationIntegrationTest {
     }
 
     private Organization organization(String name, String domain) {
-        return organizationRepository.saveAndFlush(
-                new Organization(
-                        name + " " + UUID.randomUUID(),
-                        OrganizationType.OTHER,
-                        domain
-                )
-        );
+        return organizationRepository.saveAndFlush(new Organization(
+                name + " " + UUID.randomUUID(),
+                OrganizationType.OTHER,
+                domain
+        ));
     }
 
     private User user(Role role, String email, Organization organization) {
@@ -297,19 +331,6 @@ class UserAdministrationIntegrationTest {
                 JsonPath.read(response, "$.accessToken"),
                 JsonPath.read(response, "$.refreshToken")
         );
-    }
-
-    private void loginDenied(String email) throws Exception {
-        mockMvc.perform(post("/auth/login")
-                        .with(request -> {
-                            request.setRemoteAddr(nextLoginAddress());
-                            return request;
-                        })
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"email":"%s","password":"%s"}
-                                """.formatted(email, PASSWORD)))
-                .andExpect(status().isUnauthorized());
     }
 
     private String reason(String reason) {

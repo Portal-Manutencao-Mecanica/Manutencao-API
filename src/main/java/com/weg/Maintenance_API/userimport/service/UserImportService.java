@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -61,14 +60,7 @@ public class UserImportService {
                 actor.getId(),
                 spreadsheet.rows().size()
         );
-        Map<String, Integer> emailCounts = counts(
-                spreadsheet.rows(),
-                row -> identityPolicy.normalizeEmail(row.email())
-        );
-        Map<String, Integer> usernameCounts = counts(
-                spreadsheet.rows(),
-                row -> identityPolicy.normalizeUsername(row.username())
-        );
+        Map<String, Integer> emailCounts = counts(spreadsheet.rows());
 
         int created = 0;
         int failed = 0;
@@ -79,7 +71,6 @@ public class UserImportService {
                         actor.getId(),
                         row,
                         duplicate(emailCounts, identityPolicy.normalizeEmail(row.email())),
-                        duplicate(usernameCounts, identityPolicy.normalizeUsername(row.username())),
                         metadata
                 );
                 created++;
@@ -132,13 +123,10 @@ public class UserImportService {
     }
 
     // Busca os dados necessarios para esta operacao.
-    private Map<String, Integer> counts(
-            List<SpreadsheetUserRow> rows,
-            Function<SpreadsheetUserRow, String> extractor
-    ) {
+    private Map<String, Integer> counts(List<SpreadsheetUserRow> rows) {
         Map<String, Integer> counts = new HashMap<>();
         for (SpreadsheetUserRow row : rows) {
-            String value = extractor.apply(row);
+            String value = identityPolicy.normalizeEmail(row.email());
             if (!value.isBlank()) {
                 counts.merge(value, 1, Integer::sum);
             }

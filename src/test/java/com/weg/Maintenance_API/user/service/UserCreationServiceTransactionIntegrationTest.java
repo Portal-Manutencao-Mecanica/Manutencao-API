@@ -77,6 +77,7 @@ class UserCreationServiceTransactionIntegrationTest {
                         "Student",
                         "student.local",
                         newEmail,
+                        "CARD-STUDENT",
                         Role.ALUNO,
                         organization.getId(),
                         new StudentDataRequest(List.of(UUID.randomUUID())),

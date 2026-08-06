@@ -33,7 +33,7 @@ public class SpreadsheetUserReader {
             "application/octet-stream"
     );
     private static final Set<String> REQUIRED_HEADERS =
-            Set.of("name", "username", "email", "role", "organization", "classgroupids");
+            Set.of("name", "email", "role", "organization", "classgroupids");
 
     private final long maxFileSizeBytes;
     private final int maxRows;
@@ -167,7 +167,7 @@ public class SpreadsheetUserReader {
     private void validateRequiredHeaders(Map<String, Integer> columns) {
         if (!columns.keySet().containsAll(REQUIRED_HEADERS)) {
             throw new InvalidSpreadsheetException(
-                    "Cabeçalhos obrigatórios: name, username, email, role, organization e classGroupIds."
+                    "Cabeçalhos obrigatórios: name, email, role, organization e classGroupIds."
             );
         }
     }
@@ -181,7 +181,6 @@ public class SpreadsheetUserReader {
         return new SpreadsheetUserRow(
                 rowNumber,
                 value(row, columns.get("name"), formatter),
-                value(row, columns.get("username"), formatter),
                 value(row, columns.get("email"), formatter),
                 value(row, columns.get("role"), formatter),
                 value(row, columns.get("organization"), formatter),
@@ -197,7 +196,6 @@ public class SpreadsheetUserReader {
         return new SpreadsheetUserRow(
                 rowNumber,
                 value(row, columns.get("name")),
-                value(row, columns.get("username")),
                 value(row, columns.get("email")),
                 value(row, columns.get("role")),
                 value(row, columns.get("organization")),
@@ -229,6 +227,7 @@ public class SpreadsheetUserReader {
         List<String> record = new ArrayList<>();
         StringBuilder value = new StringBuilder();
         boolean quoted = false;
+        char delimiter = detectDelimiter(content);
 
         for (int index = 0; index < content.length(); index++) {
             char character = content.charAt(index);
@@ -251,7 +250,7 @@ public class SpreadsheetUserReader {
                     throw new InvalidSpreadsheetException("O CSV possui aspas em posição inválida.");
                 }
                 quoted = true;
-            } else if (character == ',') {
+            } else if (character == delimiter) {
                 record.add(value.toString());
                 value.setLength(0);
             } else if (character == '\n' || character == '\r') {
@@ -276,6 +275,43 @@ public class SpreadsheetUserReader {
             records.add(record);
         }
         return records;
+    }
+
+    private char detectDelimiter(String content) {
+        int commas = 0;
+        int semicolons = 0;
+        int tabs = 0;
+        boolean quoted = false;
+
+        for (int index = 0; index < content.length(); index++) {
+            char character = content.charAt(index);
+            if (character == '"') {
+                if (quoted && index + 1 < content.length() && content.charAt(index + 1) == '"') {
+                    index++;
+                } else {
+                    quoted = !quoted;
+                }
+                continue;
+            }
+            if (!quoted && (character == '\n' || character == '\r')) {
+                break;
+            }
+            if (!quoted && character == ',') {
+                commas++;
+            } else if (!quoted && character == ';') {
+                semicolons++;
+            } else if (!quoted && character == '\t') {
+                tabs++;
+            }
+        }
+
+        if (tabs > commas && tabs > semicolons) {
+            return '\t';
+        }
+        if (semicolons > commas) {
+            return ';';
+        }
+        return ',';
     }
 
     private InvalidSpreadsheetException rowLimitExceeded() {

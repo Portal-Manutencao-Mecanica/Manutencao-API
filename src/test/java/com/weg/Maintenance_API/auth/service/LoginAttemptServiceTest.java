@@ -41,7 +41,8 @@ class LoginAttemptServiceTest {
         user.setId(UUID.randomUUID());
         user.setEnabled(true);
         user.setAccountNonLocked(true);
-        when(userRepository.findByEmailForUpdate("aluno@local.com"))
+        user.setUsername("aluno1");
+        when(userRepository.findByLoginIdentifierForUpdate("aluno1"))
                 .thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
@@ -52,7 +53,7 @@ class LoginAttemptServiceTest {
                 new ClientRequestMetadata("/auth/login", "POST", "127.0.0.1", "JUnit");
 
         for (int attempt = 0; attempt < 5; attempt++) {
-            loginAttemptService.recordFailure("aluno@local.com", metadata);
+            loginAttemptService.recordFailure("aluno1", metadata);
         }
 
         assertEquals(0, user.getFailedLoginAttempts());

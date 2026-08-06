@@ -24,9 +24,9 @@ public class LoginAttemptService {
 
     // Executa o fluxo de comunicacao ou registro.
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void recordFailure(String email, ClientRequestMetadata metadata) {
-        String normalizedEmail = normalize(email);
-        User user = userRepository.findByEmailForUpdate(normalizedEmail).orElse(null);
+    public void recordFailure(String identifier, ClientRequestMetadata metadata) {
+        String normalizedIdentifier = normalize(identifier);
+        User user = userRepository.findByLoginIdentifierForUpdate(normalizedIdentifier).orElse(null);
 
         if (user != null && user.isEnabled() && user.isAccountNonLocked()) {
             LocalDateTime now = LocalDateTime.now();
@@ -44,7 +44,7 @@ public class LoginAttemptService {
 
         if (user == null) {
             auditService.recordAnonymous(
-                    normalizedEmail,
+                    normalizedIdentifier,
                     "LOGIN_FAILURE",
                     metadata.endpoint(),
                     metadata.httpMethod(),
@@ -92,7 +92,7 @@ public class LoginAttemptService {
     }
 
     // Converte os dados para o formato necessario.
-    private String normalize(String email) {
-        return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
+    private String normalize(String identifier) {
+        return identifier == null ? "" : identifier.trim().toLowerCase(Locale.ROOT);
     }
 }

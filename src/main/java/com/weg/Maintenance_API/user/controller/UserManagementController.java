@@ -30,11 +30,12 @@ public class UserManagementController {
     private final UserCreationService userCreationService;
 
     // Cria usuario e perfil especifico no endpoint manual unico.
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
             summary = "Cria usuario e perfil especifico",
-            description = "Envie somente o bloco correspondente a role: studentData para ALUNO, teacherData para PROFESSOR e nenhum bloco especifico para COORDENADOR ou ADMIN. ADMIN cria qualquer role. COORDENADOR cria apenas ALUNO ou PROFESSOR da propria organizacao.",
+            description = "O username e gerado automaticamente pelo nome completo e uma sequencia numerica. Envie somente o bloco correspondente a role: studentData para ALUNO, teacherData para PROFESSOR e nenhum bloco especifico para COORDENADOR ou ADMIN. ADMIN cria qualquer role. COORDENADOR cria apenas ALUNO ou PROFESSOR.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -42,16 +43,16 @@ public class UserManagementController {
                             schema = @Schema(implementation = CreateUserRequest.class),
                             examples = {
                                     @ExampleObject(name = "ALUNO", value = """
-                                            {"name":"Joao da Silva","username":"joao.silva","email":"joao@organizacao.com","role":"ALUNO","organizationId":"00000000-0000-4000-8000-000000000001","studentData":{"classGroupIds":["00000000-0000-4000-8000-000000000010"]}}
+                                            {"name":"Joao da Silva","email":"joao@organizacao.com","numberCard":"1001","role":"ALUNO","organizationId":"00000000-0000-4000-8000-000000000001","studentData":{"classGroupIds":["00000000-0000-4000-8000-000000000010"]}}
                                             """),
                                     @ExampleObject(name = "PROFESSOR", value = """
-                                            {"name":"Maria Souza","username":"maria.souza","email":"maria@organizacao.com","role":"PROFESSOR","organizationId":"00000000-0000-4000-8000-000000000001","teacherData":{"classGroupIds":["00000000-0000-4000-8000-000000000010"]}}
+                                            {"name":"Maria Souza","email":"maria@organizacao.com","numberCard":"2001","role":"PROFESSOR","organizationId":"00000000-0000-4000-8000-000000000001","teacherData":{"classGroupIds":["00000000-0000-4000-8000-000000000010"]}}
                                             """),
                                     @ExampleObject(name = "COORDENADOR", value = """
-                                            {"name":"Ana Lima","username":"ana.lima","email":"ana@organizacao.com","role":"COORDENADOR","organizationId":"00000000-0000-4000-8000-000000000001"}
+                                            {"name":"Ana Lima","email":"ana@organizacao.com","numberCard":"3001","role":"COORDENADOR","organizationId":"00000000-0000-4000-8000-000000000001"}
                                             """),
                                     @ExampleObject(name = "ADMIN", value = """
-                                            {"name":"Administrador","username":"admin.local","email":"admin@organizacao.com","role":"ADMIN","organizationId":"00000000-0000-4000-8000-000000000001"}
+                                            {"name":"Administrador","email":"admin@organizacao.com","numberCard":"4001","role":"ADMIN","organizationId":"00000000-0000-4000-8000-000000000001"}
                                             """)
                             }
                     )

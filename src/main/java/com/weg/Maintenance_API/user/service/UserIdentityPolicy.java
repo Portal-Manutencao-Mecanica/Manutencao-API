@@ -44,6 +44,33 @@ public class UserIdentityPolicy {
         return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
     }
 
+    public String generateUsername(String name) {
+        validateName(name);
+
+        String base = Normalizer.normalize(name, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]+", ".")
+                .replaceAll("^\\.+|\\.+$", "");
+        if (base.isBlank()) {
+            throw new InvalidRequestException("O nome deve conter letras ou numeros para gerar o username.");
+        }
+
+        for (int sequence = 1; ; sequence++) {
+            String suffix = String.valueOf(sequence);
+            int maxBaseLength = 50 - suffix.length();
+            String candidate = base.substring(0, Math.min(base.length(), maxBaseLength)) + suffix;
+
+            if (candidate.length() < 3) {
+                candidate = (base + "00").substring(0, 3 - suffix.length()) + suffix;
+            }
+            validateUsername(candidate);
+            if (!userRepository.existsByUsernameIgnoreCase(candidate)) {
+                return candidate;
+            }
+        }
+    }
+
     // Valida a regra aplicada por este metodo.
     public void validateName(String name) {
         if (name == null || name.isBlank()) {

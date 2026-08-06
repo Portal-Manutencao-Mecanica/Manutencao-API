@@ -31,7 +31,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     private final ConcurrentMap<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     public LoginRateLimitFilter(
-            @Value("${app.security.login-rate-limit.capacity:5}") int requestsPerWindow,
+            @Value("${app.security.login-rate-limit.capacity:100}") int requestsPerWindow,
             @Value("${app.security.login-rate-limit.refill-seconds:60}") long refillSeconds
     ) {
         if (requestsPerWindow <= 0 || refillSeconds <= 0) {

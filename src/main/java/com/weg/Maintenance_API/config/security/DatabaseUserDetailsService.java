@@ -15,12 +15,13 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    //Busca o usuario no banco de acordo com o email e retorna a senha criptografada
+    // Busca o usuario pelo e-mail ou username e retorna a senha criptografada.
     @Override
-    public UserDetails loadUserByUsername(String email)
+    public UserDetails loadUserByUsername(String identifier)
             throws UsernameNotFoundException {
 
-        User user = userRepository.findByEmailIgnoreCase(email)
+        User user = userRepository
+                .findByEmailIgnoreCaseOrUsernameIgnoreCase(identifier, identifier)
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not founded"));
 
