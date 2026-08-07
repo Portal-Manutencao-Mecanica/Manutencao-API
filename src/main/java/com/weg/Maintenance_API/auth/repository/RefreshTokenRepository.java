@@ -35,8 +35,4 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
             @Param("userId") UUID userId,
             @Param("revokedAt") LocalDateTime revokedAt
     );
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("delete from RefreshToken item where item.user.id = :userId")
-    void deleteByUserId(@Param("userId") UUID userId);
 }

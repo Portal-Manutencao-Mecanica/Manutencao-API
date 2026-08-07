@@ -1,10 +1,6 @@
 package com.weg.Maintenance_API.user.service;
 
 import com.weg.Maintenance_API.audit.service.AuditService;
-import com.weg.Maintenance_API.auth.firstaccess.repository.FirstAccessCodeRepository;
-import com.weg.Maintenance_API.auth.password.repository.PasswordResetTokenRepository;
-import com.weg.Maintenance_API.auth.repository.RefreshTokenRepository;
-import com.weg.Maintenance_API.user.preference.repository.NotificationPreferenceRepository;
 import com.weg.Maintenance_API.auth.service.ClientRequestMetadata;
 import com.weg.Maintenance_API.auth.service.RefreshTokenService;
 import com.weg.Maintenance_API.enums.Role;
@@ -12,7 +8,6 @@ import com.weg.Maintenance_API.exception.type.ConflictException;
 import com.weg.Maintenance_API.exception.type.InvalidRequestException;
 import com.weg.Maintenance_API.exception.type.InvalidStateException;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
-import org.springframework.dao.DataIntegrityViolationException;
 import com.weg.Maintenance_API.organization.entity.Organization;
 import com.weg.Maintenance_API.organization.repository.OrganizationRepository;
 import com.weg.Maintenance_API.organization.dto.OrganizationSummaryResponse;
@@ -35,10 +30,6 @@ import java.util.UUID;
 public class UserAdministrationService {
 
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final FirstAccessCodeRepository firstAccessCodeRepository;
-    private final PasswordResetTokenRepository passwordResetTokenRepository;
-    private final NotificationPreferenceRepository notificationPreferenceRepository;
     private final UserManagementPermissionService permissionService;
     private final RefreshTokenService refreshTokenService;
     private final TemporaryCredentialService temporaryCredentialService;
@@ -307,39 +298,6 @@ public class UserAdministrationService {
                 "Role anterior: " + previousRole + "; nova role: " + targetRole
         );
         return response(changed);
-    }
-
-    @Transactional
-    public void delete(UUID userId, String actorEmail, ClientRequestMetadata metadata) {
-        User actor = actor(actorEmail);
-        User target = target(userId);
-        permissionService.validateCanManage(actor, target);
-        validateNotSelf(actor, target, "excluir");
-        protectLastActiveAdmin(target);
-
-        try {
-            deleteTechnicalUserData(userId);
-            userRepository.delete(target);
-            userRepository.flush();
-        } catch (DataIntegrityViolationException exception) {
-            throw new InvalidStateException(
-                    "O usuário possui registros vinculados e não pode ser excluído. "
-                            + "Inative-o para preservar o histórico."
-            );
-        }
-
-        auditService.recordInCurrentTransaction(
-                actor, "USER_DELETED", "USER", userId,
-                metadata.endpoint(), metadata.httpMethod(), metadata.ipAddress(), metadata.userAgent(),
-                true, "Usuário excluído pelo administrador."
-        );
-    }
-
-    private void deleteTechnicalUserData(UUID userId) {
-        refreshTokenRepository.deleteByUserId(userId);
-        firstAccessCodeRepository.deleteByUserId(userId);
-        passwordResetTokenRepository.deleteByUserId(userId);
-        notificationPreferenceRepository.deleteByUserId(userId);
     }
 
     // Executa a operacao deste metodo.

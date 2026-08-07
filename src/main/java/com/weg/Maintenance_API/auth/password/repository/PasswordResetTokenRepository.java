@@ -49,8 +49,4 @@ public interface PasswordResetTokenRepository
             @Param("userId") UUID userId,
             @Param("invalidatedAt") LocalDateTime invalidatedAt
     );
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("delete from PasswordResetToken item where item.user.id = :userId")
-    void deleteByUserId(@Param("userId") UUID userId);
 }

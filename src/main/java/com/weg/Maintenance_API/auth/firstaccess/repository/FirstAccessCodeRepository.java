@@ -30,8 +30,4 @@ public interface FirstAccessCodeRepository extends JpaRepository<FirstAccessCode
             @Param("userId") UUID userId,
             @Param("invalidatedAt") LocalDateTime invalidatedAt
     );
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("delete from FirstAccessCode item where item.user.id = :userId")
-    void deleteByUserId(@Param("userId") UUID userId);
 }

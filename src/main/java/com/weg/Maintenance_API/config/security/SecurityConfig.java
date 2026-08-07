@@ -83,32 +83,22 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/users/*")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/users/*")
-                        .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,
                                 "/maquinas", "/turma", "/maquina-log", "/equipamento",
-                                "/designacao", "/lugar", "/organizations")
+                                "/material-apoio", "/designacao", "/lugar", "/organizations")
                         .hasAnyRole("COORDENADOR", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/material-apoio")
-                        .hasAnyRole("PROFESSOR", "COORDENADOR", "ADMIN")
                         .requestMatchers(HttpMethod.PUT,
                                 "/maquinas/**", "/turma/**", "/maquina-log/**", "/equipamento/**",
-                                "/designacao/**", "/lugar/**")
+                                "/material-apoio/**", "/designacao/**", "/lugar/**")
                         .hasAnyRole("COORDENADOR", "ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/material-apoio/**")
-                        .hasAnyRole("PROFESSOR", "COORDENADOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH,
                                 "/maquinas/**", "/turma/**", "/maquina-log/**", "/equipamento/**",
-                                "/designacao/**", "/lugar/**", "/organizations/**")
+                                "/material-apoio/**", "/designacao/**", "/lugar/**", "/organizations/**")
                         .hasAnyRole("COORDENADOR", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/material-apoio/**")
-                        .hasAnyRole("PROFESSOR", "COORDENADOR", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE,
                                 "/maquinas/**", "/turma/**", "/maquina-log/**", "/equipamento/**",
-                                "/designacao/**", "/lugar/**")
+                                "/material-apoio/**", "/designacao/**", "/lugar/**")
                         .hasAnyRole("COORDENADOR", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/material-apoio/**")
-                        .hasAnyRole("PROFESSOR", "COORDENADOR", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/eventos")
                         .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/eventos/**")

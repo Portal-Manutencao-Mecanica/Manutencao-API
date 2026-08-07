@@ -16,7 +16,6 @@ public interface EquipmentMapper {
 
     @Mapping(target = "unitPrice", source = "unitPrice")
     @Mapping(target = "availableQuantity", source = "availableQuantity")
-    @Mapping(target = "image", expression = "java(equipment.getMedia().isEmpty() ? null : equipment.getMedia().get(0).getImage())")
     EquipmentResponse toResponse(Equipment equipment);
 
 }

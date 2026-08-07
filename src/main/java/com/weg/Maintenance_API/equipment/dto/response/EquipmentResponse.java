@@ -13,7 +13,6 @@ public record EquipmentResponse(
         String patrimony,
         String tag,
         BigDecimal unitPrice,
-        Integer availableQuantity,
-        String image) {
+        Integer availableQuantity) {
 
 }

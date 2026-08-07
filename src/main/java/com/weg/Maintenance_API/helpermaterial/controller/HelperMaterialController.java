@@ -33,7 +33,7 @@ public class HelperMaterialController {
     private final HelperMaterialService service;
 
     // Cria e persiste os dados da operacao.
-    @PreAuthorize("hasAnyRole('PROFESSOR', 'COORDENADOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PostMapping
     public ResponseEntity<HelperMaterialResponse> create(@Valid @RequestBody HelperMaterialRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request));
@@ -56,7 +56,7 @@ public class HelperMaterialController {
     }
 
     // Atualiza o estado conforme os dados informados.
-    @PreAuthorize("hasAnyRole('PROFESSOR', 'COORDENADOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<HelperMaterialResponse> update(
             @PathVariable UUID id,
@@ -66,7 +66,7 @@ public class HelperMaterialController {
     }
 
     // Atualiza o estado conforme os dados informados.
-    @PreAuthorize("hasAnyRole('PROFESSOR', 'COORDENADOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<HelperMaterialResponse> patch(
             @PathVariable UUID id,
@@ -76,7 +76,7 @@ public class HelperMaterialController {
     }
 
     // Remove ou invalida os dados solicitados.
-    @PreAuthorize("hasAnyRole('PROFESSOR', 'COORDENADOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COORDENADOR', 'ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         service.delete(id);
