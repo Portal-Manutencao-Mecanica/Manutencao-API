@@ -34,6 +34,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Organization {
 
+    private static final String SENAI_EDUCATION_EMAIL_DOMAIN = "edu.sc.senai.br";
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "organization_id", nullable = false, updatable = false)
@@ -75,7 +77,10 @@ public class Organization {
         }
         String domain = email.substring(email.lastIndexOf('@') + 1).toLowerCase(Locale.ROOT);
         String normalizedDomain = normalizeDomain(emailDomain);
-        return domain.equals(normalizedDomain) || domain.endsWith("." + normalizedDomain);
+        return domain.equals(normalizedDomain)
+                || domain.endsWith("." + normalizedDomain)
+                || (type == OrganizationType.SENAI
+                && domain.equals(SENAI_EDUCATION_EMAIL_DOMAIN));
     }
 
     @PrePersist

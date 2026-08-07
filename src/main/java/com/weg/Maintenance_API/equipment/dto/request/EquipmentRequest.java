@@ -19,6 +19,7 @@ public record EquipmentRequest(
     BigDecimal unitPrice,
     @NotNull(message = "available quantity can't be null")
     @PositiveOrZero(message = "available quantity can't be negative")
-    Integer availableQuantity
+    Integer availableQuantity,
+    String image
 ) {
 }
