@@ -1,480 +1,398 @@
-# Portal de Manutenção — API
+Portal da Manutenção — API
 
-API REST do Portal de Manutenção, construída com Java 21, Spring Boot 4, Spring Security, JWT, Spring Data JPA, PostgreSQL e Flyway.
+Backend do Portal da Manutenção Mecânica, sistema desenvolvido para centralizar rotinas de manutenção, ativos, usuários, compras, inspeções, 5S e auditoria em um ambiente integrado entre WEG e SENAI.
 
-O estado atual corresponde à conclusão das Fases 1 e 2: identificadores UUID, organizações, autenticação stateless, ciclo completo de credenciais, importação XLSX, primeiro acesso, recuperação de senha, perfil, administração de usuários, auditoria e respostas de erro padronizadas.
+Status: projeto concluído — release 1.0.0.
 
-## Requisitos para execução
+Sobre o projeto
 
-- Java 21 ou superior;
-- PostgreSQL 17 ou compatível;
-- Docker, opcional;
-- servidor SMTP para os fluxos que enviam e-mail.
+A API concentra as regras de negócio, autenticação, autorização, persistência, auditoria e integrações utilizadas pelo portal. O projeto foi desenvolvido em Java com Spring Boot, PostgreSQL e Redis.
 
-Copie `.env.example` e configure os valores como variáveis de ambiente do processo. O Spring Boot não carrega arquivos `.env` automaticamente.
+Backend: https://github.com/Portal-Manutencao-Mecanica/Manutencao-API
 
-Variáveis obrigatórias:
+Frontend: https://github.com/Portal-Manutencao-Mecanica/Portal_Mecanica-APP
 
-```text
-DATABASE_URL
-DATABASE_USERNAME
-DATABASE_PASSWORD
-JWT_SECRET
-MAIL_HOST
-MAIL_USERNAME
-MAIL_PASSWORD
-FRONTEND_URL
-```
+Funcionalidades
 
-`JWT_SECRET` deve ser um valor Base64 que represente pelo menos 32 bytes aleatórios. Não armazene senhas, tokens ou segredos no repositório. No perfil `dev`, o seed de administrador só é habilitado quando `DEV_ADMIN_PASSWORD` é fornecida pelo ambiente.
+Autenticação e segurança
 
-O perfil `dev` também aplica as contas de teste abaixo via Flyway. Em outros ambientes, elas só são criadas se `SEED_TEST_USERS=true` for definido.
+autenticação com JWT;
 
-| Perfil | E-mail | Senha |
-| --- | --- | --- |
-| ADMIN | `admin@teste.local` | `Senha@123` |
-| COORDENADOR | `coordenador@teste.local` | `Senha@123` |
-| PROFESSOR | `professor@teste.local` | `Senha@123` |
-| ALUNO | `aluno@teste.local` | `Senha@123` |
+access token e refresh token;
 
-Para iniciar:
+logout com revogação de refresh token;
 
-```powershell
+primeiro acesso com senha temporária;
+
+troca obrigatória e expiração da senha inicial;
+
+código de verificação para primeiro acesso;
+
+recuperação de senha por token temporário;
+
+bloqueio após tentativas inválidas;
+
+ativação e inativação de contas;
+
+RBAC por perfil;
+
+rate limiting em operações críticas;
+
+auditoria de operações sensíveis.
+
+Usuários, organizações e turmas
+
+Perfis disponíveis:
+
+Perfil
+
+Responsabilidade geral
+
+ADMIN
+
+Administração global e operações privilegiadas
+
+COORDENADOR
+
+Gestão da organização, usuários e aprovações
+
+PROFESSOR
+
+Acompanhamento de turmas e fluxos de manutenção
+
+ALUNO
+
+Registro e acompanhamento das atividades permitidas
+
+O sistema também possui:
+
+cadastro, edição, exclusão e inativação de usuários;
+
+organizações WEG, SENAI e outros tipos previstos pelo domínio;
+
+associação de professores e alunos a turmas;
+
+importação de usuários por CSV;
+
+histórico das importações;
+
+reemissão de credenciais.
+
+Máquinas, equipamentos e locais
+
+cadastro e gerenciamento de máquinas;
+
+patrimônio e TAG;
+
+condição operacional;
+
+local de instalação;
+
+histórico de manutenção;
+
+equipamentos e materiais;
+
+código SAP;
+
+quantidade disponível;
+
+preço unitário;
+
+mídias associadas.
+
+Solicitações de manutenção
+
+abertura de ocorrências;
+
+prioridade e descrição;
+
+máquina, patrimônio, TAG e local;
+
+alunos participantes;
+
+professor responsável;
+
+aprovação/reprovação pelo professor;
+
+aprovação/reprovação pelo coordenador;
+
+ordem de serviço;
+
+histórico de alterações;
+
+anexos e evidências;
+
+finalização da solicitação.
+
+Outros módulos
+
+manutenção autônoma;
+
+calendário e eventos;
+
+Livro de Máquina;
+
+solicitações de compra e itens;
+
+inconvenientes 5S;
+
+material de apoio;
+
+notificações e preferências;
+
+upload e relacionamento de mídias;
+
+histórico e auditoria.
+
+Tecnologias
+
+Tecnologia
+
+Uso
+
+Java 21
+
+Linguagem principal
+
+Spring Boot 3.5
+
+Framework
+
+Spring Web
+
+API REST
+
+Spring Data JPA / Hibernate
+
+Persistência
+
+Spring Security
+
+Autenticação e autorização
+
+OAuth2 Resource Server
+
+JWT
+
+PostgreSQL 16
+
+Banco de dados
+
+Flyway
+
+Migrations
+
+Redis 7
+
+Infraestrutura distribuída
+
+Caffeine
+
+Cache local
+
+Bucket4j
+
+Rate limiting
+
+Spring Mail
+
+E-mails
+
+Springdoc OpenAPI
+
+Swagger
+
+Maven
+
+Build
+
+Docker / Compose
+
+Infraestrutura local
+
+Arquitetura
+
+Frontend
+   │
+   ▼
+Controllers
+   │
+   ▼
+Services / Regras de negócio
+   ├── Segurança
+   ├── Eventos
+   ├── Auditoria
+   └── Validações
+   │
+   ▼
+Repositories
+   │
+   ├── PostgreSQL
+   └── Redis
+
+O projeto utiliza DTOs, eventos de domínio, tratamento centralizado de exceções, Flyway, variáveis de ambiente e organização modular por domínio.
+
+Pré-requisitos
+
+Java 21;
+
+Docker e Docker Compose;
+
+Git.
+
+O projeto possui Maven Wrapper, portanto não é necessário instalar Maven globalmente.
+
+Configuração
+
+Crie um .env com base no .env.example.
+
+Principais variáveis:
+
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+
+REDIS_PASSWORD=
+
+JWT_SECRET=
+
+APP_MASTER_ADMIN_EMAIL=
+APP_MASTER_ADMIN_USERNAME=
+APP_MASTER_ADMIN_PASSWORD=
+
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM=
+
+APP_FRONTEND_URL=
+
+HOST_DB_PORT=
+HOST_REDIS_PORT=
+
+Para seeds de desenvolvimento, consulte também SEED_TEST_USERS.
+
+Nunca versione .env, senhas, tokens, credenciais SMTP ou chaves JWT.
+
+Executando localmente
+
+git clone https://github.com/Portal-Manutencao-Mecanica/Manutencao-API.git
+cd Manutencao-API
+
+Suba PostgreSQL e Redis:
+
+docker compose up -d db redis
+
+Linux/macOS:
+
+./mvnw spring-boot:run
+
+Windows:
+
 .\mvnw.cmd spring-boot:run
-```
-
-Para executar os testes:
 
-```powershell
-.\mvnw.cmd test
-```
+A API é utilizada pelo frontend em:
 
-## URLs
-
-O contexto padrão da aplicação é `/api`.
-
-```text
-API:        http://localhost:8080/api
-Swagger:    http://localhost:8080/api/swagger-ui.html
-OpenAPI:    http://localhost:8080/api/v3/api-docs
-Health:     http://localhost:8080/api/actuator/health
-```
+http://localhost:8080/api
 
-Swagger e OpenAPI são desabilitados no perfil `prod`.
+Swagger / OpenAPI
 
-## Autenticação
+Swagger UI:
 
-Envie o access token nas rotas protegidas:
+http://localhost:8080/swagger-ui/index.html
 
-```http
-Authorization: Bearer <accessToken>
-```
-
-### Login
-
-`POST /api/auth/login` — público
-
-```json
-{
-  "email": "usuario@sesisenai.org.br",
-  "password": "Senha@123"
-}
-```
-
-Resposta:
-
-```json
-{
-  "accessToken": "...",
-  "refreshToken": "...",
-  "tokenType": "Bearer",
-  "expiresIn": 900,
-  "passwordChangeRequired": false,
-  "user": {
-    "id": "5e642408-7af3-47ef-a7cb-154aaf4316f7",
-    "name": "Nome",
-    "username": "nome.usuario",
-    "email": "usuario@sesisenai.org.br",
-    "role": "ALUNO",
-    "status": "ACTIVE",
-    "passwordChangeRequired": false,
-    "organization": {
-      "id": "00000000-0000-4000-8000-000000000001",
-      "name": "SENAI"
-    }
-  }
-}
-```
-
-### Sessão
-
-| Método | Endpoint | Acesso | Descrição |
-|---|---|---|---|
-| `POST` | `/api/auth/login` | Público | Autentica e emite access e refresh tokens |
-| `POST` | `/api/auth/refresh` | Público | Rotaciona o refresh token e emite novo par |
-| `POST` | `/api/auth/logout` | Autenticado | Revoga o refresh token informado |
-| `POST` | `/api/auth/logout-all` | Autenticado | Revoga todos os refresh tokens do usuário |
-| `GET` | `/api/auth/me` | Autenticado | Retorna o usuário autenticado |
-
-Body de refresh ou logout:
-
-```json
-{
-  "refreshToken": "..."
-}
-```
-
-O refresh token original só é entregue ao cliente. No banco é persistido apenas seu hash SHA-256.
-
-## Roles
-
-Os nomes atuais do projeto foram preservados:
-
-| Requisito | Role da API |
-|---|---|
-| `ADMIN` | `ADMIN` |
-| `COORDINATOR` | `COORDENADOR` |
-| `TEACHER` | `PROFESSOR` |
-| `STUDENT` | `ALUNO` |
-
-## Criacao manual de usuarios
-
-### `POST /api/users`
-
-Cria um usuario e, na mesma transacao, o perfil correspondente a sua role. Nao existem endpoints separados para aluno, professor ou coordenador.
-
-**Acesso:** token Bearer de `ADMIN` ou `COORDENADOR`. Sem autenticacao, a rota retorna `401`.
-
-| Campo | Tipo | Obrigatorio | Descricao |
-|---|---|---|---|
-| `name` | string | Sim | Nome do usuario. |
-| `username` | string | Nao | Gerado automaticamente pelo nome completo e uma sequencia numerica. |
-| `email` | string | Sim | E-mail unico, com dominio aceito pela organizacao. |
-| `role` | `Role` | Sim | `ADMIN`, `COORDENADOR`, `PROFESSOR` ou `ALUNO`. |
-| `organizationId` | UUID | Sim | Organizacao selecionada para o novo usuario. |
-| `studentData` | objeto | Role `ALUNO` | Dados especificos do aluno. |
-| `teacherData` | objeto | Role `PROFESSOR` | Dados especificos do professor. |
-
-Todos os identificadores sao UUIDs.
-
-#### Payloads por role
-
-Aluno (`ALUNO`):
-
-```json
-{
-  "name": "Joao da Silva",
-  "email": "joao.silva@sesisenai.org.br",
-  "role": "ALUNO",
-  "organizationId": "00000000-0000-4000-8000-000000000001",
-  "studentData": {
-    "classGroupIds": [
-      "00000000-0000-4000-8000-000000000010"
-    ]
-  }
-}
-```
-
-Professor (`PROFESSOR`):
-
-```json
-{
-  "name": "Maria Souza",
-  "email": "maria.souza@sesisenai.org.br",
-  "role": "PROFESSOR",
-  "organizationId": "00000000-0000-4000-8000-000000000001",
-  "teacherData": {
-    "classGroupIds": [
-      "00000000-0000-4000-8000-000000000010"
-    ]
-  }
-}
-```
-
-Coordenador (`COORDENADOR`):
-
-```json
-{
-  "name": "Ana Lima",
-  "email": "ana.lima@sesisenai.org.br",
-  "role": "COORDENADOR",
-  "organizationId": "00000000-0000-4000-8000-000000000001"
-}
-```
-
-Administrador (`ADMIN`):
-
-```json
-{
-  "name": "Administrador Local",
-  "email": "admin@sesisenai.org.br",
-  "role": "ADMIN",
-  "organizationId": "00000000-0000-4000-8000-000000000001"
-}
-```
-
-#### Validacao de perfil e autorizacao
-
-- `ALUNO` exige somente `studentData`;
-- `PROFESSOR` exige somente `teacherData`;
-- `COORDENADOR` nao possui dados adicionais de perfil e nao aceita `studentData` ou `teacherData`;
-- `ADMIN` nao aceita dados especificos de perfil;
-- dados de um perfil nunca podem acompanhar outra role;
-- `ADMIN` pode criar qualquer role;
-- `COORDENADOR` pode criar apenas `ALUNO` e `PROFESSOR`, em qualquer organizacao ativa;
-- cada UUID em `classGroupIds` e resolvido antes da associacao; turma inexistente retorna erro e desfaz toda a criacao;
-- `studentData.classGroupIds` e `teacherData.classGroupIds` exigem ao menos uma turma; cada item deve ser um UUID nao nulo;
-- nome de usuario e e-mail sao normalizados e devem ser unicos;
-- a organizacao precisa estar ativa e aceitar o dominio do e-mail.
-
-#### Resposta de sucesso
-
-Retorna `201 Created`. A senha temporaria nunca aparece no response.
-
-```json
-{
-  "id": "00000000-0000-4000-8000-000000000100",
-  "name": "Joao da Silva",
-  "username": "joao.da.silva1",
-  "email": "joao.silva@sesisenai.org.br",
-  "role": "ALUNO",
-  "status": "PENDING_FIRST_ACCESS",
-  "passwordChangeRequired": true,
-  "organization": {
-    "id": "00000000-0000-4000-8000-000000000001",
-    "name": "Organizacao Local"
-  },
-  "credentialsSent": false,
-  "emailStatus": "PENDING",
-  "createdAt": "2026-07-30T10:00:00"
-}
-```
-
-Erros esperados: `400` para payload invalido, `401` sem autenticacao, `403` para falta de permissao, `404` para organizacao ou turma inexistente e `409` para e-mail ja utilizado.
-
-Os mesmos exemplos estao disponiveis no Swagger em `/api/swagger-ui.html`.
-
-As rotas legadas `POST /api/alunos`, `POST /api/professores` e `POST /api/coordenador` foram removidas para impedir que contornem essas regras.
-
-## Importação de usuários por CSV ou Excel
-
-`POST /api/users/import`
-
-Acesso: `ADMIN` ou `COORDENADOR`. Envie `multipart/form-data` com a parte `file`. O formato recomendado é CSV UTF-8 separado por vírgulas; arquivos XLSX existentes continuam compatíveis.
-
-Cabeçalho padrão:
-
-```text
-name,email,role,organization,classGroupIds
-```
-
-As colunas `name`, `email`, `role`, `organization` e `classGroupIds` são obrigatórias no cabeçalho. O username é gerado pelo nome completo e uma sequência numérica: `junior1`, `junior2`, `junior.silva1`. O valor de `organization` aceita somente `SENAI`, `WEG` ou `OTHER`. Para ADMIN, a organização informada é resolvida pelo tipo e precisa existir e estar ativa; todas as roles são permitidas. Para COORDENADOR, a organização usada é sempre a própria e, quando preenchido, o tipo da planilha precisa ser o mesmo; as roles permitidas são somente `ALUNO` e `PROFESSOR`. Cada linha valida cabeçalho, conteúdo, e-mail, organização, role e duplicidades no arquivo e no banco.
-
-A resposta contém o UUID da importação, totais e erros por linha. Senhas temporárias nunca são gravadas em `user_import_item`, logs ou auditoria; somente o hash BCrypt permanece no usuário e o valor temporário é entregue ao listener de e-mail após o commit.
-
-## Primeiro acesso, recuperação e perfil
-
-Enquanto `passwordChangeRequired=true`, o backend permite somente:
-
-```text
-GET   /api/users/me
-PATCH /api/users/me/password
-POST  /api/auth/logout
-```
-
-Todas as outras operações retornam `403`. A troca de senha valida a senha atual, a política e a confirmação; depois revoga tokens, incrementa a versão de segurança e envia confirmação após o commit.
-
-| Método | Endpoint | Acesso | Descrição |
-|---|---|---|---|
-| `POST` | `/api/auth/password/forgot` | Público | Solicita recuperação com resposta sempre genérica |
-| `GET` | `/api/auth/password/validate?token=...` | Público | Valida token temporário |
-| `POST` | `/api/auth/password/reset` | Público | Redefine a senha com token de uso único |
-| `GET` | `/api/users/me` | Autenticado | Consulta o próprio perfil |
-| `PATCH` | `/api/users/me` | Autenticado | Altera somente o nome |
-| `PATCH` | `/api/users/me/password` | Autenticado | Altera a própria senha |
-| `POST` | `/api/users/me/photo` | Autenticado | Envia foto JPEG ou PNG validada |
-| `PATCH` | `/api/users/me/preferences` | Autenticado | Altera preferências de notificação |
-
-Tokens de recuperação são aleatórios, expiram, funcionam uma vez e somente o SHA-256 é persistido. A solicitação possui rate limit por IP e e-mail. Fotos usam nome físico aleatório, validação de MIME/assinatura, limite configurável e proteção contra path traversal.
-
-## Administração de usuários
-
-| Método | Endpoint | Acesso |
-|---|---|---|
-| `PATCH` | `/api/users/{id}/block` | `ADMIN`, `COORDENADOR` |
-| `PATCH` | `/api/users/{id}/unblock` | `ADMIN`, `COORDENADOR` |
-| `PATCH` | `/api/users/{id}/deactivate` | `ADMIN`, `COORDENADOR` |
-| `PATCH` | `/api/users/{id}/reactivate` | `ADMIN`, `COORDENADOR` |
-| `PATCH` | `/api/users/{id}/role` | `ADMIN` |
-| `POST` | `/api/users/{id}/resend-credentials` | `ADMIN`, `COORDENADOR` |
-
-As mudanças de status exigem:
-
-```json
-{
-  "reason": "Motivo auditável da alteração"
-}
-```
-
-A troca de role recebe `{"role":"PROFESSOR"}`. Não é permitido alterar a própria role nem remover o último administrador ativo. O coordenador pode inativar somente `PROFESSOR` e `ALUNO`, independentemente da organização, e nunca administra `ADMIN` ou `COORDENADOR`.
-
-As operações administrativas revogam refresh tokens e invalidam imediatamente access tokens anteriores por meio da versão de segurança incluída no JWT. O reenvio substitui o hash da senha anterior, renova a expiração, mantém a troca obrigatória, aplica rate limit e envia a nova credencial somente após o commit.
-
-## Organizações
-
-| Método | Endpoint | Acesso |
-|---|---|---|
-| `POST` | `/api/organizations` | `ADMIN`, `COORDENADOR` |
-| `GET` | `/api/organizations` | `ADMIN`, `COORDENADOR` |
-| `GET` | `/api/organizations/{id}` | `ADMIN`, `COORDENADOR` |
-| `PATCH` | `/api/organizations/{id}` | `ADMIN`, `COORDENADOR` |
-| `PATCH` | `/api/organizations/{id}/activate` | `ADMIN` |
-| `PATCH` | `/api/organizations/{id}/deactivate` | `ADMIN` |
-
-Listagens paginadas aceitam `page`, `size` e `sort`. O tamanho máximo global é 100.
-
-Exemplo de criação:
-
-```json
-{
-  "name": "SENAI",
-  "type": "SENAI",
-  "emailDomain": "sesisenai.org.br"
-}
-```
-
-## Endpoints de domínio existentes
-
-Todos os parâmetros `{id}` abaixo são UUIDs.
-
-### Recursos restritos a `ADMIN`
-
-| Base | Endpoints |
-|---|---|
-| `/api/equipamento` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
-| `/api/lugar` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
-| `/api/maquinas` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
-| `/api/designacao` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
-| `/api/material-apoio` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}`, `DELETE /{id}` |
-| `/api/turma` | CRUD, `GET /ativos`, `PATCH /{id}/inativar` |
-| `/api/alunos` | consultas legadas |
-| `/api/professores` | consultas legadas |
-| `/api/coordenador` | consultas legadas |
-| `/api/coordernador` | alias legado de `/api/coordenador` |
-
-### Recursos que exigem autenticação
-
-| Base | Endpoints |
-|---|---|
-| `/api/compras` | CRUD e `GET /status/{status}` |
-| `/api/solicitao-manutencao` | CRUD |
-| `/api/eventos` | `POST`, `GET`, `GET /{id}`, `PUT /{id}`, `DELETE /{id}` |
-| `/api/maquina-log` | CRUD |
-| `/api/5s` | CRUD |
-| `/api/manutencao-autonoma` | fluxo professor -> coordenador, listagem paginada por visibilidade e aprovacao em `PATCH /{id}/aprovacao` |
-| `/api/notification` | `GET`, `GET /{id}`, `PUT /{id}`, `PATCH /{id}/read`, `PATCH /{id}/toggle-read`, `PATCH /read-all`, `GET /unread-count`, `DELETE /{id}`; não há criação manual e cada usuário acessa somente as próprias notificações |
-
-Os módulos legados continuam autenticados. Em manutenção autônoma, organização, propriedade, atribuição e transições de status são validadas no backend.
-
-## Rotas legadas removidas
-
-| Método | Endpoint | Motivo |
-|---|---|---|
-| `POST` | `/api/excel/import` | Substituído por `POST /api/users/import` |
-| `POST` | `/api/alunos` | Substituído por `POST /api/users` |
-| `POST` | `/api/professores` | Substituído por `POST /api/users` |
-| `POST` | `/api/coordenador` | Substituído por `POST /api/users` |
-
-As rotas legadas de escrita de aluno, professor e coordenador também foram removidas para impedir alteração direta de senha, status, role ou exclusão física sem as regras e auditoria da Fase 2.
-
-## Identificadores UUID
-
-Todas as entidades JPA e repositories usam `UUID` como identificador. O JSON representa UUID como texto:
-
-```json
-{
-  "id": "5e642408-7af3-47ef-a7cb-154aaf4316f7"
-}
-```
-
-Um ID malformado retorna `400 INVALID_PARAMETER`. Quantidades, paginação, contadores e o campo de versão otimista continuam numéricos porque não são identificadores de entidade.
-
-As migrations `V12` e `V13` convertem progressivamente IDs e chaves estrangeiras existentes sem converter números diretamente para UUID. `V14` e `V15` adicionam organizações, segurança, auditoria e refresh tokens. `V16` a `V19` adicionam importações, recuperação de senha, perfil, mídia, preferências e metadados administrativos.
-
-## Respostas de erro
-
-Formato padrão:
-
-```json
-{
-  "status": 400,
-  "error": "VALIDATION_ERROR",
-  "message": "Existem campos inválidos.",
-  "path": "/api/users",
-  "timestamp": "2026-07-23T11:00:00",
-  "errors": {
-    "email": "O e-mail informado é inválido."
-  }
-}
-```
-
-Códigos usados incluem:
-
-```text
-VALIDATION_ERROR
-INVALID_REQUEST
-INVALID_REQUEST_BODY
-INVALID_PARAMETER
-AUTHENTICATION_REQUIRED
-INVALID_CREDENTIALS
-CREDENTIALS_EXPIRED
-ACCESS_DENIED
-RESOURCE_NOT_FOUND
-DATA_CONFLICT
-CONCURRENT_UPDATE
-INVALID_TOKEN
-TOKEN_EXPIRED
-RATE_LIMIT_EXCEEDED
-INVALID_STATE
-INVALID_FILE
-UNEXPECTED_ERROR
-```
-
-Stack traces e detalhes internos não são retornados ao cliente.
-
-## Segurança implementada
-
-- sessão stateless;
-- access token JWT HS256 com issuer validado;
-- chave JWT mínima de 256 bits;
-- refresh token aleatório, com hash persistido, expiração, rotação e revogação;
-- logout de uma sessão e de todas as sessões;
-- versão de segurança no JWT para invalidar access tokens após senha, role, bloqueio ou inativação;
-- bloqueio progressivo após grupos de cinco falhas: 5 minutos, 15 minutos e 1 hora;
-- rate limit por IP no endpoint de login;
-- rate limit por IP/e-mail na recuperação e por ator/alvo no reenvio de credenciais;
-- mensagens genéricas para credenciais inválidas;
-- senha temporária e senha definitiva persistidas somente como BCrypt;
-- token de recuperação e refresh token persistidos somente como SHA-256;
-- CORS com origens explícitas e credenciais;
-- Actuator restrito, exceto `health`;
-- Swagger desabilitado em produção;
-- configuração sensível por variável de ambiente;
-- `.env` ignorado pelo Git;
-- auditoria para login, criação, importação, senha, status, role e reenvio de credenciais.
-
-## Banco e testes
-
-O Hibernate usa `ddl-auto=validate` fora dos testes e o Flyway é responsável pelo schema. Não altere migrations já aplicadas; crie uma nova migration versionada.
-
-Estado verificado em 23/07/2026:
-
-- migrations `V1` até `V19` aplicadas com sucesso no PostgreSQL 17;
-- nenhuma coluna de ID ou foreign key permanece com tipo numérico;
-- 32 testes automatizados em 16 classes passando;
-- Testcontainers valida o schema final e todas as chaves primárias UUID;
-- fluxos integrados cobertos: login, refresh, logout, importação parcial, primeiro acesso, recuperação, perfil, bloqueio, inativação, role, reenvio, auditoria e isolamento por organização.
-
-## Próxima fase
-
-A Fase 3 deve corrigir os domínios críticos: compras, relacionamentos e mappers, Livro Máquina, inspeções, máquinas/equipamentos e validadores de transição de status. Depois devem ser concluídos ocorrências, comentários, histórico, anexos, notificações por evento, filtros, dashboard e exportações.
+OpenAPI JSON:
+
+http://localhost:8080/v3/api-docs
+
+Banco de dados
+
+O schema é controlado pelo Flyway. As migrations são aplicadas durante a inicialização e devem ser tratadas como fonte de verdade da estrutura do banco.
+
+Não altere migrations já aplicadas em ambientes compartilhados.
+
+Testes e build
+
+Testes:
+
+./mvnw test
+
+Build:
+
+./mvnw clean package
+
+O artefato gerado fica em:
+
+target/
+
+Segurança
+
+Entre os controles implementados estão:
+
+BCrypt para senhas;
+
+JWT + refresh token;
+
+autorização por perfil;
+
+sessão stateless;
+
+CORS;
+
+rate limiting;
+
+bloqueio por tentativas inválidas;
+
+tokens de recuperação de uso único;
+
+credenciais temporárias;
+
+proteção de endpoints e mídias;
+
+validação de importações;
+
+auditoria;
+
+segredos externos ao código.
+
+Documentação complementar:
+
+docs/
+
+Estrutura geral
+
+Manutencao-API/
+├── .github/
+├── docs/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   └── resources/
+│   └── test/
+├── .env.example
+├── compose.yaml
+├── Dockerfile
+├── pom.xml
+├── mvnw
+├── mvnw.cmd
+└── README.md
+
+Integração com o frontend
+
+Navegador
+   │
+   ▼
+Next.js /api/*
+   │
+   ▼
+Spring Boot /api/*
+   │
+   ├── PostgreSQL
+   └── Redis
+
+Frontend: https://github.com/Portal-Manutencao-Mecanica/Portal_Mecanica-APP
+
+Status final
+
+A release 1.0.0 marca a conclusão do backend do Portal da Manutenção. A etapa final incluiu hardening, revisão de segurança, limpeza de arquivos locais e consolidação da documentação para entrega.
+
+Desenvolvido como parte do Portal da Manutenção Mecânica — WEG / SENAI.
