@@ -4,7 +4,11 @@ package com.weg.Maintenance_API.equipment.service;
 import java.util.UUID;
 import java.util.Locale;
 
+import com.weg.Maintenance_API.enums.MediaType;
 import com.weg.Maintenance_API.exception.type.ResourceNotFoundException;
+import com.weg.Maintenance_API.media.service.ImageMediaFactory;
+import com.weg.Maintenance_API.user.entity.User;
+import com.weg.Maintenance_API.user.service.AuthenticatedUserService;
 
 import java.util.List;
 
@@ -26,12 +30,15 @@ public class EquipmentService {
 
     private final EquipmentMapper equipmentMapper;
     private final EquipmentRepository equipmentRepository;
+    private final AuthenticatedUserService authenticatedUserService;
+    private final ImageMediaFactory imageMediaFactory;
 
     // Cria e persiste os dados da operacao.
     @Transactional
     public EquipmentResponse save(EquipmentRequest equipmentRequest) {
         Equipment equipment = equipmentMapper.toEntity(equipmentRequest);
         assignAutomaticIdentifiers(equipment);
+        replaceImageWhenProvided(equipment, equipmentRequest.image());
         equipment = equipmentRepository.save(equipment);
         return equipmentMapper.toResponse(equipment);
     }
@@ -64,6 +71,7 @@ public class EquipmentService {
         equipment.setUnitPrice(equipmentRequest.unitPrice());
         equipment.setAvailableQuantity(equipmentRequest.availableQuantity());
         ensureAutomaticIdentifiers(equipment);
+        replaceImageWhenProvided(equipment, equipmentRequest.image());
         equipmentRepository.save(equipment);
         return equipmentMapper.toResponse(equipment);
     }
@@ -84,6 +92,7 @@ public class EquipmentService {
         }
         ensureAutomaticIdentifiers(equipment);
 
+        replaceImageWhenProvided(equipment, request.image());
         equipmentRepository.save(equipment);
         return equipmentMapper.toResponse(equipment);
     }
@@ -94,6 +103,21 @@ public class EquipmentService {
         equipmentRepository.delete(equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipamento", id)));
     }
 
+    private void replaceImageWhenProvided(Equipment equipment, String image) {
+        if (image == null) {
+            return;
+        }
+        User currentUser = authenticatedUserService.requireCurrentUser();
+        equipment.getMedia().clear();
+        equipment.getMedia().addAll(imageMediaFactory.fromDataUrls(
+                List.of(image),
+                currentUser,
+                MediaType.EQUIPMENT,
+                "equipamento",
+                "Imagem do equipamento",
+                false
+        ));
+    }
     private void assignAutomaticIdentifiers(Equipment equipment) {
         String suffix = identifierSuffix();
         equipment.setSap("SAP-" + suffix);
